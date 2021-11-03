@@ -25,6 +25,11 @@ nav{
 	position: relative;
 	text-decoration: none;
 }
+.title ul li a:hover{
+	color: red;
+	font-size: 26px;
+	transition: 0.5s;
+}
 .nav-links{
 	flex: 1;
 	text-align: right;
@@ -68,3 +73,13 @@ nav{
 	font-size: 25px;
 	margin: 20px 0px 20px;
 }
+.text-box p a{
+	color: #fff;
+	text-decoration: none;
+}
+.text-box p a:hover{
+	font-size: 26px;
+	color: red;
+	transition: 0.5s;
+}
+

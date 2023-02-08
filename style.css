@@ -82,4 +82,9 @@ nav{
 	color: red;
 	transition: 0.5s;
 }
-
+}
+.resume-box{
+	width: 90%;
+	height: 900px;
+	text-align: center;
+}

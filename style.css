@@ -105,7 +105,6 @@ nav{
 .text-box p li:hover::after{
 	width: 100%;
 }
-}
 .resume-box{
 	width: 820px
 	margin-left: auto;

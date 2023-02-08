@@ -82,31 +82,6 @@ nav{
 	color: red;
 	transition: 0.5s;
 }
-.text-box2{
-	width: 90%;
-	color: #fff;
-	position: absolute;
-	top:  50%;
-	left: 50%;
-	transform:  translate(-50%,-50%);
-	text-align: center;
-}
-.text-box2 h1{
-	font-size: 45px;
-}
-.text-box2 p{
-	font-size: 25px;
-	margin: 20px 0px 20px;
-}
-.text-box2 p a{
-	color: #fff;
-	text-decoration: none;
-}
-.text-box2 p a:hover{
-	font-size: 22px;
-	color: orange;
-	transition: 0.5s;
-}
 .resume-box{
 	width: 820px
 	margin-left: auto;

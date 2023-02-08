@@ -82,6 +82,29 @@ nav{
 	color: red;
 	transition: 0.5s;
 }
+.text-box ul li{
+	list-style: none;
+	display: inline-block;
+	padding: 8px 12px;
+	position: relative;
+}
+.text-box ul li a{
+	color:  #fff;
+	text-decoration: none;
+	font-size: 18px;
+}
+.text-box ul li::after{
+	content:  '';
+	width:  0%;
+	height:  2px;
+	background:  #fff;
+	display:  block;
+	margin: auto;
+	transition: 0.5s;
+}
+.text-box ul li:hover::after{
+	width: 100%;
+}
 }
 .resume-box{
 	width: 820px

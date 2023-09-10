@@ -80,7 +80,7 @@ nav{
 .text-box p a:hover{
 	font-size: 26px;
 	color: red;
-	transition: 0.5s;
+	transition: 0.15s;
 }
 .resume-box{
 	width: 820px

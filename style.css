@@ -45,11 +45,6 @@ nav{
 	text-decoration: none;
 	font-size: 22px;
 }
-.nav-links ul li b{
-	color:  #fff;
-	text-decoration: none;
-	font-size: 22px;
-}
 .nav-links ul li::after{
 	content:  '';
 	width:  0%;
@@ -108,7 +103,6 @@ nav{
 	text-decoration: none;
 }
 .text-box2 p a:hover{
-	font-size: 19px;
 	color: yellow;
 	transition: 0.15s;
 }

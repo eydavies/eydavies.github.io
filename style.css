@@ -82,6 +82,15 @@ nav{
 	color: red;
 	transition: 0.15s;
 }
+.text-box p b{
+	color: #fff;
+	text-decoration: none;
+}
+.text-box p a:hover{
+	font-size: 22px;
+	color: yellow;
+	transition: 0.15s;
+}
 .resume-box{
 	width: 820px
 	margin-left: auto;

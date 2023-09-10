@@ -103,7 +103,7 @@ nav{
 	text-decoration: none;
 }
 .text-box2 p a:hover{
-	color: yellow;
+	color: red;
 	transition: 0.15s;
 }
 .resume-box{

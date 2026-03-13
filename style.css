@@ -78,9 +78,9 @@ nav{
 	text-decoration: none;
 }
 .text-box p a:hover{
-	font-size: 26px;
-	color: red;
-	transition: 0.15s;
+	font-size: 25px;
+	color: orange;
+	transition: 0.1s;
 }
 .text-box2{
 	width: 90%;
@@ -111,3 +111,4 @@ nav{
 	margin-left: auto;
 	margin-right: auto;
 }
+

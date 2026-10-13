@@ -40,6 +40,7 @@ import tempfile
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC = ROOT / "src"
 
+SITE_URL = "https://eydavies.github.io/"
 SITE_NAME = "Elliot Y. Davies"
 CV_PDF = "elliot_davies_cv.pdf"          # served by the "Download PDF" button
 CV_DOWNLOAD_NAME = "Elliot_Y_Davies_CV.pdf"  # file name the visitor's browser saves
@@ -440,6 +441,7 @@ def main():
             "description": html.escape(meta["description"], quote=True),
             "page_key": meta["key"],
             "site_name": SITE_NAME,
+            "canonical": SITE_URL + ("" if source.name == "index.html" else source.name),
             "css_url": asset("style.css"),
             "js_url": asset("site.js"),
             "nav_items": render_nav(meta["key"]),

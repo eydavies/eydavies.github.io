@@ -5,6 +5,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>About | Elliot Y. Davies</title>
+	<link rel="canonical" href="https://eydavies.github.io/about.html">
 	<meta name="description" content="About Elliot Y. Davies: research on galaxy dynamics and dark matter, and a route from North Wales via Princeton, Edinburgh and Cambridge to MIT.">
 	<meta name="theme-color" content="#04091e">
 	<meta property="og:type" content="website">
@@ -14,7 +15,13 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
-	<script>document.documentElement.classList.add('js')</script>
+	<script>
+		document.documentElement.classList.add('js');
+		/* one address for the home page: show "/" rather than "/index.html" */
+		if (/^https?:$/.test(location.protocol) && /\/index\.html$/.test(location.pathname)) {
+			history.replaceState(null, '', location.pathname.replace(/index\.html$/, '') + location.search + location.hash);
+		}
+	</script>
 	<link rel="stylesheet" href="style.css?v=5e2d7947">
 	<script defer src="site.js?v=c51c3854"></script>
 
@@ -23,7 +30,7 @@
 	<a class="skip-link" href="#main">Skip to content</a>
 	<header class="site-header">
 		<nav class="nav" aria-label="Main">
-			<a class="brand" href="index.html">Elliot Y. Davies</a>
+			<a class="brand" href="./">Elliot Y. Davies</a>
 			<ul class="nav-links">
 				<li><a href="about.html" aria-current="page">About</a></li>
 				<li><a href="resume.html">CV</a></li>

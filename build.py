@@ -9,6 +9,7 @@ GENERATED from the files in src/. To change the site:
          src/pages/*.html       the content of each page
          src/publications.json  the publication list for the Publications page
          src/abstracts.json     abstracts keyed by arXiv ID (optional per paper)
+         src/bibtex.json        BibTeX entries keyed by arXiv ID (optional per paper)
          src/cv.tex             your CV, as LaTeX (moderncv, "classic", black)
     2. run   python3 build.py   from this folder
          (add --no-pdf to skip compiling the CV PDF);
@@ -105,6 +106,7 @@ def render_abstract(text):
 def render_publications():
     pubs = json.loads((SRC / "publications.json").read_text(encoding="utf-8"))
     abstracts = json.loads((SRC / "abstracts.json").read_text(encoding="utf-8"))
+    bibtex = json.loads((SRC / "bibtex.json").read_text(encoding="utf-8"))
     sections = []
     for heading, first_author in (("First-author publications", True),
                                   ("Other publications", False)):
@@ -119,7 +121,14 @@ def render_publications():
                 title = html.escape(p["title"])
                 venue = html.escape(p["venue"])
                 arxiv = html.escape(p["arxiv"])
-                button = panel = ""
+                button = panel = bib_button = bib_panel = ""
+                if p["arxiv"] in bibtex:
+                    bid = "bib-" + p["arxiv"].replace(".", "-")
+                    bib_button = (f' <button type="button" class="bib-toggle" aria-expanded="false" '
+                                  f'aria-controls="{bid}">BibTeX</button>')
+                    bib_panel = (f'<div class="pub-bibtex" id="{bid}">'
+                                 '<button type="button" class="bib-copy">Copy</button>'
+                                 f'<pre><code>{html.escape(bibtex[p["arxiv"]], quote=False)}</code></pre></div>')
                 if p["arxiv"] in abstracts:
                     aid = "abs-" + p["arxiv"].replace(".", "-")
                     button = (f'<button type="button" class="abs-toggle" aria-expanded="false" '
@@ -129,8 +138,8 @@ def render_publications():
                 out.append(
                     '\t\t\t\t\t<li class="pub"><div class="pub-row"><div class="pub-text">'
                     f'<a class="pub-title" href="https://arxiv.org/abs/{arxiv}">{title}</a>'
-                    f'<span class="pub-meta">{venue} &middot; arXiv:{arxiv}</span>'
-                    f'</div>{button}</div>{panel}</li>')
+                    f'<span class="pub-meta">{venue}{bib_button}</span>'
+                    f'</div>{button}</div>{bib_panel}{panel}</li>')
             out.append('\t\t\t\t</ul>')
             out.append('\t\t\t</div>')
         out.append('\t\t</section>')

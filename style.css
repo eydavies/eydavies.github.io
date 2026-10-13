@@ -238,9 +238,9 @@ main {
 }
 .abs-toggle[aria-expanded="true"]::after { transform: translateY(0.1rem) rotate(-135deg); }
 
-.pub-abstract { grid-column: 1; margin-top: 0.5rem; }
-.js .pub-abstract { display: none; }
-.js .pub-abstract.is-open { display: block; }
+.pub-abstract, .pub-bibtex { grid-column: 1; margin-top: 0.5rem; }
+.js .pub-abstract, .js .pub-bibtex { display: none; }
+.js .pub-abstract.is-open, .js .pub-bibtex.is-open { display: block; }
 .pub-abstract p {
 	margin: 0 0 0.25rem;
 	padding-left: 1rem;
@@ -249,6 +249,67 @@ main {
 	font-size: 0.95rem;
 	line-height: 1.6;
 }
+
+/* the little "BibTeX" toggle that sits after the venue */
+.bib-toggle {
+	display: none;                 /* only shown when JavaScript is available */
+	align-items: center;
+	gap: 0.35rem;
+	margin-left: 0.4rem;
+	padding: 0 0.1rem;
+	border: 0;
+	background: none;
+	color: var(--accent);
+	font: inherit;
+	font-size: inherit;
+	text-decoration: underline;
+	text-decoration-color: rgba(255, 180, 84, 0.6);
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+.js .bib-toggle { display: inline-flex; }
+.bib-toggle:hover { color: #fff; }
+.bib-toggle::after {
+	content: '';
+	width: 0.35rem;
+	height: 0.35rem;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: translateY(-0.1rem) rotate(45deg);
+	transition: transform 0.15s;
+}
+.bib-toggle[aria-expanded="true"]::after { transform: translateY(0.08rem) rotate(-135deg); }
+
+.pub-bibtex { position: relative; }
+.pub-bibtex pre {
+	margin: 0;
+	padding: 2.1rem 1rem 0.8rem;     /* top padding leaves room for the Copy button */
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	background: rgba(255, 255, 255, 0.05);
+	color: #d3d9e6;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	tab-size: 4;
+}
+.pub-bibtex code { font: inherit; }
+.bib-copy {
+	position: absolute;
+	top: 0.45rem;
+	right: 0.45rem;
+	padding: 0.05rem 0.65rem;
+	border: 1px solid var(--accent);
+	border-radius: 999px;
+	background: rgba(4, 9, 30, 0.85);
+	color: var(--accent);
+	font: inherit;
+	font-size: 0.8rem;
+	cursor: pointer;
+}
+.bib-copy:hover { background: var(--accent); color: #1a1200; }
+html:not(.js) .bib-copy { display: none; }
 
 /* a small outlined button used for page tools (e.g. "Show all abstracts") */
 .btn-small { padding: 0.25rem 0.9rem; background: transparent; font: inherit; font-size: 0.95rem; cursor: pointer; }
@@ -382,7 +443,7 @@ html { scroll-behavior: smooth; }
 }
 @media (max-width: 36rem) {
 	.pub-year { grid-template-columns: 1fr; }
-	.pub-abstract { grid-column: 1 / -1; }   /* phones: use the full width */
+	.pub-abstract, .pub-bibtex { grid-column: 1 / -1; }   /* phones: use the full width */
 	.contact-list { grid-template-columns: 1fr; gap: 0.1rem; }
 	.contact-list dd { margin-bottom: 0.9rem; }
 }
@@ -398,6 +459,7 @@ html { scroll-behavior: smooth; }
 	a, .cv-date, .pub-year h3 { color: #000; text-decoration: none; }
 	.cv-section.is-collapsed .cv-body { display: block; }
 	.cv-desc, .cv-meta, .pub-meta, .pub-abstract p { color: #222; }
+	.pub-bibtex, .bib-toggle { display: none !important; }
 	.js .pub-abstract { display: block; }
 	.cv-entry { break-inside: avoid; border-color: #ccc; }
 	.cv-section h2, .pub-section h2 { border-color: #000; }

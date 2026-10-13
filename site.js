@@ -37,6 +37,43 @@
 		});
 	}
 
+	/* ---------- Publications: BibTeX buttons ---------- */
+	Array.prototype.forEach.call(document.querySelectorAll('.bib-toggle'), function (btn) {
+		btn.addEventListener('click', function () {
+			var open = btn.getAttribute('aria-expanded') !== 'true';
+			var panel = document.getElementById(btn.getAttribute('aria-controls'));
+			if (!panel) { return; }
+			btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+			panel.classList.toggle('is-open', open);
+		});
+	});
+
+	Array.prototype.forEach.call(document.querySelectorAll('.bib-copy'), function (btn) {
+		btn.addEventListener('click', function () {
+			var code = btn.parentNode.querySelector('code');
+			var text = code ? code.textContent : '';
+			function done(ok) {
+				btn.textContent = ok ? 'Copied' : 'Press Ctrl/Cmd+C';
+				setTimeout(function () { btn.textContent = 'Copy'; }, 1800);
+			}
+			function fallback() {
+				var sel = window.getSelection();
+				var range = document.createRange();
+				range.selectNodeContents(code);
+				sel.removeAllRanges();
+				sel.addRange(range);
+				var ok = false;
+				try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+				done(ok);
+			}
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+			} else {
+				fallback();
+			}
+		});
+	});
+
 	/* ---------- CV page ---------- */
 	var cv = document.querySelector('[data-cv]');
 	if (!cv) { return; }

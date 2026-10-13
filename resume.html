@@ -5,16 +5,18 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>CV | Elliot Y. Davies</title>
-	<meta name="description" content="Curriculum vitae of Elliot Y. Davies, Postdoctoral Associate at the MIT Kavli Institute. View online or download as a PDF.">
+	<meta name="description" content="Interactive curriculum vitae of Elliot Y. Davies, Postdoctoral Associate at the MIT Kavli Institute: search it, jump between sections, or download the PDF.">
 	<meta name="theme-color" content="#04091e">
 	<meta property="og:type" content="website">
 	<meta property="og:title" content="CV | Elliot Y. Davies">
-	<meta property="og:description" content="Curriculum vitae of Elliot Y. Davies, Postdoctoral Associate at the MIT Kavli Institute. View online or download as a PDF.">
+	<meta property="og:description" content="Interactive curriculum vitae of Elliot Y. Davies, Postdoctoral Associate at the MIT Kavli Institute: search it, jump between sections, or download the PDF.">
 	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2304091e'/%3E%3Cpath d='M50 12l9 29 29 9-29 9-9 29-9-29-29-9 29-9z' fill='%23ffb454'/%3E%3C/svg%3E">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+	<script>document.documentElement.classList.add('js')</script>
 	<link rel="stylesheet" href="style.css">
+	<script defer src="site.js"></script>
 
 </head>
 <body class="page-cv">
@@ -32,13 +34,498 @@
 	</header>
 	<main id="main">
 		<h1>Curriculum vitae</h1>
-		<div class="cv-actions">
-			<a class="btn btn-primary" href="elliot_davies_cv.pdf" download>Download PDF</a>
-			<a class="btn" href="elliot_davies_cv.pdf" target="_blank" rel="noopener">Open in new tab</a>
+		<p class="lede">An interactive version of my CV. Search it, jump between sections, or download the PDF.</p>
+		<div class="cv" data-cv>
+			<div class="cv-sticky">
+				<div class="cv-toolbar">
+					<label class="cv-search js-only">
+						<span class="sr-only">Search the CV</span>
+						<input type="search" class="cv-q" placeholder="Search the CV…" autocomplete="off">
+					</label>
+					<button type="button" class="btn cv-toggle-all js-only">Collapse all</button>
+					<a class="btn btn-primary" href="elliot_davies_cv.pdf" download="Elliot_Y_Davies_CV.pdf">Download PDF</a>
+				</div>
+				<nav class="cv-chips" aria-label="CV sections">
+				<a href="#employment">Employment</a>
+				<a href="#education">Education</a>
+				<a href="#publication-summary">Summary</a>
+				<a href="#first-author-publications">First-author papers</a>
+				<a href="#other-publications">Other papers</a>
+				<a href="#teaching-supervision">Teaching</a>
+				<a href="#mentoring">Mentoring</a>
+				<a href="#conferences-talks-schools">Talks</a>
+				<a href="#activities">Activities</a>
+				<a href="#awards-academic-programmes">Awards</a>
+				</nav>
+			</div>
+			<p class="cv-status js-only" role="status" aria-live="polite"></p>
+		<section class="cv-section" id="employment">
+			<h2>Employment</h2>
+			<div class="cv-body" id="employment-body">
+				<article class="cv-entry">
+					<div class="cv-date">2025–2028</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Massachusetts Institute of Technology</h3>
+						<p class="cv-sub">MIT Kavli Postdoctoral Associate</p>
+						<p class="cv-desc"><strong>PI</strong>: Prof. Lina Necib</p>
+					</div>
+				</article>
+			</div>
+		</section>
+		<section class="cv-section" id="education">
+			<h2>Education</h2>
+			<div class="cv-body" id="education-body">
+				<article class="cv-entry">
+					<div class="cv-date">2021–2025</div>
+					<div class="cv-main">
+						<h3 class="cv-title">University of Cambridge (Gonville &amp; Caius College)</h3>
+						<p class="cv-sub">Ph.D. Astronomy &amp; Astrophysics</p>
+						<p class="cv-desc"><strong>Thesis</strong>: <em>Chemodynamics of the Galactic Halo</em><br><strong>Supervisors</strong>: Prof. Vasily Belokurov &amp; Prof. N. Wyn Evans</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">2020–2021</div>
+					<div class="cv-main">
+						<h3 class="cv-title">University of Edinburgh</h3>
+						<p class="cv-sub">MSc (<em>with Merit</em>) Theoretical Physics</p>
+						<p class="cv-desc"><strong>Thesis:</strong> <em>Probing the Neutrino Mass Hierarchy with Cosmological Density and Velocity Fields</em><br><strong>Supervisor</strong>: Prof. John Peacock</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">2016–2020</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Princeton University</h3>
+						<p class="cv-sub">A.B. (<em>cum laude</em>) Astrophysics with Applied Mathematics</p>
+						<p class="cv-desc"><strong>Thesis</strong>: <em>Smoothing the Universe by Cosmological Contraction in Various Scalar Field Potentials</em><br><strong>Supervisor:</strong> Prof. Paul Steinhardt</p>
+					</div>
+				</article>
+			</div>
+		</section>
+		<section class="cv-section" id="publication-summary">
+			<h2>Publication Summary</h2>
+			<div class="cv-body" id="publication-summary-body">
+				<article class="cv-entry">
+					<div class="cv-date">ORCID iD</div>
+					<div class="cv-main">
+						<h3 class="cv-title"><a href="https://orcid.org/0000-0001-5996-4072">0000-0001-5996-4072</a></h3>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">H-index</div>
+					<div class="cv-main">
+						<h3 class="cv-title">9 (NASA ADS)</h3>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Citations</div>
+					<div class="cv-main">
+						<h3 class="cv-title">300+ (NASA ADS)</h3>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Paper count</div>
+					<div class="cv-main">
+						<h3 class="cv-title">8 (first author); 9 (other author)</h3>
+					</div>
+				</article>
+			</div>
+		</section>
+		<section class="cv-section" id="first-author-publications">
+			<h2>First Author Publications</h2>
+			<div class="cv-body" id="first-author-publications-body">
+				<article class="cv-entry">
+					<div class="cv-date">Submitted</div>
+					<div class="cv-main">
+						<h3 class="cv-title">The erasure of Galactic bar resonances by dark matter subhaloes</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc"><strong>Elliot Y. Davies</strong>, Adam M. Dillamore, Vasily Belokurov<br>https://arxiv.org/abs/2603.04490</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">7 Apr '25</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Blind source separation of the stellar halo</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc"><strong>Elliot Y. Davies</strong>, Vasily Belokurov, Andrey Kravtsov, Stephanie Monty, GyuChul Myeong, N. Wyn Evans, Sarah G. Kane<br>https://arxiv.org/abs/2410.21365</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">22 Feb '24</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Hints of a disrupted binary dwarf galaxy in the Sagittarius stream</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc"><strong>Elliot Y. Davies</strong>, Stephanie Monty, Vasily Belokurov, Adam M. Dillamore<br>https://doi.org/10.1093/mnras/stae559</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">5 Jan '24</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Disrupted dwarf binary merger as the possible origin of NGC 2419 and Sagittarius stream substructure</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc"><strong>Elliot Y. Davies</strong>, Vasily Belokurov, Stephanie Monty, N. Wyn Evans<br>https://doi.org/10.1093/mnrasl/slae001</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">17 Jul '23</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Stellar halo striations from assumptions of axisymmetry</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc"><strong>Elliot Y. Davies</strong>, Adam M. Dillamore, Vasily Belokurov, N. Wyn Evans<br>https://doi.org/10.1093/mnras/stad2138</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">14 Feb '23</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Accelerated phase mixing in the stellar halo due to a rotating bar</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc"><strong>Elliot Y. Davies</strong>, Adam M. Dillamore, Eugene Vasiliev, Vasily Belokurov<br>https://doi.org/10.1093/mnrasl/slad017</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">9 Dec '22</div>
+					<div class="cv-main">
+						<h3 class="cv-title">The phase space chevrons of a GSE-like merger as a dark matter subhalo detector</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc"><strong>Elliot Y. Davies</strong>, Eugene Vasiliev, Vasily Belokurov, N. Wyn Evans, Adam M. Dillamore<br>https://doi.org/10.1093/mnras/stac3581</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">23 Jan '20</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Fuzzy dark matter soliton cores around supermassive black holes</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc"><strong>Elliot Y. Davies</strong>, Philip Mocz<br>https://doi.org/10.1093/mnras/staa202</p>
+					</div>
+				</article>
+			</div>
+		</section>
+		<section class="cv-section" id="other-publications">
+			<h2>Other Publications</h2>
+			<div class="cv-body" id="other-publications-body">
+				<article class="cv-entry">
+					<div class="cv-date">Submitted</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Baryon-Accelerated Core Collapse in SIDM Halos and its Imprint on Galactic Disks</h3>
+						<p class="cv-desc">Zeineb Mezghanni, <strong>Elliot Y. Davies</strong>, Adriana Dropulic, Gonzalo Herrera, Abdelaziz Hussein, Lina Necib<br>https://arxiv.org/abs/2609.05600</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Submitted</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Galactic Amnesia: The Information Washout of the Milky Way Merger History</h3>
+						<p class="cv-desc">Lina Necib, Dylan Folsom, <strong>Elliot Y. Davies</strong>, Nathaniel Starkman, Andreas Thoyas<br>https://arxiv.org/abs/2605.04138</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Submitted</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Formation and Redshift Evolution of Dark Matter Spikes</h3>
+						<p class="cv-desc">Gonzalo Herrera, Abdelaziz Hussein, Lina Necib, <strong>Elliot Y. Davies</strong>, Xuejian Shen<br>https://arxiv.org/abs/2605.01023</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">27 Sep '25</div>
+					<div class="cv-main">
+						<h3 class="cv-title">STRRINGS: STReams in Residual Images of Nearby GalaxieS</h3>
+						<p class="cv-desc">Elisabeth Sola, David Chemaly, Vasily Belokurov, Oliver Müller, Anke Ardern-Arentsen, <strong>Elliot Y. Davies</strong> , ...<br>https://doi.org/10.1093/mnras/staf1647</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Submitted</div>
+					<div class="cv-main">
+						<h3 class="cv-title">The realm of Aurora. Density distribution of metal-poor giants in the heart of the Galaxy</h3>
+						<p class="cv-desc">Evgeny P. Kurbatov, Vasily Belokurov, Sergey Koposov, Andrey Kravtsov, <strong>Elliot Y. Davies</strong> , ...<br>https://arxiv.org/abs/2410.22250</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">8 Aug '24</div>
+					<div class="cv-main">
+						<h3 class="cv-title">The ratio of [Eu/Si] differentiates accreted/in-situ Milky Way stars across metallicities, as indicated by both field stars and globular clusters</h3>
+						<p class="cv-desc">Stephanie Monty, Vasily Belokurov, Jason L. Sanders, Therese T. Hansen, Erika M. Holmbeck, Charli M. Sakari, Madline McKenzie, GyuChul Myeong, <strong>Elliot Y. Davies</strong>, ...<br>https://doi.org/10.1093/mnras/stae1895</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">17 Jul '23</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Stellar halo substructure generated by bar resonances</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc">Adam M. Dillamore, Vasily Belokurov, N. Wyn Evans, <strong>Elliot Y. Davies</strong><br>https://doi.org/10.1093/mnras/stad2136</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">25 Nov '22</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Energy wrinkles and phase-space folds of the last major merger</h3>
+						<p class="cv-sub">MNRAS</p>
+						<p class="cv-desc">Vasily Belokurov, Eugene Vasiliev, Alis J. Deason, Sergey E. Koposov, Adam M. Dillamore, <strong>Elliot Y. Davies</strong>, ...<br>https://doi.org/10.1093/mnras/stac3436</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">13 Aug '20</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Robustness of Slow Contraction to Cosmic Initial Conditions</h3>
+						<p class="cv-sub">JCAP</p>
+						<p class="cv-desc">Anna Ijjas, William G. Cook, Frans Pretorius, Paul J. Steinhardt, <strong>Elliot Y. Davies</strong><br>https://doi.org/10.1088/1475-7516/2020/08/030</p>
+					</div>
+				</article>
+			</div>
+		</section>
+		<section class="cv-section" id="teaching-supervision">
+			<h2>Teaching &amp; Supervision</h2>
+			<div class="cv-body" id="teaching-supervision-body">
+				<article class="cv-entry">
+					<div class="cv-date">2022-2024</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Part II Stellar Dynamics and the Structure of Galaxies</h3>
+						<p class="cv-sub">Supervisor</p>
+						<p class="cv-meta">Institute of Astronomy, Cambridge</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">2022</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Part II Introduction to Cosmology</h3>
+						<p class="cv-sub">Supervisor</p>
+						<p class="cv-meta">Institute of Astronomy, Cambridge</p>
+					</div>
+				</article>
+			</div>
+		</section>
+		<section class="cv-section" id="mentoring">
+			<h2>Mentoring</h2>
+			<div class="cv-body" id="mentoring-body">
+				<article class="cv-entry">
+					<div class="cv-date">2026 - 2028</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Daria Zaremba</h3>
+						<p class="cv-sub">PhD</p>
+						<p class="cv-meta">MIT, Kavli Institute</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">2026</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Mark Gaskins</h3>
+						<p class="cv-sub">Undergraduate (MSRP)</p>
+						<p class="cv-meta">North Carolina A&amp;T State University</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">2025 - 2028</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Zeineb Mezghanni</h3>
+						<p class="cv-sub">PhD</p>
+						<p class="cv-meta">MIT, Kavli Institute</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">2026</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Jailee Young</h3>
+						<p class="cv-sub">Undergraduate (USRP)</p>
+						<p class="cv-meta">MIT Kavli Institute</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">2023 - 2024</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Yuxuan Zeng</h3>
+						<p class="cv-sub">Part III (Masters)</p>
+						<p class="cv-meta">Institute of Astronomy, Cambridge</p>
+					</div>
+				</article>
+			</div>
+		</section>
+		<section class="cv-section" id="conferences-talks-schools">
+			<h2>Conferences, Talks &amp; Schools</h2>
+			<div class="cv-body" id="conferences-talks-schools-body">
+				<article class="cv-entry">
+					<div class="cv-date">Aug' 26</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Poster entitled <em>The erasure of Galactic bar resonances by dark matter subhaloes</em></h3>
+						<p class="cv-desc">New Frontier in Cosmology (A Coruna, Spain)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Jun' 26</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Talk entitled <em>The erasure of Galactic bar resonances by dark matter subhaloes</em></h3>
+						<p class="cv-desc">57th DDA Meeting (Chicago, IL)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Apr' 26</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Talk entitled <em>Detecting dark matter substructure with Milky Way’s dynamics tool box</em></h3>
+						<p class="cv-desc">CIERA Theory group at Northwestern (Evanston, IL)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Apr' 26</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Talk entitled <em>Detecting dark matter substructure with Milky Way’s dynamics tool box</em></h3>
+						<p class="cv-desc">CPC Seminar at Fermilab (Batavia, IL)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Feb' 26</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Talk entitled <em>Detecting dark matter substructure with Milky Way’s dynamics tool box</em></h3>
+						<p class="cv-desc">LPPC Harvard Weekly Seminar (Cambridge, MA)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Jan' 25</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Dissertation talk entitled <em>Blind source separation of the stellar halo</em></h3>
+						<p class="cv-desc">245th AAS Meeting (National Harbor, MD)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Dec' 24</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Winter school attendee</h3>
+						<p class="cv-desc">Galaxy modelling and Galactic Centre workshop (University of Surrey, Guildford)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Aug' 24</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Contributed talk entitled <em>Hints of a disrupted binary dwarf galaxy in the Sagittarius stream</em></h3>
+						<p class="cv-desc">Small Galaxies, Large Questions (Durham, UK)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">May' 24</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Contributed talk entitled <em>Hints of a disrupted binary dwarf galaxy in the Sagittarius stream</em></h3>
+						<p class="cv-desc">The Milky Way Assembly Tale (Bologna, Italy)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Sep' 23</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Contributed talk entitled <em>Capturing subhaloes with Galactic halo substructure</em></h3>
+						<p class="cv-desc">Revealed by Gaia: the central halo of the Milky Way (Institute of Astronomy, Cambridge)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Jul' 23</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Poster entitled <em>Accelerated phase mixing in the stellar halo due to a rotating bar</em></h3>
+						<p class="cv-desc">European Astronomical Society (Krakow, Poland)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Jul' 23</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Poster entitled <em>Accelerated phase mixing in the stellar halo due to a rotating bar</em></h3>
+						<p class="cv-desc">Galactic Bars: Driving and Decoding Galaxy Evolution (Granada, Spain)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Mar' 23</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Talk entitled <em>The wrinkles and folds of the Milky Way's most recent major merger</em></h3>
+						<p class="cv-desc">MCR Research Day 2023 (Gonville &amp; Caius College, Cambridge)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Nov' 22</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Talk entitled <em>The Phase Mixed Debris of a Massive Merger as a Dark Matter Subhalo Detector</em></h3>
+						<p class="cv-desc">Wednesday Seminar (Institute of Astronomy, Cambridge)</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Jan' 20</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Poster entitled <em>How Supermassive Black Holes impact the Fuzzy Dark Matter Mass Mystery</em></h3>
+						<p class="cv-desc">235th AAS Meeting (Hawai'i Convention Center, Honolulu, HI)</p>
+					</div>
+				</article>
+			</div>
+		</section>
+		<section class="cv-section" id="activities">
+			<h2>Activities</h2>
+			<div class="cv-body" id="activities-body">
+				<article class="cv-entry">
+					<div class="cv-date">Nov.'21 – present</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Interviewer &amp; Ambassador</h3>
+						<p class="cv-sub">Princeton University Undergraduate Admissions</p>
+						<p class="cv-desc">Conduct interviews with prospective Princeton University students and produce reports on each interviewee to aid in the undergraduate admissions process. <strong>Total interviews conducted: 16</strong></p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Nov.'21 – Mar.'22</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Journal Club Coordinator</h3>
+						<p class="cv-sub">Institute of Astronomy, Cambridge</p>
+						<p class="cv-desc">Organiser for the bi-weekly undergraduate journal club for final year undergraduates and masters students.</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Jan.'17–Jan.'18</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Director &amp; Volunteer</h3>
+						<p class="cv-sub">Princeton Envision (Entrepreneurship Club)</p>
+						<p class="cv-desc">Assisted in organising, promoting and managing Envision Conference: an annual conference held over 3 days in December that brings 200 competitively selected students from universities across the world together with top researchers, entrepreneurs, and professionals to attend lectures and workshops discussing the disruptive technologies such as artificial intelligence and space travel.</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Sep.'17–Mar.'20</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Library Assistant</h3>
+						<p class="cv-sub">Princeton University Architecture Library</p>
+						<p class="cv-desc">Duties included but were not limited to: circulation services, reserves, shelving, shelf reading, with other duties as directed by the librarian.</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Dec.'16–Sep.'17</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Peer Reviewer</h3>
+						<p class="cv-sub">Princeton Undergraduate Research Journal</p>
+						<p class="cv-desc">Assisted in the peer reviewing process for the Princeton Undergraduate Research Journal (PURJ), Princeton’s first peer-reviewed academic journal, highlighting top-quality research performed by Princeton undergraduates across all academic pursuits, including the natural sciences, humanities, engineering, social sciences, and arts.</p>
+					</div>
+				</article>
+			</div>
+		</section>
+		<section class="cv-section" id="awards-academic-programmes">
+			<h2>Awards &amp; Academic Programmes</h2>
+			<div class="cv-body" id="awards-academic-programmes-body">
+				<article class="cv-entry">
+					<div class="cv-date">Oct.'21 – Apr.'25</div>
+					<div class="cv-main">
+						<h3 class="cv-title">STFC PhD Studentship</h3>
+						<p class="cv-desc">Cambridge, UK<br>Full funding for 3.5 years to complete PhD at the Institute of Astronomy, University of Cambridge.</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Sep.'16 – Jun'20</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Full-ride Academic Scholarship</h3>
+						<p class="cv-desc">Princeton University, USA<br>Various financial aid packages covering all tuition fees and living costs to attend Princeton University in the Unites States for four years.</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Mar.'15 – May.'16</div>
+					<div class="cv-main">
+						<h3 class="cv-title">Sutton Trust USA Programme</h3>
+						<p class="cv-desc">London, UK<br>One of 150 selected from 1600 high achieving low-income, first-generation students to receive admissions guidance for applying to the top universities in the US.</p>
+					</div>
+				</article>
+				<article class="cv-entry">
+					<div class="cv-date">Jul.'15</div>
+					<div class="cv-main">
+						<h3 class="cv-title">UNIQ Summer School</h3>
+						<p class="cv-desc">University of Oxford, UK<br>One of 36 Sixth Form students selected to attended the Oxford University Physics UNIQ Summer School for students from underrepresented backgrounds.</p>
+					</div>
+				</article>
+			</div>
+		</section>
+			<p class="cv-empty" hidden>Nothing in the CV matches that search.</p>
 		</div>
-		<object class="cv-embed" data="elliot_davies_cv.pdf#view=FitH" type="application/pdf" aria-label="Curriculum vitae (PDF)">
-			<p>Your browser can't display the PDF here. <a href="elliot_davies_cv.pdf">Download the CV</a> instead.</p>
-		</object>
 	</main>
 	<footer class="site-footer">
 		<p>&copy; 2026 Elliot Y. Davies &middot; Last updated 13 October 2026</p>

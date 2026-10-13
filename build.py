@@ -1,29 +1,45 @@
 #!/usr/bin/env python3
 """Build the website.
 
-The pages in the site root (index.html, about.html, ...) are GENERATED from
-the files in src/. To change the site:
+The pages in the site root (index.html, about.html, ...) and the CV PDF are
+GENERATED from the files in src/. To change the site:
 
-    1. edit src/layout.html (header/nav/footer shared by every page),
-       src/pages/*.html (the content of each page),
-       src/publications.json (the publication list), or
-       src/abstracts.json (abstracts, keyed by arXiv ID; shown as a dropdown
-       under the matching paper, and optional for each paper);
-    2. run   python3 build.py   from this folder;
-    3. commit and push the regenerated HTML files along with your edits.
+    1. edit
+         src/layout.html        header/nav/footer shared by every page
+         src/pages/*.html       the content of each page
+         src/publications.json  the publication list for the Publications page
+         src/abstracts.json     abstracts keyed by arXiv ID (optional per paper)
+         src/cv.tex             your CV, as LaTeX (moderncv, "classic", black)
+    2. run   python3 build.py   from this folder
+         (add --no-pdf to skip compiling the CV PDF);
+    3. commit and push the regenerated files along with your edits.
 
-Needs only Python 3 (no extra packages).
+The CV: src/cv.tex is the single source. build.py turns its \\section and
+\\cventry lines into the interactive CV on resume.html, and compiles the same
+file with pdflatex into elliot_davies_cv.pdf (the page's "Download PDF"
+button). If pdflatex is not installed, or the compile fails, the existing PDF
+is left untouched and a message is printed.
+
+Needs Python 3 (no extra packages) and, for the PDF, a LaTeX install that has
+moderncv. Put a custom moderncv.cls / .sty in src/ if you use one.
 """
+import argparse
 import datetime
 import html
 import json
+import os
 import pathlib
 import re
+import shutil
+import subprocess
+import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC = ROOT / "src"
 
 SITE_NAME = "Elliot Y. Davies"
+CV_PDF = "elliot_davies_cv.pdf"          # served by the "Download PDF" button
+CV_DOWNLOAD_NAME = "Elliot_Y_Davies_CV.pdf"  # file name the visitor's browser saves
 
 # (page key, output file, label) in the order shown in the navigation bar.
 NAV = [
@@ -32,6 +48,19 @@ NAV = [
     ("publications", "publics.html", "Publications"),
     ("contact", "contact.html", "Contact"),
 ]
+
+# Shorter labels for the CV's section-jump chips (the full heading is kept
+# on the page itself). Sections not listed here use their own heading.
+CV_CHIP_LABELS = {
+    "Publication Summary": "Summary",
+    "First Author Publications": "First-author papers",
+    "Other Publications": "Other papers",
+    "Teaching & Supervision": "Teaching",
+    "Conferences, Talks & Schools": "Talks",
+    "Awards & Academic Programmes": "Awards",
+}
+
+WARNINGS = []
 
 
 def parse_page(text):
@@ -55,6 +84,10 @@ def render_nav(active):
     return "\n".join(items)
 
 
+# ---------------------------------------------------------------------------
+# Publications page
+# ---------------------------------------------------------------------------
+
 # Loaded on pages whose metadata says `mathjax: true`, so that TeX in abstracts
 # (e.g. $(E,L_z)$) is typeset. Without JavaScript the raw TeX stays readable.
 MATHJAX = """\t<script>window.MathJax = {tex: {inlineMath: [['$', '$']]}};</script>
@@ -76,7 +109,7 @@ def render_publications():
     for heading, first_author in (("First-author publications", True),
                                   ("Other publications", False)):
         items = [p for p in pubs if p["first_author"] == first_author]
-        out = [f'\t\t<section class="pub-section">',
+        out = ['\t\t<section class="pub-section">',
                f'\t\t\t<h2>{heading}</h2>']
         for year in sorted({p["year"] for p in items}, reverse=True):
             out.append('\t\t\t<div class="pub-year">')
@@ -86,16 +119,18 @@ def render_publications():
                 title = html.escape(p["title"])
                 venue = html.escape(p["venue"])
                 arxiv = html.escape(p["arxiv"])
-                abstract = ""
+                button = panel = ""
                 if p["arxiv"] in abstracts:
-                    abstract = ('<details class="pub-abstract"><summary>Abstract</summary>'
-                                f'<p>{render_abstract(abstracts[p["arxiv"]])}</p></details>')
+                    aid = "abs-" + p["arxiv"].replace(".", "-")
+                    button = (f'<button type="button" class="abs-toggle" aria-expanded="false" '
+                              f'aria-controls="{aid}">Abstract</button>')
+                    panel = (f'<div class="pub-abstract" id="{aid}">'
+                             f'<p>{render_abstract(abstracts[p["arxiv"]])}</p></div>')
                 out.append(
-                    '\t\t\t\t\t<li>'
+                    '\t\t\t\t\t<li class="pub"><div class="pub-row"><div class="pub-text">'
                     f'<a class="pub-title" href="https://arxiv.org/abs/{arxiv}">{title}</a>'
                     f'<span class="pub-meta">{venue} &middot; arXiv:{arxiv}</span>'
-                    f'{abstract}'
-                    '</li>')
+                    f'</div>{button}</div>{panel}</li>')
             out.append('\t\t\t\t</ul>')
             out.append('\t\t\t</div>')
         out.append('\t\t</section>')
@@ -103,12 +138,272 @@ def render_publications():
     return "\n".join(sections)
 
 
+# ---------------------------------------------------------------------------
+# CV: src/cv.tex -> interactive HTML (+ PDF, see compile_cv_pdf)
+# ---------------------------------------------------------------------------
+
+def read_group(s, i):
+    """s[i] must be '{'. Return (inner text, index just after the matching '}')."""
+    depth = 0
+    j = i
+    while j < len(s):
+        c = s[j]
+        if c == "\\":
+            j += 2          # skip escaped characters such as \{ \} \\ \&
+            continue
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                return s[i + 1:j], j + 1
+        j += 1
+    raise ValueError("unbalanced braces in src/cv.tex")
+
+
+def strip_tex_comments(tex):
+    return "\n".join(re.sub(r"(?<!\\)%.*$", "", line) for line in tex.splitlines())
+
+
+CV_COMMAND = re.compile(r"\\(section|cventry)(?![A-Za-z])\s*")
+
+
+def parse_cv(tex):
+    """Return [{'title': str, 'entries': [[6 raw args], ...]}, ...]."""
+    if r"\begin{document}" not in tex:
+        raise ValueError(r"src/cv.tex has no \begin{document}")
+    body = tex.split(r"\begin{document}", 1)[1].split(r"\end{document}")[0]
+    body = strip_tex_comments(body)
+    sections, pos = [], 0
+    while True:
+        m = CV_COMMAND.search(body, pos)
+        if not m:
+            break
+        name, i, args = m.group(1), m.end(), []
+        for _ in range(1 if name == "section" else 6):
+            while i < len(body) and body[i].isspace():
+                i += 1
+            if i >= len(body) or body[i] != "{":
+                raise ValueError(f"\\{name} in src/cv.tex is missing an argument "
+                                 f"near: {body[m.start():m.start() + 60]!r}")
+            arg, i = read_group(body, i)
+            args.append(arg)
+        pos = i
+        if name == "section":
+            sections.append({"title": args[0], "entries": []})
+        else:
+            if not sections:
+                raise ValueError(r"\cventry before the first \section in src/cv.tex")
+            sections[-1]["entries"].append(args)
+    return sections
+
+
+WRAP_COMMANDS = {"textbf": "strong", "textit": "em", "emph": "em", "textsl": "em",
+                 "textsuperscript": "sup", "textsubscript": "sub"}
+PLAIN_COMMANDS = {"textrm", "textsf", "texttt", "textnormal", "mbox", "hbox"}
+IGNORED_COMMANDS = {"small", "large", "Large", "footnotesize", "normalsize", "par",
+                    "newpage", "noindent", "centering", "bfseries", "itshape"}
+SYMBOL_COMMANDS = {"ldots": "…", "dots": "…", "textellipsis": "…",
+                   "textbackslash": "\\", "TeX": "TeX", "LaTeX": "LaTeX"}
+ESCAPED_SYMBOLS = {"&": "&amp;", "%": "%", "_": "_", "$": "$", "#": "#",
+                   "{": "{", "}": "}", " ": " ", ",": "\u2009", "-": ""}
+
+
+def tex_to_html(s):
+    """Convert the small LaTeX subset used inside \\cventry arguments to HTML."""
+    out, i = [], 0
+    while i < len(s):
+        c = s[i]
+        if c == "\\":
+            if s.startswith("\\\\", i):
+                out.append("<br>")
+                i += 2
+                continue
+            m = re.match(r"\\([A-Za-z]+)\s*", s[i:])
+            if m:
+                name = m.group(1)
+                i += m.end()
+                has_arg = i < len(s) and s[i] == "{"
+                if name in WRAP_COMMANDS and has_arg:
+                    inner, i = read_group(s, i)
+                    tag = WRAP_COMMANDS[name]
+                    out.append(f"<{tag}>{tex_to_html(inner)}</{tag}>")
+                elif name == "href" and has_arg:
+                    url, i = read_group(s, i)
+                    text = ""
+                    if i < len(s) and s[i] == "{":
+                        text, i = read_group(s, i)
+                    out.append(f'<a href="{html.escape(url.strip())}">{tex_to_html(text) or html.escape(url)}</a>')
+                elif name == "url" and has_arg:
+                    url, i = read_group(s, i)
+                    out.append(html.escape(url.strip()))   # linkified below
+                elif name in PLAIN_COMMANDS and has_arg:
+                    inner, i = read_group(s, i)
+                    out.append(tex_to_html(inner))
+                elif name in SYMBOL_COMMANDS:
+                    out.append(SYMBOL_COMMANDS[name])
+                elif name in IGNORED_COMMANDS:
+                    pass
+                else:
+                    WARNINGS.append(f"cv.tex: unsupported command \\{name} (shown without formatting)")
+                    if has_arg:
+                        inner, i = read_group(s, i)
+                        out.append(tex_to_html(inner))
+                continue
+            nxt = s[i + 1] if i + 1 < len(s) else ""
+            if nxt in ESCAPED_SYMBOLS:
+                out.append(ESCAPED_SYMBOLS[nxt])
+            else:
+                WARNINGS.append(f"cv.tex: unsupported escape \\{nxt}")
+            i += 2
+        elif c == "{":
+            inner, i = read_group(s, i)
+            out.append(tex_to_html(inner))
+        elif c == "}":
+            i += 1
+        elif s.startswith("---", i):
+            out.append("—")
+            i += 3
+        elif s.startswith("--", i):
+            out.append("–")
+            i += 2
+        elif s.startswith("``", i):
+            out.append("“")
+            i += 2
+        elif s.startswith("''", i):
+            out.append("”")
+            i += 2
+        elif c == "~":
+            out.append("\u00a0")
+            i += 1
+        else:
+            out.append(html.escape(c, quote=False))
+            i += 1
+    text = "".join(out)
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s*<br>\s*", "<br>", text)
+    return re.sub(r"^(<br>)+|(<br>)+$", "", text.strip()).strip()
+
+
+URL_RE = re.compile(r"(?<![\"'>=/])https?://[^\s<]+")
+ORCID_RE = re.compile(r"(?<![\w/])(\d{4}-\d{4}-\d{4}-\d{3}[\dX])(?![\w-])")
+
+
+def linkify(text):
+    def link(m):
+        url = m.group(0)
+        trail = ""
+        while url and url[-1] in ".,;:)":
+            trail = url[-1] + trail
+            url = url[:-1]
+        label = re.sub(r"^https?://(www\.)?", "", url)
+        return f'<a href="{url}">{label}</a>{trail}'
+    text = URL_RE.sub(link, text)
+    return ORCID_RE.sub(r'<a href="https://orcid.org/\1">\1</a>', text)
+
+
+def slugify(title):
+    s = re.sub(r"[^a-z0-9]+", "-", tex_to_html(title).lower().replace("&amp;", " ")).strip("-")
+    return s or "section"
+
+
+def render_cv_entry(args):
+    date, title, subtitle, place, note, desc = (linkify(tex_to_html(a)) for a in args)
+    parts = []
+    if title:
+        parts.append(f'<h3 class="cv-title">{title}</h3>')
+    if subtitle:
+        parts.append(f'<p class="cv-sub">{subtitle}</p>')
+    meta = " &middot; ".join(x for x in (place, note) if x)
+    if meta:
+        parts.append(f'<p class="cv-meta">{meta}</p>')
+    if desc:
+        parts.append(f'<p class="cv-desc">{desc}</p>')
+    date_html = f'<div class="cv-date">{date}</div>' if date else '<div class="cv-date"></div>'
+    inner = "\n".join(f"\t\t\t\t\t\t{p}" for p in parts)
+    return (f'\t\t\t\t<article class="cv-entry">\n\t\t\t\t\t{date_html}\n'
+            f'\t\t\t\t\t<div class="cv-main">\n{inner}\n\t\t\t\t\t</div>\n\t\t\t\t</article>')
+
+
+def render_cv():
+    sections = parse_cv((SRC / "cv.tex").read_text(encoding="utf-8"))
+    chips, blocks = [], []
+    for sec in sections:
+        title = tex_to_html(sec["title"])
+        sid = slugify(sec["title"])
+        label = CV_CHIP_LABELS.get(html.unescape(title), title)
+        chips.append(f'<a href="#{sid}">{label}</a>')
+        entries = "\n".join(render_cv_entry(e) for e in sec["entries"])
+        blocks.append(
+            f'\t\t<section class="cv-section" id="{sid}">\n'
+            f'\t\t\t<h2>{title}</h2>\n'
+            f'\t\t\t<div class="cv-body" id="{sid}-body">\n{entries}\n\t\t\t</div>\n'
+            f'\t\t</section>')
+    total = sum(len(s["entries"]) for s in sections)
+    print(f"parsed src/cv.tex: {len(sections)} sections, {total} entries")
+    chip_html = "\n\t\t\t\t".join(chips)
+    return f"""\t\t<div class="cv" data-cv>
+\t\t\t<div class="cv-sticky">
+\t\t\t\t<div class="cv-toolbar">
+\t\t\t\t\t<label class="cv-search js-only">
+\t\t\t\t\t\t<span class="sr-only">Search the CV</span>
+\t\t\t\t\t\t<input type="search" class="cv-q" placeholder="Search the CV…" autocomplete="off">
+\t\t\t\t\t</label>
+\t\t\t\t\t<button type="button" class="btn cv-toggle-all js-only">Collapse all</button>
+\t\t\t\t\t<a class="btn btn-primary" href="{CV_PDF}" download="{CV_DOWNLOAD_NAME}">Download PDF</a>
+\t\t\t\t</div>
+\t\t\t\t<nav class="cv-chips" aria-label="CV sections">
+\t\t\t\t{chip_html}
+\t\t\t\t</nav>
+\t\t\t</div>
+\t\t\t<p class="cv-status js-only" role="status" aria-live="polite"></p>
+{chr(10).join(blocks)}
+\t\t\t<p class="cv-empty" hidden>Nothing in the CV matches that search.</p>
+\t\t</div>"""
+
+
+def compile_cv_pdf():
+    """Compile src/cv.tex with pdflatex and install it as elliot_davies_cv.pdf.
+    Returns True on success; on any problem leaves the existing PDF alone."""
+    exe = shutil.which("pdflatex")
+    if not exe:
+        print(f"WARNING: pdflatex not found, so {CV_PDF} was NOT regenerated "
+              "(install LaTeX with moderncv, or compile src/cv.tex yourself).")
+        return False
+    env = dict(os.environ)
+    env["TEXINPUTS"] = str(SRC) + os.pathsep + env.get("TEXINPUTS", "")  # local moderncv files win
+    with tempfile.TemporaryDirectory() as tmp:
+        cmd = [exe, "-interaction=nonstopmode", "-halt-on-error",
+               "-output-directory", tmp, str(SRC / "cv.tex")]
+        for _ in range(2):   # second pass settles any cross-references
+            proc = subprocess.run(cmd, cwd=SRC, env=env, stdin=subprocess.DEVNULL,
+                                  capture_output=True, text=True)
+            if proc.returncode != 0:
+                errors = [l for l in proc.stdout.splitlines() if l.startswith("!")]
+                print(f"WARNING: pdflatex failed, so {CV_PDF} was NOT regenerated.")
+                for line in (errors or proc.stdout.splitlines()[-8:])[:6]:
+                    print("   ", line)
+                return False
+        shutil.copyfile(pathlib.Path(tmp) / "cv.pdf", ROOT / CV_PDF)
+    print(f"compiled src/cv.tex -> {CV_PDF}")
+    return True
+
+
+# ---------------------------------------------------------------------------
+
 def main():
+    ap = argparse.ArgumentParser(description="Build the website from src/.")
+    ap.add_argument("--no-pdf", action="store_true", help="skip compiling the CV PDF")
+    opts = ap.parse_args()
+
     layout = (SRC / "layout.html").read_text(encoding="utf-8")
     today = datetime.date.today()
     for source in sorted((SRC / "pages").glob("*.html")):
         meta, body = parse_page(source.read_text(encoding="utf-8"))
-        body = body.replace("{{publications}}", render_publications())
+        if "{{publications}}" in body:
+            body = body.replace("{{publications}}", render_publications())
+        if "{{cv}}" in body:
+            body = body.replace("{{cv}}", render_cv())
         title_tag = meta.get("title_tag") or f"{meta['title']} | {SITE_NAME}"
         values = {
             "title_tag": html.escape(title_tag),
@@ -126,6 +421,11 @@ def main():
             page = page.replace("{{" + name + "}}", value)
         (ROOT / source.name).write_text(page, encoding="utf-8")
         print(f"built {source.name}")
+
+    if not opts.no_pdf:
+        compile_cv_pdf()
+    for w in sorted(set(WARNINGS)):
+        print("WARNING:", w)
 
 
 if __name__ == "__main__":

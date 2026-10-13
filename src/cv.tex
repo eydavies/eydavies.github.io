@@ -1,0 +1,203 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% "ModernCV" CV and Cover Letter
+% LaTeX Template
+% Version 1.11 (19/6/14)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Xavier Danaux (xdanaux@gmail.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+% Important note:
+% This template requires the moderncv.cls and .sty files to be in the same 
+% directory as this .tex file. These files provide the resume style and themes 
+% used for structuring the document.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% THIS FILE IS THE SINGLE SOURCE FOR THE CV ON THE WEBSITE.
+% Run `python3 build.py` in the website folder and it will
+%   1. turn the \section / \cventry lines below into the interactive CV page
+%      (resume.html), and
+%   2. compile this file with pdflatex into elliot_davies_cv.pdf, which is
+%      what the "Download PDF" button serves.
+% Keep entries in the form \cventry{date}{title}{subtitle}{place}{note}{details}
+% and use only \section, \cventry, \textbf, \textit, \\ and \& in the body so
+% that both outputs stay in sync. (Phone number and street address appear in
+% the PDF only; the web page leaves them out.)
+
+%----------------------------------------------------------------------------------------
+%   PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[10pt,a4paper,sans]{moderncv} % Font sizes: 10, 11, or 12; paper sizes: a4paper, letterpaper, a5paper, legalpaper, executivepaper or landscape; font families: sans or roman
+
+\moderncvstyle{classic} % CV theme - options include: 'casual' (default), 'classic', 'oldstyle' and 'banking'
+\moderncvcolor{black} % CV color - options include: 'blue' (default), 'orange', 'green', 'red', 'purple', 'grey' and 'black'
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+%\usepackage{fontawesome}
+%\newcommand{\ts}{\textsuperscript}
+\usepackage[scale=.9]{geometry} % Reduce document margins
+%\setlength{\hintscolumnwidth}{3cm} % Uncomment to change the width of the dates column
+\setlength{\makecvtitlenamewidth}{10cm} % For the 'classic' style, uncomment to adjust the width of the space allocated to your name
+
+%----------------------------------------------------------------------------------------
+%   NAME AND CONTACT INFORMATION SECTION
+%----------------------------------------------------------------------------------------
+\usepackage{tikz}
+
+\usepackage{mathptmx}
+\usepackage[11pt]{moresize}
+
+% (The unused \github logo macro that used to live here was removed.)
+
+\firstname{Elliot Yarnell} % Your first name
+\familyname{Davies} % Your last name
+
+% All information in this block is optional, comment out any lines you don't need
+
+
+\address{37-582bb, 70 Vassar St, Cambridge, MA 02139}
+\mobile{ +1 857 995 3387}
+\email{eydavies@mit.edu}
+\homepage{eydavies.github.io}
+
+
+
+%% \github{github.com/KevinDennyII} 
+
+%%\extrainfo{
+%%  \httplink{https://www.codechef.com/users/priyanka_pps}
+%%\homepage{https://github.com/priyankapps/} {https://github.com/priyankapps/}}
+
+
+
+
+
+
+\begin{document}
+
+\makecvtitle 
+
+\section{Employment}
+
+\cventry{2025--2028}{Massachusetts Institute of Technology}{MIT Kavli Postdoctoral Associate}{}{}{\textbf{PI}: Prof. Lina Necib}
+
+\section{Education}
+
+\cventry{2021--2025}{University of Cambridge (Gonville \& Caius College)}{Ph.D. Astronomy \& Astrophysics}{}{}{
+    \textbf{Thesis}: \textit{Chemodynamics of the Galactic Halo} \\
+    \textbf{Supervisors}: Prof. Vasily Belokurov \& Prof. N. Wyn Evans}
+
+\cventry{2020--2021}{University of Edinburgh}{MSc (\textit{with Merit}) Theoretical Physics}{}{}{
+	\textbf{Thesis:} \textit{Probing the Neutrino Mass Hierarchy with Cosmological Density and Velocity Fields} \\ \textbf{Supervisor}: Prof. John Peacock}
+
+\cventry{2016--2020}{Princeton University}{A.B. (\textit{cum laude}) Astrophysics with Applied Mathematics}{}{}{ 
+	\textbf{Thesis}: \textit{Smoothing the Universe by Cosmological Contraction in Various Scalar Field Potentials} \\ \textbf{Supervisor:} Prof. Paul Steinhardt}
+
+\section{Publication Summary}
+
+\cventry{ORCID iD}{0000-0001-5996-4072}{}{}{}{}
+\cventry{H-index}{9 (NASA ADS)}{}{}{}{}
+\cventry{Citations}{300+ (NASA ADS)}{}{}{}{}
+\cventry{Paper count}{8 (first author); 9 (other author)}{}{}{}{}
+    
+\section{First Author Publications}
+
+\cventry{Submitted}{The erasure of Galactic bar resonances by dark matter subhaloes}{MNRAS}{}{}{\textbf{Elliot Y. Davies}, Adam M. Dillamore, Vasily Belokurov \\ https://arxiv.org/abs/2603.04490}
+\cventry{7 Apr '25}{Blind source separation of the stellar halo}{MNRAS}{}{}{\textbf{Elliot Y. Davies}, Vasily Belokurov, Andrey Kravtsov, Stephanie Monty, GyuChul Myeong, N. Wyn Evans, Sarah G. Kane \\ https://arxiv.org/abs/2410.21365}
+\cventry{22 Feb '24}{Hints of a disrupted binary dwarf galaxy in the Sagittarius stream}{MNRAS}{}{}{\textbf{Elliot Y. Davies}, Stephanie Monty, Vasily Belokurov, Adam M. Dillamore \\ https://doi.org/10.1093/mnras/stae559}
+\cventry{5 Jan '24}{Disrupted dwarf binary merger as the possible origin of NGC 2419 and Sagittarius stream substructure}{MNRAS}{}{}{\textbf{Elliot Y. Davies}, Vasily Belokurov, Stephanie Monty, N. Wyn Evans \\ https://doi.org/10.1093/mnrasl/slae001}
+\cventry{17 Jul '23}{Stellar halo striations from assumptions of axisymmetry}{MNRAS}{}{}{\textbf{Elliot Y. Davies}, Adam M. Dillamore, Vasily Belokurov, N. Wyn Evans \\ https://doi.org/10.1093/mnras/stad2138}
+\cventry{14 Feb '23}{Accelerated phase mixing in the stellar halo due to a rotating bar}{MNRAS}{}{}{\textbf{Elliot Y. Davies}, Adam M. Dillamore, Eugene Vasiliev, Vasily Belokurov \\ 
+https://doi.org/10.1093/mnrasl/slad017}
+\cventry{9 Dec '22}{The phase space chevrons of a GSE-like merger as a dark matter subhalo detector}{MNRAS}{}{}{\textbf{Elliot Y. Davies}, Eugene Vasiliev, Vasily Belokurov, N. Wyn Evans, Adam M. Dillamore \\
+https://doi.org/10.1093/mnras/stac3581}
+\cventry{23 Jan '20}{Fuzzy dark matter soliton cores around supermassive black holes}{MNRAS}{}{}{\textbf{Elliot Y. Davies}, Philip Mocz \\ https://doi.org/10.1093/mnras/staa202}
+
+\section{Other Publications}
+
+\cventry{Submitted}{Baryon-Accelerated Core Collapse in SIDM Halos and its Imprint on Galactic Disks}{}{}{}{Zeineb Mezghanni, \textbf{Elliot Y. Davies}, Adriana Dropulic, Gonzalo Herrera, Abdelaziz Hussein, Lina Necib \\ https://arxiv.org/abs/2609.05600}
+
+\cventry{Submitted}{Galactic Amnesia: The Information Washout of the Milky Way Merger History}{}{}{}{Lina Necib, Dylan Folsom, \textbf{Elliot Y. Davies}, Nathaniel Starkman, Andreas Thoyas \\ https://arxiv.org/abs/2605.04138}
+
+\cventry{Submitted}{Formation and Redshift Evolution of Dark Matter Spikes}{}{}{}{Gonzalo Herrera, Abdelaziz Hussein, Lina Necib, \textbf{Elliot Y. Davies}, Xuejian Shen \\ https://arxiv.org/abs/2605.01023}
+
+\cventry{27 Sep '25}{STRRINGS: STReams in Residual Images of Nearby GalaxieS}{}{}{}{Elisabeth Sola,  David Chemaly,  Vasily Belokurov,  Oliver Müller,  Anke Ardern-Arentsen, \textbf{Elliot Y. Davies} , ... \\ https://doi.org/10.1093/mnras/staf1647}
+
+\cventry{Submitted}{The realm of Aurora. Density distribution of metal-poor giants in the heart of the Galaxy}{}{}{}{Evgeny P. Kurbatov, Vasily Belokurov, Sergey Koposov, Andrey Kravtsov, \textbf{Elliot Y. Davies} , ... \\ https://arxiv.org/abs/2410.22250}
+
+\cventry{8 Aug '24}{The ratio of [Eu/Si] differentiates accreted/in-situ Milky Way stars across metallicities, as indicated by both field stars and globular clusters}{}{}{}{Stephanie Monty, Vasily Belokurov, Jason L. Sanders, Therese  T. Hansen, Erika M. Holmbeck, Charli M. Sakari, Madline McKenzie, GyuChul Myeong, \textbf{Elliot Y. Davies}, ... \\ https://doi.org/10.1093/mnras/stae1895}
+\cventry{17 Jul '23}{Stellar halo substructure generated by bar resonances}{MNRAS}{}{}{Adam M. Dillamore, Vasily Belokurov, N. Wyn Evans, \textbf{Elliot Y. Davies} \\ 
+https://doi.org/10.1093/mnras/stad2136}
+\cventry{25 Nov '22}{Energy wrinkles and phase-space folds of the last major merger}{MNRAS}{}{}{Vasily Belokurov, Eugene Vasiliev, Alis J. Deason, Sergey E. Koposov, Adam M. Dillamore, \textbf{Elliot Y. Davies}, ... \\ 
+https://doi.org/10.1093/mnras/stac3436}
+\cventry{13 Aug '20}{Robustness of Slow Contraction to Cosmic Initial Conditions}{JCAP}{}{}{Anna Ijjas, William G. Cook, Frans Pretorius, Paul J. Steinhardt, \textbf{Elliot Y. Davies} \\ https://doi.org/10.1088/1475-7516/2020/08/030}
+
+\section{Teaching \& Supervision}
+
+\cventry{2022-2024}{Part II Stellar Dynamics and the Structure of Galaxies}{Supervisor}{Institute of Astronomy, Cambridge}{}{}
+\cventry{2022}{Part II Introduction to Cosmology}{Supervisor}{Institute of Astronomy, Cambridge}{}{}
+
+\section{Mentoring}
+
+\cventry{2026 - 2028}{Daria Zaremba}{PhD}{MIT, Kavli Institute}{}{}
+\cventry{2026}{Mark Gaskins}{Undergraduate (MSRP)}{North Carolina A\&T State University}{}{}
+\cventry{2025 - 2028}{Zeineb Mezghanni}{PhD}{MIT, Kavli Institute}{}{}
+\cventry{2026}{Jailee Young}{Undergraduate (USRP)}{MIT Kavli Institute}{}{}
+\cventry{2023 - 2024}{Yuxuan Zeng}{Part III (Masters)}{Institute of Astronomy, Cambridge}{}{}
+%\newpage
+
+\section{Conferences, Talks \& Schools}
+
+\cventry{Aug' 26}{Poster entitled \textit{The erasure of Galactic bar resonances by dark matter subhaloes}}{}{}{}{New Frontier in Cosmology (A Coruna, Spain)}
+\cventry{Jun' 26}{Talk entitled \textit{The erasure of Galactic bar resonances by dark matter subhaloes}}{}{}{}{57th DDA Meeting (Chicago, IL)}
+\cventry{Apr' 26}{Talk entitled \textit{Detecting dark matter substructure with Milky Way’s dynamics tool box}}{}{}{}{CIERA Theory group at Northwestern (Evanston, IL)}
+\cventry{Apr' 26}{Talk entitled \textit{Detecting dark matter substructure with Milky Way’s dynamics tool box}}{}{}{}{CPC Seminar at Fermilab (Batavia, IL)}
+\cventry{Feb' 26}{Talk entitled \textit{Detecting dark matter substructure with Milky Way’s dynamics tool box}}{}{}{}{LPPC Harvard Weekly Seminar (Cambridge, MA)}
+\cventry{Jan' 25}{Dissertation talk entitled \textit{Blind source separation of the stellar halo}}{}{}{}{245th AAS Meeting (National Harbor, MD)}
+\cventry{Dec' 24}{Winter school attendee}{}{}{}{Galaxy modelling and Galactic Centre workshop (University of Surrey, Guildford)}
+\cventry{Aug' 24}{Contributed talk entitled \textit{Hints of a disrupted binary dwarf galaxy in the Sagittarius stream}}{}{}{}{Small Galaxies, Large Questions (Durham, UK)}
+\cventry{May' 24}{Contributed talk entitled \textit{Hints of a disrupted binary dwarf galaxy in the Sagittarius stream}}{}{}{}{The Milky Way Assembly Tale (Bologna, Italy)}
+\cventry{Sep' 23}{Contributed talk entitled \textit{Capturing subhaloes with Galactic halo substructure}}{}{}{}{Revealed by Gaia: the central halo of the Milky Way (Institute of Astronomy, Cambridge)}
+\cventry{Jul' 23}{Poster entitled \textit{Accelerated phase mixing in the stellar halo due to a rotating bar}}{}{}{}{European Astronomical Society (Krakow, Poland)}
+\cventry{Jul' 23}{Poster entitled \textit{Accelerated phase mixing in the stellar halo due to a rotating bar}}{}{}{}{Galactic Bars: Driving and Decoding Galaxy Evolution (Granada, Spain)}
+\cventry{Mar' 23}{Talk entitled \textit{The wrinkles and folds of the Milky Way's most recent major merger}}{}{}{}{MCR Research Day 2023 (Gonville \& Caius College, Cambridge)}
+\cventry{Nov' 22}{Talk entitled \textit{The Phase Mixed Debris of a Massive Merger as a Dark Matter Subhalo Detector}}{}{}{}{Wednesday Seminar (Institute of Astronomy, Cambridge)}
+\cventry{Jan' 20}{Poster entitled \textit{How Supermassive Black Holes impact the Fuzzy Dark Matter Mass Mystery}}{}{}{}{235th AAS Meeting (Hawai'i Convention Center, Honolulu, HI)}
+
+
+\section{Activities}
+
+\cventry{Nov.'21 -- present}{Interviewer \& Ambassador}{Princeton University Undergraduate Admissions}{}{}{Conduct interviews with prospective Princeton University students and produce reports on each interviewee to aid in the undergraduate admissions process. \textbf{Total interviews conducted: 16}}
+
+\cventry{Nov.'21 -- Mar.'22}{Journal Club Coordinator}{Institute of Astronomy, Cambridge}{}{}{Organiser for the bi-weekly undergraduate journal club for final year undergraduates and masters students. }
+
+\cventry{Jan.'17--Jan.'18}{Director \& Volunteer}{Princeton Envision (Entrepreneurship Club)}{}{}{Assisted in organising, promoting and managing Envision Conference: an annual conference held over 3 days in December that brings 200 competitively selected students from universities across the world together with top researchers, entrepreneurs, and professionals to attend lectures and workshops discussing the disruptive technologies such as artificial intelligence and space travel.}
+
+\cventry{Sep.'17--Mar.'20}{Library Assistant}{Princeton University Architecture Library}{}{}{Duties included but were not limited to: circulation services, reserves, shelving, shelf reading, with other duties as directed by the librarian.}
+
+\cventry{Dec.'16--Sep.'17}{Peer Reviewer}{Princeton Undergraduate Research Journal}{}{}{Assisted in the peer reviewing process for the Princeton Undergraduate Research Journal (PURJ), Princeton’s first peer-reviewed academic journal, highlighting top-quality research performed by Princeton undergraduates across all academic pursuits, including the natural 
+	sciences, humanities, engineering, social sciences, and arts. }
+
+\section{Awards \& Academic Programmes}
+{\small
+\renewcommand{\listitemsymbol}{-~} % Changes the symbol used for lists
+
+\cventry{Oct.'21 -- Apr.'25}{STFC PhD Studentship}{}{}{}{Cambridge, UK \\ Full funding for 3.5 years to complete PhD at the Institute of Astronomy, University of Cambridge.}
+
+\cventry{Sep.'16 -- Jun'20}{Full-ride Academic Scholarship}{}{}{}{Princeton University, USA \\ Various financial aid packages covering all tuition fees and living costs to attend Princeton University in the Unites States for four years.}
+
+\cventry{Mar.'15 -- May.'16}{Sutton Trust USA Programme}{}{}{}{London, UK \\ One of 150 selected from 1600 high achieving low-income, first-generation students to receive admissions guidance for applying to the top universities in the US.}
+
+\cventry{Jul.'15}{UNIQ Summer School}{}{}{}{University of Oxford, UK \\ One of 36 Sixth Form students selected to attended the Oxford University Physics UNIQ Summer School for students from underrepresented backgrounds.}
+          
+\par}
+
+
+\end{document}

@@ -433,7 +433,10 @@ def main():
             "page_key": meta["key"],
             "site_name": SITE_NAME,
             "nav_items": render_nav(meta["key"]),
-            "head_extra": MATHJAX if meta.get("mathjax") == "true" else "",
+            "head_extra": "\n".join(filter(None, [
+                MATHJAX if meta.get("mathjax") == "true" else "",
+                *(f'\t<script defer src="{s.strip()}"></script>' for s in meta.get("scripts", "").split(",") if s.strip()),
+            ])),
             "content": body,
             "year": str(today.year),
             "updated": f"{today.day} {today.strftime('%B %Y')}",

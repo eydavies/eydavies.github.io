@@ -5,8 +5,10 @@ The pages in the site root (index.html, about.html, ...) are GENERATED from
 the files in src/. To change the site:
 
     1. edit src/layout.html (header/nav/footer shared by every page),
-       src/pages/*.html (the content of each page), or
-       src/publications.json (the publication list);
+       src/pages/*.html (the content of each page),
+       src/publications.json (the publication list), or
+       src/abstracts.json (abstracts, keyed by arXiv ID; shown as a dropdown
+       under the matching paper, and optional for each paper);
     2. run   python3 build.py   from this folder;
     3. commit and push the regenerated HTML files along with your edits.
 
@@ -16,6 +18,7 @@ import datetime
 import html
 import json
 import pathlib
+import re
 
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC = ROOT / "src"
@@ -52,8 +55,23 @@ def render_nav(active):
     return "\n".join(items)
 
 
+# Loaded on pages whose metadata says `mathjax: true`, so that TeX in abstracts
+# (e.g. $(E,L_z)$) is typeset. Without JavaScript the raw TeX stays readable.
+MATHJAX = """\t<script>window.MathJax = {tex: {inlineMath: [['$', '$']]}};</script>
+\t<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js"></script>"""
+
+
+def render_abstract(text):
+    """Escape an arXiv abstract for HTML, keeping $...$ TeX intact and turning
+    the few text-mode TeX commands arXiv abstracts use into HTML."""
+    text = html.escape(text, quote=False)
+    text = re.sub(r"\\textit\{([^}]*)\}", r"<em>\1</em>", text)
+    return text.replace("\\%", "%")
+
+
 def render_publications():
     pubs = json.loads((SRC / "publications.json").read_text(encoding="utf-8"))
+    abstracts = json.loads((SRC / "abstracts.json").read_text(encoding="utf-8"))
     sections = []
     for heading, first_author in (("First-author publications", True),
                                   ("Other publications", False)):
@@ -68,10 +86,15 @@ def render_publications():
                 title = html.escape(p["title"])
                 venue = html.escape(p["venue"])
                 arxiv = html.escape(p["arxiv"])
+                abstract = ""
+                if p["arxiv"] in abstracts:
+                    abstract = ('<details class="pub-abstract"><summary>Abstract</summary>'
+                                f'<p>{render_abstract(abstracts[p["arxiv"]])}</p></details>')
                 out.append(
                     '\t\t\t\t\t<li>'
                     f'<a class="pub-title" href="https://arxiv.org/abs/{arxiv}">{title}</a>'
                     f'<span class="pub-meta">{venue} &middot; arXiv:{arxiv}</span>'
+                    f'{abstract}'
                     '</li>')
             out.append('\t\t\t\t</ul>')
             out.append('\t\t\t</div>')
@@ -93,6 +116,7 @@ def main():
             "page_key": meta["key"],
             "site_name": SITE_NAME,
             "nav_items": render_nav(meta["key"]),
+            "head_extra": MATHJAX if meta.get("mathjax") == "true" else "",
             "content": body,
             "year": str(today.year),
             "updated": f"{today.day} {today.strftime('%B %Y')}",

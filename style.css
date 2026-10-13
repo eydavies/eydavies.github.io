@@ -201,6 +201,37 @@ main {
 .pub-title:hover { color: var(--accent); }
 .pub-meta { display: block; color: var(--muted); font-size: 0.95rem; }
 
+.pub-abstract { margin-top: 0.3rem; }
+.pub-abstract summary {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.1rem 0;
+	color: var(--accent);
+	font-size: 0.95rem;
+	cursor: pointer;
+	list-style: none;
+}
+.pub-abstract summary::-webkit-details-marker { display: none; }
+.pub-abstract summary::before {
+	content: '';
+	border: 0.3rem solid transparent;
+	border-left-color: currentColor;
+	border-right-width: 0;
+	transition: transform 0.15s;
+}
+.pub-abstract[open] summary::before { transform: rotate(90deg); }
+.pub-abstract summary:hover { color: #fff; }
+.pub-abstract p {
+	max-width: var(--measure);
+	margin: 0.5rem 0 0.25rem;
+	padding-left: 1rem;
+	border-left: 2px solid var(--line);
+	color: #d3d9e6;
+	font-size: 0.95rem;
+	line-height: 1.6;
+}
+
 /* ---------- CV ---------- */
 .cv-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0 0 1.5rem; }
 .cv-embed {

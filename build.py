@@ -11,6 +11,7 @@ GENERATED from the files in src/. To change the site:
          src/abstracts.json     abstracts keyed by arXiv ID (optional per paper)
          src/bibtex.json        BibTeX entries keyed by arXiv ID (optional per paper)
          src/cv.tex             your CV, as LaTeX (moderncv, "classic", black)
+         src/people.json        supervisor name -> website, linked on the web CV only
     2. run   python3 build.py   from this folder
          (add --no-pdf to skip compiling the CV PDF);
     3. commit and push the regenerated files along with your edits.
@@ -316,8 +317,24 @@ def slugify(title):
     return s or "section"
 
 
-def render_cv_entry(args):
+# Supervisors / PIs are linked to their websites on the web page only (the PDF
+# is compiled from cv.tex, which is left untouched). Names and URLs live in
+# src/people.json; names are linked inside these CV sections only, so the same
+# people are not linked in publication author lists.
+PEOPLE_LINK_SECTIONS = {"Employment", "Education"}
+
+
+def link_people(text, people):
+    for name, url in people.items():
+        text = re.sub(rf"(?<![\w>]){re.escape(html.escape(name, quote=False))}(?![\w<])",
+                      f'<a href="{html.escape(url)}">{html.escape(name, quote=False)}</a>', text)
+    return text
+
+
+def render_cv_entry(args, people=None):
     date, title, subtitle, place, note, desc = (linkify(tex_to_html(a)) for a in args)
+    if people:
+        desc = link_people(desc, people)
     parts = []
     if title:
         parts.append(f'<h3 class="cv-title">{title}</h3>')
@@ -336,13 +353,15 @@ def render_cv_entry(args):
 
 def render_cv():
     sections = parse_cv((SRC / "cv.tex").read_text(encoding="utf-8"))
+    people = json.loads((SRC / "people.json").read_text(encoding="utf-8"))
     chips, blocks = [], []
     for sec in sections:
         title = tex_to_html(sec["title"])
         sid = slugify(sec["title"])
         label = CV_CHIP_LABELS.get(html.unescape(title), title)
         chips.append(f'<a href="#{sid}">{label}</a>')
-        entries = "\n".join(render_cv_entry(e) for e in sec["entries"])
+        link_set = people if html.unescape(title) in PEOPLE_LINK_SECTIONS else None
+        entries = "\n".join(render_cv_entry(e, link_set) for e in sec["entries"])
         blocks.append(
             f'\t\t<section class="cv-section" id="{sid}">\n'
             f'\t\t\t<h2>{title}</h2>\n'

@@ -202,6 +202,9 @@
 		active = true;
 		canvas = document.createElement('canvas');
 		canvas.className = 'nbody-canvas';
+		// inline, so the canvas is a full-window overlay even if the stylesheet is stale or cached
+		canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;margin:0;' +
+			'pointer-events:none;z-index:20;display:block';
 		canvas.setAttribute('aria-hidden', 'true');
 		document.body.appendChild(canvas);
 		ctx = canvas.getContext('2d');

@@ -27,6 +27,7 @@ moderncv. Put a custom moderncv.cls / .sty in src/ if you use one.
 """
 import argparse
 import datetime
+import hashlib
 import html
 import json
 import os
@@ -413,6 +414,13 @@ def compile_cv_pdf():
 
 # ---------------------------------------------------------------------------
 
+def asset(name):
+    """URL of a static file with a content hash, so browsers/CDNs never serve a stale copy."""
+    path = ROOT / name
+    digest = hashlib.md5(path.read_bytes()).hexdigest()[:8] if path.exists() else "0"
+    return f"{name}?v={digest}"
+
+
 def main():
     ap = argparse.ArgumentParser(description="Build the website from src/.")
     ap.add_argument("--no-pdf", action="store_true", help="skip compiling the CV PDF")
@@ -432,10 +440,12 @@ def main():
             "description": html.escape(meta["description"], quote=True),
             "page_key": meta["key"],
             "site_name": SITE_NAME,
+            "css_url": asset("style.css"),
+            "js_url": asset("site.js"),
             "nav_items": render_nav(meta["key"]),
             "head_extra": "\n".join(filter(None, [
                 MATHJAX if meta.get("mathjax") == "true" else "",
-                *(f'\t<script defer src="{s.strip()}"></script>' for s in meta.get("scripts", "").split(",") if s.strip()),
+                *(f'\t<script defer src="{asset(s.strip())}"></script>' for s in meta.get("scripts", "").split(",") if s.strip()),
             ])),
             "content": body,
             "year": str(today.year),

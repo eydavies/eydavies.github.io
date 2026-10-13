@@ -345,10 +345,6 @@ def render_cv():
     return f"""\t\t<div class="cv" data-cv>
 \t\t\t<div class="cv-sticky">
 \t\t\t\t<div class="cv-toolbar">
-\t\t\t\t\t<label class="cv-search js-only">
-\t\t\t\t\t\t<span class="sr-only">Search the CV</span>
-\t\t\t\t\t\t<input type="search" class="cv-q" placeholder="Search the CV…" autocomplete="off">
-\t\t\t\t\t</label>
 \t\t\t\t\t<button type="button" class="btn cv-toggle-all js-only">Collapse all</button>
 \t\t\t\t\t<a class="btn btn-primary" href="{CV_PDF}" download="{CV_DOWNLOAD_NAME}">Download PDF</a>
 \t\t\t\t</div>
@@ -356,9 +352,7 @@ def render_cv():
 \t\t\t\t{chip_html}
 \t\t\t\t</nav>
 \t\t\t</div>
-\t\t\t<p class="cv-status js-only" role="status" aria-live="polite"></p>
 {chr(10).join(blocks)}
-\t\t\t<p class="cv-empty" hidden>Nothing in the CV matches that search.</p>
 \t\t</div>"""
 
 

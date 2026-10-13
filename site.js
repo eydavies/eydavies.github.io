@@ -42,12 +42,8 @@
 	if (!cv) { return; }
 
 	var sections = Array.prototype.slice.call(cv.querySelectorAll('.cv-section'));
-	var entries = Array.prototype.slice.call(cv.querySelectorAll('.cv-entry'));
 	var chips = Array.prototype.slice.call(cv.querySelectorAll('.cv-chips a'));
 	var toggleAll = cv.querySelector('.cv-toggle-all');
-	var input = cv.querySelector('.cv-q');
-	var status = cv.querySelector('.cv-status');
-	var emptyMsg = cv.querySelector('.cv-empty');
 	var chipBar = cv.querySelector('.cv-chips');
 
 	function setCollapsed(sec, collapsed) {
@@ -98,47 +94,6 @@
 			var anyOpen = sections.some(function (s) { return !s.classList.contains('is-collapsed'); });
 			sections.forEach(function (s) { setCollapsed(s, anyOpen); });
 			syncToggleAll();
-		});
-	}
-
-	/* Live search: every word typed must appear somewhere in the entry. */
-	var cache = entries.map(function (e) { return e.textContent.toLowerCase().replace(/\s+/g, ' '); });
-
-	function runSearch() {
-		var terms = input.value.toLowerCase().split(/\s+/).filter(Boolean);
-		var searching = terms.length > 0;
-		cv.classList.toggle('is-searching', searching);
-		var total = 0;
-		var perSection = new Map();
-		entries.forEach(function (entry, i) {
-			var hit = !searching || terms.every(function (t) { return cache[i].indexOf(t) !== -1; });
-			entry.hidden = !hit;
-			if (hit) {
-				total += 1;
-				var sec = entry.closest('.cv-section');
-				perSection.set(sec, (perSection.get(sec) || 0) + 1);
-			}
-		});
-		sections.forEach(function (sec) {
-			sec.hidden = searching && !perSection.get(sec);
-		});
-		chips.forEach(function (chip) {
-			var sec = document.getElementById(chip.getAttribute('href').slice(1));
-			chip.classList.toggle('is-empty', searching && sec && sec.hidden);
-		});
-		emptyMsg.hidden = !(searching && total === 0);
-		status.textContent = searching
-			? total + (total === 1 ? ' matching entry' : ' matching entries')
-			: '';
-	}
-
-	if (input) {
-		input.addEventListener('input', runSearch);
-		input.addEventListener('keydown', function (e) {
-			if (e.key === 'Escape' && input.value) {
-				input.value = '';
-				runSearch();
-			}
 		});
 	}
 

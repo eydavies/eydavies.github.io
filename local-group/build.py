@@ -20,7 +20,7 @@ open the page with ?season=winter (or spring, summer, fall) on the end of the ad
 Everything on the map is drawn on a pixel grid by this script (1 SVG unit = 1 art
 pixel) so that the buildings, people and speech bubble stay crisp at any size.
 """
-import argparse, datetime, json, math, pathlib, random
+import argparse, datetime, json, math, pathlib, random, urllib.parse
 
 HERE = pathlib.Path(__file__).resolve().parent
 ap = argparse.ArgumentParser(description="Build The Local Group pages.")
@@ -1052,6 +1052,29 @@ _WIDTHS = {k: (lambda b: b[2] - b[0] + 1)(c['sprite']().bbox()) for k, c in CAMP
 assert len(set(_WIDTHS.values())) == 1, f'campus icons must all be the same width: {_WIDTHS}'
 CAMPUS_ICON = {k: icon_svg(c["sprite"](), 2, "m-svg", snow=True) for k, c in CAMPUSES.items()}
 
+# Where each meeting place is, for the directions links (a campus without an entry here, e.g. Harvard for now,
+# gets no map icon and its room is not a link). Directions open Google Maps with the place as the destination.
+DIRECTIONS = {
+    "mit": dict(building="MIT Kavli Institute", place="MIT Building 37, 70 Vassar St, Cambridge, MA 02139"),
+    "bu":  dict(building="College of Arts & Sciences", place="College of Arts & Sciences, 725 Commonwealth Ave, Boston, MA 02215"),
+}
+def maps_url(key):
+    return "https://www.google.com/maps/dir/?api=1&destination=" + urllib.parse.quote(DIRECTIONS[key]["place"])
+
+def map_icon():
+    """A little folded paper map with a red pin (16 x 14)."""
+    g = Grid(); P1, P2, P3, RD = '#a8d98a', '#f6efc0', '#9fd0f2', '#e63946'
+    g.rect(0, 5, 4, 13, P1); g.rect(5, 4, 10, 12, P2); g.rect(11, 5, 15, 13, P3)       # three folded panels
+    g.rect(5, 12, 10, 13, P2); g.rect(0, 13, 15, 13, P1); g.rect(11, 13, 15, 13, P3)
+    for x, y in ((6, 10), (7, 9), (9, 11), (10, 10)): g.px(x, y, '#d9c98a')            # a dashed road
+    for x, y in ((12, 7), (13, 8), (13, 9), (14, 10), (14, 11)): g.px(x, y, '#5bb8f0')  # a river
+    for x, y in ((1, 7), (2, 8), (1, 10), (3, 11)): g.px(x, y, '#7cc060')              # a few trees
+    g.disc(8, 2, 2.4, 2.4, RD); g.rect(7, 4, 9, 4, RD); g.px(8, 5, RD); g.px(8, 6, RD)  # the pin
+    g.px(8, 2, '#ffffff')
+    g.outline(OL)
+    return g
+MAP_ICON = icon_svg(map_icon(), 2, "dir-svg")
+
 def esc(t): return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 def tba(value, label):
@@ -1068,6 +1091,10 @@ def meeting_card(m, venues, on_campus_page=False):
         f'<span class="t-text"><span class="t-title">{esc(t.get("title") or "Untitled talk")}</span>'
         f'<span class="t-speaker">{esc(t.get("speaker") or "Speaker TBA")}</span></span></li>' for t in m["talks"])
     room = tba(m.get("room") or venues.get(m["campus"], {}).get("room"), "Room")
+    room_html = esc(room)
+    if m["campus"] in DIRECTIONS and room.upper() != "ROOM TBA":                    # a known room links to its directions
+        room_html = (f'<a class="room-link" href="{esc(maps_url(m["campus"]))}" target="_blank" rel="noopener" '
+                     f'title="Directions on Google Maps">{esc(room)}</a>')
     if on_campus_page:
         ico, where = "", f"{d:%A}"
     else:
@@ -1075,7 +1102,7 @@ def meeting_card(m, venues, on_campus_page=False):
         where = f'{d:%A} at <a href="{c["href"]}">{c["label"]}</a>'
     return (f'<li id="{m["date"]}"><article class="card meeting" style="--c:{c["color"]}">'
             f'<header>{ico}<div><h2>{d:%B} {d.day}, {d.year}</h2><p class="m-where">{where}</p>'
-            f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{esc(room)}</span></p>'
+            f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{room_html}</span></p>'
             f'<p class="m-food">Food provided by {esc(m.get("food") or "TBA")}</p></div></header>'
             f'<ul class="talks">{talks}</ul></article></li>')
 
@@ -1094,8 +1121,12 @@ def campus_page(key):
     mine = [m for m in sorted(data["meetings"], key=lambda m: m["date"]) if m["campus"] == key]
     cards = "".join(meeting_card(m, venues, on_campus_page=True) for m in mine)
     body = (f'<ol class="meetings">{cards}</ol>' if mine else '<p class="card empty">No meetings are scheduled here yet.</p>')
+    dr = DIRECTIONS.get(key)
+    bldg = f'<p class="v-bldg">{esc(dr["building"])}</p>' if dr else ""
+    link = (f'<a class="dir" href="{esc(maps_url(key))}" target="_blank" rel="noopener" title="Directions on Google Maps" '
+            f'aria-label="Directions to {esc(dr["building"])} on Google Maps">{MAP_ICON}<span>Directions</span></a>') if dr else ""
     main = (f'<section class="card venue" style="--c:{c["color"]}"><span class="m-ico">{CAMPUS_ICON[key]}</span>'
-            f'<div><h2>Where</h2><p class="v-room">{esc(room)}</p></div></section>\n\t\t' + body)
+            f'<div><h2>Where</h2><p class="v-room">{esc(room)}</p>{bldg}</div>{link}</section>\n\t\t' + body)
     return subpage(c["label"], f"Meetings hosted at {c['label']}.", f"Meetings of The Local Group hosted at {c['label']}, with the room and the schedule of talks.", main)
 
 SCHED = r'''<!DOCTYPE html>

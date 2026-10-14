@@ -260,6 +260,19 @@ a.m-ico:hover svg, a.m-ico:focus-visible svg { transform: translateY(-2px); filt
 .venue { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1.6rem; }
 .venue h2 { margin: 0 0 0.5rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
 .v-room { margin: 0; font-size: clamp(0.8rem, 2.8vw, 1.05rem); line-height: 1.5; color: var(--c); }
+.v-bldg { margin: 0.35rem 0 0; font-size: 0.55rem; line-height: 1.8; }
+.venue { flex-wrap: wrap; }
+.room-link { color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.room-link:hover, .room-link:focus-visible { color: var(--c); }
+/* the little map button on a campus page: opens Google Maps directions */
+.dir {
+	margin-left: auto; display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.75rem;
+	font-size: 0.55rem; color: var(--navy); text-decoration: none; background: var(--cream);
+	border: 3px solid var(--navy); box-shadow: 3px 3px 0 #3a4a8a;
+}
+.dir:hover { background: #fff; transform: translate(2px, 2px); box-shadow: 1px 1px 0 #3a4a8a; }
+.dir:active { transform: translate(3px, 3px); box-shadow: 0 0 0 #3a4a8a; }
+.dir-svg { display: block; image-rendering: pixelated; flex: none; }
 .empty { font-size: 0.6rem; line-height: 1.9; }
 .m-food { margin: 0.4rem 0 0; font-size: 0.5rem; line-height: 1.8; color: #5a6389; }
 .talks { list-style: none; margin: 1rem 0 0; padding: 0.4rem 0 0; border-top: 3px solid rgba(29, 43, 83, 0.15); }

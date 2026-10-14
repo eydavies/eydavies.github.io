@@ -873,12 +873,12 @@ def egg_figure(kind, frame, swim=False):
     if kind == 'A':       # short blonde hair, burgundy top, stone-coloured trousers
         HAIR, TOP, TOPD, PANTS = '#f0cf6a', '#8c1c3a', '#6e1530', '#b9ae98'
         g.rect(-1, -11, 1, -11, HAIR); g.px(-1, -10, HAIR); g.px(0, -10, HAIR); g.px(1, -10, HAIR)
-        g.rect(-1, -9, 1, -8, SKIN); g.px(1, -9, '#2b2438')
+        g.rect(-1, -9, 1, -8, SKIN)
         g.rect(-1, -7, 1, -4, TOP); g.px(0, -5, TOPD); g.px(-2, -6, TOP); g.px(2, -6, TOP)
     else:                 # slightly longer brown hair, brown-and-green checked cardigan, dark trousers
         HAIR, BRN, GRN, PANTS = '#6b4226', '#8b5a2b', '#4f8f4a', '#464a5c'
         g.rect(-1, -11, 1, -10, HAIR); g.px(-2, -10, HAIR); g.px(-2, -9, HAIR); g.px(-2, -8, HAIR)
-        g.rect(-1, -9, 1, -8, SKIN); g.px(1, -9, '#2b2438')
+        g.rect(-1, -9, 1, -8, SKIN)
         for y in range(-7, -3):
             for x in (-1, 0, 1): g.px(x, y, BRN if (x + y) % 2 == 0 else GRN)
         g.px(-2, -6, BRN); g.px(2, -6, GRN)
@@ -898,25 +898,25 @@ def egg_sit():
     """Both figures side by side on a park bench, seen from the front (the third click)."""
     g = Grid()
     WOOD, WOODD, WOODL, LEG, SHOE, SKIN = '#b87a46', '#8a5a2c', '#d39a5e', '#4a3a2a', '#2b2438', '#f1c27d'
-    g.rect(-7, -8, 7, -8, WOODL); g.rect(-7, -7, 7, -6, WOOD)                    # backrest
-    g.rect(-7, -5, -7, -1, LEG); g.rect(7, -5, 7, -1, LEG)                       # posts
+    g.rect(-6, -8, 6, -8, WOODL); g.rect(-6, -7, 6, -6, WOOD)                    # backrest
+    g.rect(-6, -5, -6, -1, LEG); g.rect(6, -5, 6, -1, LEG)                       # posts
     cx = -3                                                                      # blonde, burgundy top, stone trousers
     for x in (cx - 1, cx, cx + 1): g.px(x, -11, '#f0cf6a'); g.px(x, -10, '#f0cf6a')
-    g.rect(cx - 1, -9, cx + 1, -8, SKIN); g.px(cx - 1, -9, SHOE); g.px(cx + 1, -9, SHOE)
+    g.rect(cx - 1, -9, cx + 1, -8, SKIN)
     g.rect(cx - 1, -7, cx + 1, -5, '#8c1c3a'); g.px(cx, -6, '#6e1530')
     for x in (cx - 2, cx + 2): g.rect(x, -7, x, -6, '#8c1c3a'); g.px(x, -5, SKIN)
-    for x in (cx - 1, cx + 1): g.px(x, -2, '#b9ae98'); g.px(x, -1, SHOE)
+    g.rect(cx - 1, -3, cx + 1, -2, '#b9ae98'); g.px(cx - 1, -1, SHOE); g.px(cx + 1, -1, SHOE)
     cx = 3                                                                       # longer brown hair, checked cardigan
     HAIR, BRN, GRN = '#6b4226', '#8b5a2b', '#4f8f4a'
     g.rect(cx - 1, -11, cx + 1, -10, HAIR)
     for x in (cx - 2, cx + 2): g.rect(x, -10, x, -8, HAIR)
-    g.rect(cx - 1, -9, cx + 1, -8, SKIN); g.px(cx - 1, -9, SHOE); g.px(cx + 1, -9, SHOE)
+    g.rect(cx - 1, -9, cx + 1, -8, SKIN)
     for y in range(-7, -4):
         for x in range(cx - 2, cx + 3):
             if abs(x - cx) <= 1 or y >= -7 and y <= -6: g.px(x, y, BRN if (x + y) % 2 == 0 else GRN)
     for x in (cx - 2, cx + 2): g.px(x, -5, SKIN)
-    for x in (cx - 1, cx + 1): g.px(x, -2, '#464a5c'); g.px(x, -1, SHOE)
-    g.rect(-7, -4, 7, -4, WOODL); g.rect(-7, -3, 7, -3, WOODD)                   # seat, in front of the hips
+    g.rect(cx - 1, -3, cx + 1, -2, '#464a5c'); g.px(cx - 1, -1, SHOE); g.px(cx + 1, -1, SHOE)
+    g.rect(-6, -4, 6, -4, WOODL)                                                 # seat (the legs hang below it)
     g.outline(OL)
     return g
 EGG_BENCH = f'<g id="egg-bench">{svg_paths(egg_sit())}</g>'

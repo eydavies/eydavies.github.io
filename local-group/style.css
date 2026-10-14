@@ -379,3 +379,11 @@ a, a *, button, button *, .campus, .campus *, [role="button"], summary, label[fo
 .egg-pop { animation: eggpop 0.4s steps(1, end) forwards; }
 @keyframes eggpop { 0% { opacity: 1; } 50% { opacity: 0.55; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .egg-pop { animation: none; opacity: 0; } }
+
+/* skip link: off-screen until it gets keyboard focus */
+.skip-link {
+	position: absolute; left: 1rem; top: -6rem; z-index: 100; padding: 0.6rem 0.9rem; font-size: 0.65rem;
+	color: var(--navy); background: var(--cream); text-decoration: none;
+	border: 3px solid var(--navy); box-shadow: 3px 3px 0 #3a4a8a;
+}
+.skip-link:focus { top: 1rem; }

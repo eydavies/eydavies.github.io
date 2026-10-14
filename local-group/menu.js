@@ -11,7 +11,6 @@
 		if (!tod) { return; }
 		var night = root.getAttribute('data-time') === 'night';
 		tod.setAttribute('aria-pressed', night ? 'true' : 'false');
-		tod.setAttribute('aria-label', night ? 'Switch to day mode' : 'Switch to night mode');
 		tod.setAttribute('title', night ? 'Day mode' : 'Night mode');
 	}
 	if (tod) {

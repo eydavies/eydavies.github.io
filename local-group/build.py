@@ -550,7 +550,7 @@ def sun_icon():
     g.outline(OL)
     return g
 
-TOD_BUTTON = ('<button class="tod" type="button" id="tod" aria-pressed="false" aria-label="Switch to night mode" title="Night mode">'
+TOD_BUTTON = ('<button class="tod" type="button" id="tod" aria-pressed="false" aria-label="Night mode" title="Night mode">'
               f'<span class="tod-moon">{icon_svg(moon_icon(), 2, "tod-svg")}</span><span class="tod-sun">{icon_svg(sun_icon(), 2, "tod-svg")}</span></button>')
 
 def campus(key):
@@ -943,6 +943,7 @@ HTML = r'''<!DOCTYPE html>
 	<script defer src="menu.js"></script>
 </head>
 <body class="home">
+	<a class="skip-link" href="#main">Skip to content</a>
 	<div class="hero">
 		<div class="sky" aria-hidden="true"></div>
 		<svg class="galaxy" viewBox="0 0 @@GALW@@ @@GALH@@" shape-rendering="crispEdges" aria-hidden="true" focusable="false">@@GALAXY@@</svg>
@@ -954,14 +955,15 @@ HTML = r'''<!DOCTYPE html>
 			<p class="tagline">A discussion and seminar group for galactic dynamics and near-field cosmology.</p>
 			<nav class="buttons" aria-label="The Local Group">
 				<a class="btn" href="schedule.html">Schedule</a>
-				<a class="btn" href="https://forms.gle/UewtgsnsCusrJGoR7" target="_blank" rel="noopener">Mailing List</a>
+				<a class="btn" href="https://forms.gle/UewtgsnsCusrJGoR7" target="_blank" rel="noopener">Mailing List<span class="sr"> (opens in a new tab)</span></a>
 				<a class="btn" href="about.html">About</a>
 			</nav>
 		</div>
 	</div>
 
 	<main class="scene-wrap" id="main">
-		<svg class="scene" viewBox="@@VIEW@@" data-view="@@VIEW@@" data-compact="@@COMPACT@@" data-ctop="@@CTOP@@" data-cbot="@@CBOT@@" data-river="@@RIVERCFG@@" data-bridge="@@BRIDGEX@@" data-obst="@@OBST@@" data-w="@@W@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" role="group" aria-label="Pixel map of the Charles River with Harvard and MIT on the north bank and Boston University on the south bank">
+		<h2 class="sr">Meeting locations</h2>
+		<svg class="scene" role="group" aria-label="Pixel-art map of the three host institutions: Harvard and MIT on the north bank of the river, Boston University on the south bank, joined by a bridge. Select a building to see its meetings." viewBox="@@VIEW@@" data-view="@@VIEW@@" data-compact="@@COMPACT@@" data-ctop="@@CTOP@@" data-cbot="@@CBOT@@" data-river="@@RIVERCFG@@" data-bridge="@@BRIDGEX@@" data-obst="@@OBST@@" data-w="@@W@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" role="group" aria-label="Pixel map of the Charles River with Harvard and MIT on the north bank and Boston University on the south bank">
 			<defs>
 				@@EGGDEFS@@
 				<!-- night: every colour moves 45% of the way towards a deep blue (same blend as the page background in style.css) -->
@@ -1133,17 +1135,17 @@ def meeting_card(m, venues, on_campus_page=False):
     room_html = esc(room)
     food_html = esc(m.get("food") or "TBA")
     if (m.get("food_url") or "").strip():                                           # the caterer's name links to their website
-        food_html = f'<a class="room-link" href="{esc(m["food_url"].strip())}" target="_blank" rel="noopener">{food_html}</a>'
+        food_html = f'<a class="room-link" href="{esc(m["food_url"].strip())}" target="_blank" rel="noopener">{food_html}<span class="sr"> (opens in a new tab)</span></a>'
     if m["campus"] in DIRECTIONS and room.upper() != "ROOM TBA":                    # a known room links to its directions
         room_html = (f'<a class="room-link" href="{esc(maps_url(m["campus"]))}" target="_blank" rel="noopener" '
-                     f'title="Directions on Google Maps">{esc(room)}</a>')
+                     f'title="Directions on Google Maps">{esc(room)}<span class="sr">, directions on Google Maps (opens in a new tab)</span></a>')
     if on_campus_page:
         ico, where = "", f"{d:%A}"
     else:
-        ico = f'<a class="m-ico" href="{c["href"]}" aria-label="{c["label"]}: room and all of its meetings">{CAMPUS_ICON[m["campus"]]}</a>'
-        where = f'{d:%A} at <a href="{c["href"]}">{c["label"]}</a>'
+        ico = f'<a class="m-ico" href="{c["href"]}" tabindex="-1" aria-hidden="true">{CAMPUS_ICON[m["campus"]]}</a>'     # the name link beside it does the job for keyboards and screen readers
+        where = f'{d:%A} at <a href="{c["href"]}">{c["label"]}<span class="sr">: room and all of its meetings</span></a>'
     return (f'<li id="{m["date"]}" data-freq="{freq}"><article class="card meeting" style="--c:{c["color"]}">'
-            f'<header>{ico}<div><h2>{d:%B} {d.day}, {d.year}</h2><p class="m-where">{where}</p>'
+            f'<header>{ico}<div><h2><time datetime="{m["date"]}">{d:%B} {d.day}, {d.year}</time></h2><p class="m-where">{where}</p>'
             f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{room_html}</span></p>'
             f'</div><span class="m-freq" role="img" title="{esc(FREQUENCIES[freq][0])}: {esc(FREQUENCIES[freq][1])}" '
             f'aria-label="{esc(FREQUENCIES[freq][0])} meeting: {esc(FREQUENCIES[freq][1])}">{FREQ_ICON[freq]}</span></header>'
@@ -1165,6 +1167,7 @@ def schedule_page():
             f'<div class="legend-body" id="key-body"><div><h3>Talk types</h3><ul>{legend}</ul></div>'
             f'<div><h3>Meeting frequency</h3><ul>{freqs}</ul></div></div></section>\n\t\t'
             f'<ol class="meetings">\n\t\t\t' + "\n\t\t\t".join(meetings) + '\n\t\t</ol>\n\t\t'
+            f'<p class="sr" id="filter-status" role="status" aria-live="polite"></p>\n\t\t'
             f'<p class="card empty" id="no-match" hidden>No meetings match this selection. Click the highlighted icon in the key to clear it.</p>')
     page = subpage("Schedule", "Upcoming meetings and talks.", "Upcoming meetings and talks of The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology.", main)
     return page.replace("</body>", '<script defer src="schedule.js"></script>\n</body>')
@@ -1179,7 +1182,7 @@ def campus_page(key):
     dr = DIRECTIONS.get(key)
     bldg = f'<p class="v-bldg">{esc(dr["building"])}</p>' if dr else ""
     link = (f'<a class="dir" href="{esc(maps_url(key))}" target="_blank" rel="noopener" title="Directions on Google Maps" '
-            f'aria-label="Directions to {esc(dr["building"])} on Google Maps">{MAP_ICON}<span>Directions</span></a>') if dr else ""
+            f'aria-label="Directions to {esc(dr["building"])} on Google Maps (opens in a new tab)">{MAP_ICON}<span>Directions</span></a>') if dr else ""
     main = (f'<section class="card venue" style="--c:{c["color"]}"><span class="m-ico">{CAMPUS_ICON[key]}</span>'
             f'<div><h2>Where</h2><p class="v-room">{esc(room)}</p>{bldg}</div>{link}</section>\n\t\t' + body)
     return subpage(c["label"], f"Meetings hosted at {c['label']}.", f"Meetings of The Local Group hosted at {c['label']}, with the room and the schedule of talks.", main)
@@ -1198,6 +1201,7 @@ SCHED = r'''<!DOCTYPE html>
 	<link rel="stylesheet" href="style.css">
 </head>
 <body class="sched">
+	<a class="skip-link" href="#main">Skip to content</a>
 	<div class="hero">
 		<div class="sky" aria-hidden="true"></div>
 		<header class="topbar">
@@ -1230,7 +1234,7 @@ def about_page():
     rows = []
     for o in data["organisers"]:
         pos, url = (o.get("position") or "").strip(), (o.get("url") or "").strip()
-        site = (f'<a class="p-site" href="{esc(url)}" target="_blank" rel="noopener">{esc(url.split("//")[-1].strip("/"))}</a>' if url
+        site = (f'<a class="p-site" href="{esc(url)}" target="_blank" rel="noopener">{esc(url.split("//")[-1].strip("/"))}<span class="sr"> (opens in a new tab)</span></a>' if url
                 else '<span class="p-site tba">Website TBA</span>')
         rows.append(f'<li><span class="p-ico">{star}</span><div><h3>{esc(o["name"])}</h3>'
                     f'<p class="p-pos{"" if pos else " tba"}">{esc(pos) if pos else "Position TBA"}</p>{site}</div></li>')
@@ -1257,6 +1261,7 @@ PAGE = r'''<!DOCTYPE html>
 	<link rel="stylesheet" href="style.css">
 </head>
 <body class="sub" style="--c:@@COLOR@@">
+	<a class="skip-link" href="#main">Skip to content</a>
 	<header class="topbar">
 		<a href="./">&lt; The Local Group</a>
 	</header>

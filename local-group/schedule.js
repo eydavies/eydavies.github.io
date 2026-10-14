@@ -8,10 +8,10 @@
 	var toggle = legend.querySelector('.key-toggle'), note = legend.querySelector('.key-note');
 	var buttons = Array.prototype.slice.call(legend.querySelectorAll('.key-btn'));
 	var meetings = Array.prototype.slice.call(document.querySelectorAll('.meetings > li'));
-	var empty = document.getElementById('no-match');
+	var empty = document.getElementById('no-match'), status = document.getElementById('filter-status');
 	var state = { type: null, freq: null };
 
-	function apply() {
+	function apply(announce) {
 		var shown = 0;
 		meetings.forEach(function (li) {
 			var freqOk = !state.freq || li.getAttribute('data-freq') === state.freq;
@@ -27,6 +27,9 @@
 			if (show) { shown++; }
 		});
 		if (empty) { empty.hidden = shown > 0; }
+		if (announce && status) {
+			status.textContent = shown === 0 ? 'No meetings match this selection.' : (state.type || state.freq ? 'Showing ' + shown + ' of ' + meetings.length + ' meetings.' : 'Showing all ' + meetings.length + ' meetings.');
+		}
 		buttons.forEach(function (b) {
 			b.setAttribute('aria-pressed', state[b.getAttribute('data-kind')] === b.getAttribute('data-val') ? 'true' : 'false');
 		});
@@ -37,7 +40,7 @@
 		b.addEventListener('click', function () {
 			var kind = b.getAttribute('data-kind'), val = b.getAttribute('data-val');
 			state[kind] = state[kind] === val ? null : val;
-			apply();
+			apply(true);
 		});
 	});
 

@@ -74,8 +74,9 @@
    scrolled to the lower half). Pages without a sky header (the placeholder pages) just use the ground colour. */
 html { background: #0f1535; }
 html.lower { background: var(--grass); }
-:root:has(body.sub) { background: var(--grass); }
+:root:has(body.sub), :root:has(body.sched) { background: #0f1535; }   /* sub-pages are season-agnostic: always the night-sky blue */
 :root[data-time="night"].lower { background: #34503f; background: color-mix(in srgb, var(--grass) 55%, #0e1640); }
+:root[data-time="night"].lower:has(body.sub), :root[data-time="night"].lower:has(body.sched) { background: #0f1535; }
 
 body {
 	margin: 0;
@@ -226,6 +227,14 @@ h1 {
 }
 
 /* ---------- Schedule ---------- */
+/* Schedule, About and the placeholder pages: the same starfield as the header, all the way down, whatever the season
+   (the tile lines up with the header's, so the header's fade is seamless). */
+body.sched, body.sub {
+	background: url(hero-stars.svg) 0 0 / calc(256 * var(--px)) calc(128 * var(--px)) repeat, #0f1535;
+}
+.sub h1 { color: #fff; text-shadow: 0.1em 0.1em 0 #3a4a8a; }
+.sub .tagline { color: var(--cream); }
+body.sched .card { box-shadow: 4px 4px 0 #3a4a8a; }
 .sched .intro { padding-top: 0.5rem; }
 .sched-main { flex: 1; width: 100%; max-width: 46rem; margin: 0 auto; padding: 1.4rem 1.25rem 4rem; }
 .card { background: var(--cream); border: 3px solid var(--navy); box-shadow: 4px 4px 0 var(--navy); padding: 1.1rem 1.2rem; }
@@ -284,7 +293,7 @@ a.p-site:hover { background: var(--navy); color: var(--cream); }
 	text-align: center;
 	padding: 2rem 1.25rem 6rem;
 }
-.sub-main h1 { color: var(--c); text-shadow: 0.1em 0.1em 0 var(--navy); }
+.sub-main h1 { color: #fff; text-shadow: 0.1em 0.1em 0 #3a4a8a; }
 
 @media (prefers-reduced-motion: reduce) {
 	.sh { animation: none; }

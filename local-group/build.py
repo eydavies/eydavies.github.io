@@ -866,22 +866,22 @@ def compact_top():
 
 # ------------------------------------------------------------------ easter egg: two little figures who appear where you click
 # (desktop only, see menu.js). Facing right; menu.js mirrors them. 'w' = walking (2 frames), 's' = swimming (head and
-# shoulders above the water, 2 frames of ripples). A has dark skin and B light skin.
+# shoulders above the water, 2 frames of ripples). A has short blonde hair and a burgundy top, B longer brown hair and a checked cardigan.
 def egg_figure(kind, frame, swim=False):
     g = Grid()
-    if kind == 'A':       # a young student: red beanie, green hoodie, backpack
-        SKIN, HAT, BAND, TOP, TOPD, PANTS, PACK = '#7a4a2a', '#e63946', '#ff8a8a', '#3fa46a', '#2f8a56', '#3a5a9a', '#f2b134'
-        g.px(0, -12, '#ffffff'); g.rect(-1, -11, 1, -11, HAT); g.rect(-1, -10, 1, -10, BAND)
-        g.rect(-1, -9, 1, -8, SKIN); g.px(1, -9, '#1d1d1d')
-        g.rect(-1, -7, 1, -4, TOP); g.px(0, -5, TOPD); g.px(-2, -6, TOP)
-        g.rect(-3, -7, -2, -5, PACK); g.px(-3, -4, PACK)
-    else:                 # an older man: white hair, round glasses, scarf, mustard cardigan and a walking stick
-        SKIN, HAIR, GLS, SCARF, TOP, TOPD, PANTS = '#f1c27d', '#f4f4f0', '#2b2438', '#c0392b', '#e0a030', '#b9791c', '#6b4a2e'
-        g.rect(-1, -11, 1, -10, HAIR); g.px(-2, -10, HAIR); g.px(-2, -9, HAIR)
-        g.rect(-1, -9, 1, -8, SKIN); g.px(0, -9, GLS); g.px(1, -9, GLS)
-        g.rect(-1, -7, 1, -7, SCARF); g.px(-2, -7, SCARF); g.px(-2, -6, SCARF)
-        g.rect(-1, -6, 1, -4, TOP); g.px(0, -5, TOPD); g.px(0, -4, TOPD); g.px(2, -6, TOP)
-        if not swim: g.vline(3, -6, -1, '#6b4429')
+    SKIN = '#f1c27d'
+    if kind == 'A':       # short blonde hair, burgundy top, stone-coloured trousers
+        HAIR, TOP, TOPD, PANTS = '#f0cf6a', '#8c1c3a', '#6e1530', '#b9ae98'
+        g.rect(-1, -11, 1, -11, HAIR); g.px(-1, -10, HAIR); g.px(0, -10, HAIR); g.px(1, -10, HAIR)
+        g.rect(-1, -9, 1, -8, SKIN); g.px(1, -9, '#2b2438')
+        g.rect(-1, -7, 1, -4, TOP); g.px(0, -5, TOPD); g.px(-2, -6, TOP); g.px(2, -6, TOP)
+    else:                 # slightly longer brown hair, brown-and-green checked cardigan, dark trousers
+        HAIR, BRN, GRN, PANTS = '#6b4226', '#8b5a2b', '#4f8f4a', '#464a5c'
+        g.rect(-1, -11, 1, -10, HAIR); g.px(-2, -10, HAIR); g.px(-2, -9, HAIR); g.px(-2, -8, HAIR)
+        g.rect(-1, -9, 1, -8, SKIN); g.px(1, -9, '#2b2438')
+        for y in range(-7, -3):
+            for x in (-1, 0, 1): g.px(x, y, BRN if (x + y) % 2 == 0 else GRN)
+        g.px(-2, -6, BRN); g.px(2, -6, GRN)
     if swim:
         g.outline(OL)
         for x in ((-3, -2, 2, 3) if frame == 0 else (-2, -1, 1, 2)): g.px(x, -6, '.shm')
@@ -1139,7 +1139,7 @@ PAGE = r'''<!DOCTYPE html>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>@@NAME@@ | The Local Group</title>
 	<meta name="description" content="@@NAME@@ at The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology.">
-	<meta name="theme-color" content="#8fd16c">
+	<meta name="theme-color" content="#0f1535">
 	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%238fd16c'/%3E%3Cpath fill='%233f95d8' d='M0 6h16v6H0z'/%3E%3Cpath fill='%235bb8f0' d='M0 6h16v4H0z'/%3E%3C/svg%3E">
 	<link rel="preload" href="PressStart2P.woff2" as="font" type="font/woff2" crossorigin>
 	<script src="season.js"></script>

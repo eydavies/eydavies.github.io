@@ -134,11 +134,11 @@ h1 {
 	position: absolute; top: 0; left: 50%; z-index: -1; pointer-events: none;
 	width: calc(160 * var(--px)); height: calc(46 * var(--px)); transform: translateX(-50%);
 }
-.home .intro { padding-top: max(0.5rem, calc(var(--px) * 37 - 4.1rem)); }
-/* narrow screens: drop the galaxy below the back button so the stream isn't hidden behind it */
+.home .intro { padding-top: calc(var(--px) * 37 + 0.1rem); }       /* the title sits where it did when a top bar was above it */
+/* narrow screens: drop the galaxy a little so the stream isn't hidden behind the day/night button */
 @media (max-width: 899px) {
 	.galaxy { top: 2.6rem; }
-	.home .intro { padding-top: max(0.5rem, calc(var(--px) * 37 - 1.5rem)); }
+	.home .intro { padding-top: calc(var(--px) * 37 + 2.7rem); }
 }
 .home h1, .sched h1 { color: #fff; text-shadow: 0.1em 0.1em 0 #3a4a8a; }
 .home .tagline, .sched .tagline { color: var(--cream); }

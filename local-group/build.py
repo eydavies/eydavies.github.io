@@ -945,9 +945,6 @@ HTML = r'''<!DOCTYPE html>
 		<div class="sky" aria-hidden="true"></div>
 		<svg class="galaxy" viewBox="0 0 @@GALW@@ @@GALH@@" shape-rendering="crispEdges" aria-hidden="true" focusable="false">@@GALAXY@@</svg>
 
-		<header class="topbar">
-			<a href="../">&lt; Elliot Y. Davies</a>
-		</header>
 		@@TOD@@
 
 		<div class="intro">

@@ -128,18 +128,24 @@ main {
 .site-footer p { margin: 0; }
 
 /* ---------- Buttons ---------- */
+/* Chunky square buttons in the style of The Local Group: cream face, dark outline, a hard offset shadow that the
+   button sinks into when you hover or press it. */
+:root { --btn-face: #f7f2d0; --btn-ink: #1d2b53; --btn-shadow: #3a4a8a; }
 .btn {
 	display: inline-block;
-	padding: 0.55rem 1.3rem;
-	border: 1px solid var(--accent);
-	border-radius: 999px;
-	color: var(--accent);
+	padding: 0.5rem 1.3rem;
+	border: 3px solid var(--btn-ink);
+	border-radius: 0;
+	background: var(--btn-face);
+	color: var(--btn-ink);
+	box-shadow: 4px 4px 0 var(--btn-shadow);
 	text-decoration: none;
-	transition: background 0.15s, color 0.15s;
+	transition: background 0.1s;
 }
-.btn:hover { background: var(--accent); color: #1a1200; }
+.btn:hover { background: #fff; color: var(--btn-ink); transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--btn-shadow); }
+.btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--btn-shadow); }
 .btn-primary { background: var(--accent); color: #1a1200; }
-.btn-primary:hover { background: #fff; border-color: #fff; color: #1a1200; }
+.btn-primary:hover { background: #fff; color: #1a1200; }
 
 /* ---------- Home ---------- */
 .page-home main {
@@ -233,19 +239,21 @@ main {
 	align-items: center;
 	gap: 0.45rem;
 	margin-top: 0.1rem;
-	padding: 0.2rem 0.75rem;
-	border: 1px solid var(--accent);
-	border-radius: 999px;
-	background: transparent;
-	color: var(--accent);
+	padding: 0.1rem 0.75rem;
+	border: 2px solid var(--btn-ink);
+	border-radius: 0;
+	background: var(--btn-face);
+	color: var(--btn-ink);
+	box-shadow: 3px 3px 0 var(--btn-shadow);
 	font: inherit;
 	font-size: 0.9rem;
 	line-height: 1.5;
 	cursor: pointer;
-	transition: background 0.15s, color 0.15s;
+	transition: background 0.1s;
 }
 .js .abs-toggle { display: inline-flex; }
-.abs-toggle:hover { background: var(--accent); color: #1a1200; }
+.abs-toggle:hover { background: #fff; transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--btn-shadow); }
+.abs-toggle:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--btn-shadow); }
 .abs-toggle::after {
 	content: '';
 	width: 0.4rem;
@@ -319,19 +327,23 @@ main {
 	top: 0.45rem;
 	right: 0.45rem;
 	padding: 0.05rem 0.65rem;
-	border: 1px solid var(--accent);
-	border-radius: 999px;
-	background: rgba(4, 9, 30, 0.85);
-	color: var(--accent);
+	border: 2px solid var(--btn-ink);
+	border-radius: 0;
+	background: var(--btn-face);
+	color: var(--btn-ink);
+	box-shadow: 2px 2px 0 var(--btn-shadow);
 	font: inherit;
 	font-size: 0.8rem;
 	cursor: pointer;
 }
-.bib-copy:hover { background: var(--accent); color: #1a1200; }
+.bib-copy:hover { background: #fff; transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--btn-shadow); }
+.bib-copy:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--btn-shadow); }
 html:not(.js) .bib-copy { display: none; }
 
 /* a small outlined button used for page tools (e.g. "Show all abstracts") */
-.btn-small { padding: 0.25rem 0.9rem; background: transparent; font: inherit; font-size: 0.95rem; cursor: pointer; }
+.btn-small { padding: 0.2rem 0.9rem; border-width: 2px; box-shadow: 3px 3px 0 var(--btn-shadow); font: inherit; font-size: 0.95rem; cursor: pointer; }
+.btn-small:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--btn-shadow); }
+.btn-small:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--btn-shadow); }
 
 /* ---------- CV ---------- */
 .sr-only {
@@ -357,7 +369,7 @@ html:not(.js) .js-only { display: none !important; }
 	border-bottom: 1px solid var(--line);
 }
 .cv-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
-.cv-toggle-all { background: transparent; font: inherit; font-size: 1rem; cursor: pointer; white-space: nowrap; }
+.cv-toggle-all { font: inherit; font-size: 1rem; cursor: pointer; white-space: nowrap; }
 
 .cv-chips {
 	display: flex;
@@ -371,7 +383,7 @@ html:not(.js) .js-only { display: none !important; }
 	flex: none;
 	padding: 0.1rem 0.75rem;
 	border: 1px solid var(--line);
-	border-radius: 999px;
+	border-radius: 0;
 	color: var(--muted);
 	font-size: 0.9rem;
 	text-decoration: none;
@@ -404,7 +416,7 @@ html:not(.js) .js-only { display: none !important; }
 .cv-count {
 	padding: 0 0.55rem;
 	border: 1px solid var(--line);
-	border-radius: 999px;
+	border-radius: 0;
 	color: var(--muted);
 	font-size: 0.85rem;
 	font-weight: 400;

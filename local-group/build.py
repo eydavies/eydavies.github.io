@@ -289,34 +289,51 @@ def text_grid(word, x0, y0, c):
     return g
 def text_width(word): return sum(len(FONT[ch][0]) for ch in word) + len(word) - 1
 
-def cds():
-    """BU's Center for Computing & Data Science ('the Tetris building'): stacked, cantilevered boxes."""
+def dahod():
+    """Dahod Family Alumni Center (BU): warm-brick Georgian hall with a white pedimented entrance, slate roof, dormers and a cupola."""
     g = Grid()
-    WH, WHS, GLASS, GLASSL, WOOD, WOODD, SOFFIT, WIND = '#e9e7e0', '#cfcdc6', '#7da7c9', '#d6e6f3', '#c9985f', '#b2814b', '#8a5a3b', '#6f93b8'
-    # (x0, x1, top, bottom, kind): each box is pushed out sideways from the one below
-    blocks = [(-15, 15, -9, -1, 'glass'), (-8, 18, -20, -10, 'white'), (-18, 6, -31, -21, 'wood'),
-              (-4, 16, -41, -32, 'white'), (-14, 8, -51, -42, 'glass')]
-    for x0, x1, top, bot, kind in blocks:
-        if kind == 'white':
-            g.rect(x0, top, x1, bot, WH); g.hline(bot, x0, x1, WHS)
-            for a, b in ((2, 4), (6, 8)):
-                for y in range(top + a, min(top + b, bot - 1) + 1):
-                    for x in range(x0 + 1, x1):
-                        g.px(x, y, WH if (x - x0) % 4 == 0 else WIND)
-        elif kind == 'wood':
-            g.rect(x0, top, x1, bot, WOOD)
-            for y in (top + 3, top + 7): g.hline(y, x0, x1, WOODD)
-            for x in range(x0 + 3, x1 - 2, 6): g.rect(x, top + 1, x + 1, bot - 2, WIND)
-        else:
-            g.rect(x0, top, x1, bot, GLASS)
-            for x in range(x0, x1 + 1, 4): g.vline(x, top, bot, GLASSL)
-            g.hline(top + 4, x0, x1, GLASSL)
-    # the wooden undersides of the overhangs
-    for i in range(1, len(blocks)):
-        x0, x1, top, bot, _ = blocks[i]; px0, px1 = blocks[i - 1][0], blocks[i - 1][1]
-        for x in range(x0, x1 + 1):
-            if x < px0 or x > px1: g.px(x, bot, SOFFIT)
-    g.rect(0, -54, 8, -52, '#c1c5ce')
+    BR, BRD, ST, SL, SLL, GL, DOOR = '#c9825a', '#b06c46', '#f3ead8', '#4a4e69', '#5f6488', '#3f4f73', '#6b3a2e'
+    RED, REDH = '#cc0000', '#e8504a'
+    def brick(x0, y0, x1, y1):
+        g.rect(x0, y0, x1, y1, BR)
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                if (x + (y % 2) * 2) % 4 == 0: g.px(x, y, BRD)
+    def window(x, y):                       # 3x5 pane in a white frame
+        g.rect(x - 1, y - 1, x + 3, y + 5, ST); g.rect(x, y, x + 2, y + 4, GL); g.px(x + 1, y + 2, ST)
+    brick(-26, -20, 26, -1)
+    g.hline(-1, -26, 26, ST)                # stone base
+    # hipped slate roof, narrowing to a ridge
+    for i, half in enumerate((28, 26, 24, 22, 20, 18, 16, 14)):
+        g.rect(-half, -21 - i, half, -21 - i, SLL if i % 2 else SL)
+    # dormers either side of the entrance
+    for sx in (-1, 1):
+        for xc in (12, 20):
+            x0 = sx * xc - 1
+            g.rect(x0 - 1, -25, x0 + 3, -22, ST); g.rect(x0, -24, x0 + 2, -22, GL)
+    # windows on both floors
+    for sx in (-1, 1):
+        for xs in (11, 17, 22):
+            x = xs if sx > 0 else -xs - 2
+            window(x, -17); window(x, -9)
+    # entrance pavilion: white pediment, columns, red awning over the door
+    for i, half in enumerate((10, 8, 6, 4, 2)):
+        g.rect(-half, -26 - i, half, -26 - i, ST if i != 4 else ST)
+    g.rect(-9, -21, 9, -20, ST)
+    g.rect(-1, -24, 1, -22, GL)
+    brick(-8, -19, 8, -2)
+    g.rect(-4, -17, 4, -14, ST); g.rect(-3, -16, 3, -15, GL); g.px(0, -16, ST); g.px(0, -15, ST)
+    for cx in (-7, 6):
+        g.rect(cx, -19, cx + 1, -2, ST)
+    g.rect(-5, -12, 5, -11, RED); g.hline(-10, -5, 5, REDH)
+    g.rect(-3, -9, 3, -2, DOOR); g.px(0, -9, ST); g.vline(0, -8, -2, BRD)
+    g.rect(-9, -1, 9, -1, '#e5e7eb')
+    # cupola on the ridge with a red BU flag
+    g.rect(-5, -34, 5, -29, ST)
+    g.rect(-3, -33, -2, -30, GL); g.rect(2, -33, 3, -30, GL); g.rect(-1, -33, 1, -30, ST)
+    for i, half in enumerate((6, 5, 4, 3, 2, 1)):
+        g.rect(-half, -35 - i, half, -35 - i, SLL if i % 2 else SL)
+    g.vline(0, -45, -41, OL); g.rect(1, -45, 3, -44, RED)
     g.outline(OL)
     return g
 
@@ -410,7 +427,7 @@ CAMPUSES = {
     #            page          label                color      sprite   tag      x    y   plaza  bubble tip (dx, dy, side)  walkers' direction
     "harvard": dict(href="harvard.html", label="Harvard", color="#a51c30", sprite=harvard, word="HARVARD", x=90, y=77, rx=30, tip=(16, -36, 'right'), walk=-1),
     "mit":     dict(href="mit.html", label="MIT", color="#5f6168", sprite=mit, word="MIT", x=290, y=77, rx=34, tip=(-16, -36, 'left'), walk=1),
-    "bu":      dict(href="bu.html", label="Boston University", color="#cc0000", sprite=cds, word="BOSTON U", x=190, y=190, rx=27, tip=(24, -34, 'right'), walk=-1),
+    "bu":      dict(href="bu.html", label="Boston University", color="#cc0000", sprite=dahod, word="BOSTON U", x=190, y=190, rx=27, tip=(24, -34, 'right'), walk=-1),
 }
 if NEXT["campus"] not in CAMPUSES:
     raise SystemExit("next-meeting.json: campus must be one of " + ", ".join(CAMPUSES))

@@ -1122,7 +1122,7 @@ def meeting_card(m, venues, on_campus_page=False):
     """One meeting. On the main schedule the campus icon and name link to that campus's page."""
     d = datetime.date.fromisoformat(m["date"]); c = CAMPUSES[m["campus"]]
     talks = "".join(
-        f'<li><span class="t-ico" title="{TALK_TYPES[t["type"]][0]}">{TALK_ICON[t["type"]]}<span class="sr">{TALK_TYPES[t["type"]][0]}: </span></span>'
+        f'<li data-type="{t["type"]}"><span class="t-ico" title="{TALK_TYPES[t["type"]][0]}">{TALK_ICON[t["type"]]}<span class="sr">{TALK_TYPES[t["type"]][0]}: </span></span>'
         f'<span class="t-text"><span class="t-title">{esc(t.get("title") or "Untitled talk")}</span>'
         f'<span class="t-speaker">{esc(t.get("speaker") or "Speaker TBA")}</span></span></li>' for t in m["talks"])
     room = tba(m.get("room") or venues.get(m["campus"], {}).get("room"), "Room")
@@ -1140,7 +1140,7 @@ def meeting_card(m, venues, on_campus_page=False):
     else:
         ico = f'<a class="m-ico" href="{c["href"]}" aria-label="{c["label"]}: room and all of its meetings">{CAMPUS_ICON[m["campus"]]}</a>'
         where = f'{d:%A} at <a href="{c["href"]}">{c["label"]}</a>'
-    return (f'<li id="{m["date"]}"><article class="card meeting" style="--c:{c["color"]}">'
+    return (f'<li id="{m["date"]}" data-freq="{freq}"><article class="card meeting" style="--c:{c["color"]}">'
             f'<header>{ico}<div><h2>{d:%B} {d.day}, {d.year}</h2><p class="m-where">{where}</p>'
             f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{room_html}</span></p>'
             f'</div><span class="m-freq" role="img" title="{esc(FREQUENCIES[freq][0])}: {esc(FREQUENCIES[freq][1])}" '
@@ -1150,13 +1150,22 @@ def meeting_card(m, venues, on_campus_page=False):
 
 def schedule_page():
     data = load_schedule(); venues = data.get("venues", {})
-    legend = "".join(f'<li><span class="l-ico">{TALK_ICON[k]}</span><span><b>{name}</b><br>{esc(desc)}</span></li>' for k, (name, desc, _) in TALK_TYPES.items())
-    freqs = "".join(f'<li><span class="l-ico">{FREQ_ICON[k]}</span><span><b>{name}</b><br>{esc(desc)}</span></li>' for k, (name, desc, _) in FREQUENCIES.items())
+    def key_item(kind, k, icon, name, desc):
+        return (f'<li><button type="button" class="key-btn" data-kind="{kind}" data-val="{k}" aria-pressed="false">'
+                f'<span class="l-ico">{icon}</span><span><b>{name}</b><br>{esc(desc)}</span></button></li>')
+    legend = "".join(key_item("type", k, TALK_ICON[k], name, desc) for k, (name, desc, _) in TALK_TYPES.items())
+    freqs = "".join(key_item("freq", k, FREQ_ICON[k], name, desc) for k, (name, desc, _) in FREQUENCIES.items())
     meetings = [meeting_card(m, venues) for m in sorted(data["meetings"], key=lambda m: m["date"])]
-    main = (f'<section class="card legend" aria-label="Key"><div><h2>Talk types</h2><ul>{legend}</ul></div>'
-            f'<div><h2>Meeting frequency</h2><ul>{freqs}</ul></div></section>\n\t\t'
-            f'<ol class="meetings">\n\t\t\t' + "\n\t\t\t".join(meetings) + '\n\t\t</ol>')
-    return subpage("Schedule", "Upcoming meetings and talks.", "Upcoming meetings and talks of The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology.", main)
+    main = (f'<section class="card legend" id="key" aria-label="Key">'
+            f'<div class="legend-head"><h2>Key<span class="key-note" hidden> (filtered)</span></h2>'
+            f'<button type="button" class="key-toggle" aria-expanded="true" aria-controls="key-body" title="Hide the key">'
+            f'<span aria-hidden="true">-</span><span class="sr">Hide the key</span></button></div>'
+            f'<div class="legend-body" id="key-body"><div><h3>Talk types</h3><ul>{legend}</ul></div>'
+            f'<div><h3>Meeting frequency</h3><ul>{freqs}</ul></div></div></section>\n\t\t'
+            f'<ol class="meetings">\n\t\t\t' + "\n\t\t\t".join(meetings) + '\n\t\t</ol>\n\t\t'
+            f'<p class="card empty" id="no-match" hidden>No meetings match this selection. Click the highlighted icon in the key to clear it.</p>')
+    page = subpage("Schedule", "Upcoming meetings and talks.", "Upcoming meetings and talks of The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology.", main)
+    return page.replace("</body>", '<script defer src="schedule.js"></script>\n</body>')
 
 def campus_page(key):
     """Harvard / MIT / BU page: the room at the top, then only the meetings held there."""
@@ -1263,7 +1272,7 @@ for fname, name, color in (("mailing-list.html", "Mailing List", "#1d2b53"),):
 import hashlib, re
 def _ver(name):
     return hashlib.md5((OUT / name).read_bytes()).hexdigest()[:8]
-_V = {n: _ver(n) for n in ("style.css", "menu.js", "season.js")}
+_V = {n: _ver(n) for n in ("style.css", "menu.js", "season.js", "schedule.js")}
 for _page in OUT.glob("*.html"):
     _t = _page.read_text(encoding="utf-8")
     for _n, _h in _V.items():

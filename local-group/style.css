@@ -112,12 +112,12 @@ h1 {
 }
 .tagline {
 	margin: 0.9rem 0 0;
-	font-size: clamp(0.5rem, 1.5vw, 0.75rem);
+	font-size: clamp(0.6rem, 1.8vw, 0.875rem);
 	line-height: 1.9;
 }
 .intro { text-align: center; padding: 0 1rem; }
 .tagline { max-width: 82ch; margin-left: auto; margin-right: auto; }
-@media (max-width: 899px) { .tagline { font-size: 0.75rem; } }                  /* phones and tablets: 12px rather than 8px */
+@media (max-width: 899px) { .tagline { font-size: 0.875rem; } }                 /* phones and tablets: 14px */
 
 /* ---------- Home header: a night sky (galaxy + stellar stream) that fades into the grass ---------- */
 :root { --px: 4px; }                          /* one art pixel of the header, in screen pixels */
@@ -151,7 +151,7 @@ h1 {
 	padding: 0.8rem 1.1rem;
 	color: var(--navy);
 	text-decoration: none;
-	font-size: clamp(0.6rem, 1.6vw, 0.75rem);
+	font-size: clamp(0.625rem, 1.9vw, 0.875rem);
 	background: var(--cream);
 	border: 3px solid var(--navy);
 	box-shadow: 4px 4px 0 var(--navy);

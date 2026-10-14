@@ -132,6 +132,26 @@ for _ in range(40):
         col = random.choice(['#e8782a', '#d9452f', '#e9b52e', '#c2561c'])
         litter.px(x, y, col); litter.px(x + 1, y, col)
 
+# wide screens show more of the map than the 380px the scene was drawn on: carry the ground detail out to the river's full length
+# (X0..X1). A separate generator keeps the original centre exactly as it was.
+_xr = random.Random(11)
+for _lo, _hi in ((X0, -1), (W, X1)):
+    _f = (_hi - _lo + 1) / W
+    for _ in range(round(226 * _f)):
+        x, y = _xr.randint(_lo, _hi - 2), _xr.randint(0, H - 3)
+        ground.px(x, y, '.tuft'); ground.px(x + 1, y + 1, '.tuft'); ground.px(x - 1, y + 1, '.tuft')
+    for _ in range(round(68 * _f)):
+        flowers.px(_xr.randint(_lo, _hi - 1), _xr.randint(1, H - 2), _xr.choice(['#ffffff', '#ffd1e0', '#fff3a0']))
+    for _ in range(round(34 * _f)):
+        cx, cy, col = _xr.randint(_lo, _hi - 2), _xr.randint(2, H - 3), _xr.choice(['#ff8fb8', '#ffffff', '#fff070', '#c9a6ff'])
+        for _k in range(3): spring_extra.px(cx + _xr.randint(-2, 2), cy + _xr.randint(-1, 1), col)
+    for _ in range(round(40 * _f)):
+        cx, cy = _xr.randint(_lo, _hi - 4), _xr.randint(2, H - 3)
+        for _k in range(4):
+            x, y = cx + _xr.randint(-3, 3), cy + _xr.randint(-1, 1)
+            col = _xr.choice(['#e8782a', '#d9452f', '#e9b52e', '#c2561c'])
+            litter.px(x, y, col); litter.px(x + 1, y, col)
+
 def snow_layer(spr, pred=None):
     """White caps on every upward-facing edge of a sprite, a bit thicker on flat tops."""
     pre = spr.pre; top = {k for k, c in pre.items() if (k[0], k[1] - 1) not in pre and (pred is None or pred(c))}
@@ -165,6 +185,14 @@ def tree(big=True):
 
 TREE_SPOTS = [(22, 66, 1), (44, 36, 0), (200, 70, 1), (238, 60, 0), (352, 68, 1), 
               (18, 172, 1), (24, 214, 0), (128, 214, 0), (300, 214, 0), (342, 186, 1), (360, 216, 0), (300, 172, 1)]
+# the same trees, scattered along both banks beyond the original map (wide screens only; phones crop them out)
+_tr = random.Random(5)
+for _lo, _hi in ((X0 + 8, -30), (W + 30, X1 - 8)):
+    _x = _lo + _tr.randint(0, 20)
+    while _x < _hi:
+        _y = _tr.choice([_tr.randint(34, 74), _tr.randint(172, 216)])
+        TREE_SPOTS.append((_x, _y, _tr.choice([0, 1, 1])))
+        _x += _tr.randint(22, 46)
 def tree_svg(i, x, y, big):
     t = tree(bool(big))
     snow = snow_layer(t, pred=lambda c: c.startswith('.lf'))

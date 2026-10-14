@@ -894,7 +894,33 @@ def egg_figure(kind, frame, swim=False):
         g.px(0, -1, '#2b2438'); g.px(-1, -1, '#2b2438')
     g.outline(OL)
     return g
-EGG_DEFS = "".join(f'<g id="egg-{k}-{t}{f}">{svg_paths(egg_figure(k, f, t == "s"))}</g>' for k in "AB" for t in "ws" for f in (0, 1))
+def egg_sit():
+    """Both figures side by side on a park bench, seen from the front (the third click)."""
+    g = Grid()
+    WOOD, WOODD, WOODL, LEG, SHOE, SKIN = '#b87a46', '#8a5a2c', '#d39a5e', '#4a3a2a', '#2b2438', '#f1c27d'
+    g.rect(-7, -8, 7, -8, WOODL); g.rect(-7, -7, 7, -6, WOOD)                    # backrest
+    g.rect(-7, -5, -7, -1, LEG); g.rect(7, -5, 7, -1, LEG)                       # posts
+    cx = -3                                                                      # blonde, burgundy top, stone trousers
+    for x in (cx - 1, cx, cx + 1): g.px(x, -11, '#f0cf6a'); g.px(x, -10, '#f0cf6a')
+    g.rect(cx - 1, -9, cx + 1, -8, SKIN); g.px(cx - 1, -9, SHOE); g.px(cx + 1, -9, SHOE)
+    g.rect(cx - 1, -7, cx + 1, -5, '#8c1c3a'); g.px(cx, -6, '#6e1530')
+    for x in (cx - 2, cx + 2): g.rect(x, -7, x, -6, '#8c1c3a'); g.px(x, -5, SKIN)
+    for x in (cx - 1, cx + 1): g.px(x, -2, '#b9ae98'); g.px(x, -1, SHOE)
+    cx = 3                                                                       # longer brown hair, checked cardigan
+    HAIR, BRN, GRN = '#6b4226', '#8b5a2b', '#4f8f4a'
+    g.rect(cx - 1, -11, cx + 1, -10, HAIR)
+    for x in (cx - 2, cx + 2): g.rect(x, -10, x, -8, HAIR)
+    g.rect(cx - 1, -9, cx + 1, -8, SKIN); g.px(cx - 1, -9, SHOE); g.px(cx + 1, -9, SHOE)
+    for y in range(-7, -4):
+        for x in range(cx - 2, cx + 3):
+            if abs(x - cx) <= 1 or y >= -7 and y <= -6: g.px(x, y, BRN if (x + y) % 2 == 0 else GRN)
+    for x in (cx - 2, cx + 2): g.px(x, -5, SKIN)
+    for x in (cx - 1, cx + 1): g.px(x, -2, '#464a5c'); g.px(x, -1, SHOE)
+    g.rect(-7, -4, 7, -4, WOODL); g.rect(-7, -3, 7, -3, WOODD)                   # seat, in front of the hips
+    g.outline(OL)
+    return g
+EGG_BENCH = f'<g id="egg-bench">{svg_paths(egg_sit())}</g>'
+EGG_DEFS = EGG_BENCH + "".join(f'<g id="egg-{k}-{t}{f}">{svg_paths(egg_figure(k, f, t == "s"))}</g>' for k in "AB" for t in "ws" for f in (0, 1))
 EGG_OBST = ";".join(f'{c["x"]},{c["y"] - (62 if c["y"] < 100 else 46)},{c["y"] + 17},32' for c in CAMPUSES.values())     # x, top, bottom, half-width of each building
 
 # ------------------------------------------------------------------ page

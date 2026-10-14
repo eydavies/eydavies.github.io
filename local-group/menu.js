@@ -71,9 +71,10 @@
 	fit();
 	window.addEventListener('resize', fit);
 
-	/* ---------- easter egg (desktop only): click anywhere that is not a link and a little figure appears (up to two) ----------
-	   Click on land: it walks around and follows your mouse. Click in the river: it bobs along the river (in winter it
-	   slides along the ice). With two out, another click sends the older one to the new spot. */
+	/* ---------- easter egg (desktop only): click anywhere that is not a link ----------
+	   1st click: a little figure appears. Click on land: it walks around and follows your mouse; click in the river: it
+	   bobs along the river (in winter it slides along the ice). 2nd click: a second figure. 3rd click: both sit together
+	   on a bench where you clicked. 4th click: everything vanishes, and the next click starts over. */
 	(function () {
 		var walkL = document.getElementById('egg-walk'), swimL = document.getElementById('egg-swim');
 		if (!svg || !walkL || !swimL) { return; }
@@ -125,14 +126,53 @@
 			last = null; raf = requestAnimationFrame(tick);
 		}
 
+		function puff(x, y, layer) {                                            /* a little puff of white pixels */
+			var pop = document.createElementNS(NS, 'g');
+			pop.setAttribute('class', 'egg-pop'); pop.setAttribute('transform', 'translate(' + Math.round(x) + ' ' + Math.round(y) + ')');
+			pop.innerHTML = '<rect x="-1" y="-5" width="2" height="2" fill="#fff"/><rect x="-1" y="3" width="2" height="2" fill="#fff"/><rect x="-6" y="-1" width="2" height="2" fill="#fff"/><rect x="4" y="-1" width="2" height="2" fill="#fff"/>';
+			layer.appendChild(pop);
+			setTimeout(function () { pop.parentNode && pop.parentNode.removeChild(pop); }, 450);
+		}
+
+		var bench = null, benchAt = { x: 0, y: 0 };
+		function benchOk(x, y) {
+			for (var dx = -9; dx <= 9; dx += 9) { for (var dy = 0; dy >= -8; dy -= 8) { if (!isFree(x + dx, y + dy)) { return false; } } }
+			return true;
+		}
+		function putOnBench(p) {                                                /* both figures sit on a bench at the nearest good spot */
+			var x = clamp(p.x, 16, W - 16), y = clamp(p.y, 24, H - 4), spot = null;
+			for (var r = 0; r <= 120 && !spot; r += 2) {
+				for (var a = 0; a < 360 && !spot; a += (r ? 20 : 360)) {
+					var px = x + r * Math.cos(a * Math.PI / 180), py = y + r * Math.sin(a * Math.PI / 180);
+					if (benchOk(px, py)) { spot = { x: Math.round(px), y: Math.round(py) }; }
+				}
+			}
+			if (!spot) { spot = { x: Math.round(x), y: Math.round(y) }; }
+			figs.forEach(function (f) {
+				puff(f.x, f.y - 6, f.river ? swimL : walkL);
+				f.el.parentNode && f.el.parentNode.removeChild(f.el);
+			});
+			figs = [];
+			bench = document.createElementNS(NS, 'g');
+			var u = document.createElementNS(NS, 'use');
+			u.setAttribute('href', '#egg-bench'); u.setAttributeNS(XL, 'xlink:href', '#egg-bench');
+			bench.appendChild(u);
+			benchAt = spot;
+			bench.setAttribute('transform', 'translate(' + spot.x + ' ' + spot.y + ')');
+			walkL.appendChild(bench);
+			puff(spot.x - 3, spot.y - 6, walkL); puff(spot.x + 3, spot.y - 6, walkL);
+		}
+		function clearAll() {
+			if (bench) { puff(benchAt.x - 3, benchAt.y - 6, walkL); puff(benchAt.x + 3, benchAt.y - 6, walkL); bench.parentNode && bench.parentNode.removeChild(bench); bench = null; }
+			figs.forEach(function (f) { f.el.parentNode && f.el.parentNode.removeChild(f.el); });
+			figs = [];
+		}
+
+		var clicks = 0;                                                          /* 0, 1: spawn   2: bench   3: clear */
+
 		function spawn(p) {
 			var inRiver = Math.abs(p.y - ry(p.x)) <= HALF;
-			var kind;
-			if (figs.length >= 2) {
-				var old = figs.shift(); kind = old.kind; old.el.parentNode && old.el.parentNode.removeChild(old.el);
-			} else {
-				kind = figs.length && figs[0].kind === 'A' ? 'B' : 'A';
-			}
+			var kind = figs.length && figs[0].kind === 'A' ? 'B' : 'A';
 			var winter = document.documentElement.getAttribute('data-season') === 'winter';
 			var f = { kind: kind, river: inRiver, winter: winter, dir: p.x < W / 2 ? 1 : -1, frame: 1, phase: Math.random() * 4, t: 0, wp: null, wpUntil: 0 };
 			if (inRiver) { f.x = clamp(p.x, 14, W - 14); f.y = ry(f.x); }
@@ -143,11 +183,7 @@
 			(inRiver ? swimL : walkL).appendChild(f.el);
 			figs.push(f);
 			draw(f, 0);
-			var pop = document.createElementNS(NS, 'g');                        /* a little puff where they appear */
-			pop.setAttribute('class', 'egg-pop'); pop.setAttribute('transform', 'translate(' + Math.round(f.x) + ' ' + Math.round(f.y - 6) + ')');
-			pop.innerHTML = '<rect x="-1" y="-5" width="2" height="2" fill="#fff"/><rect x="-1" y="3" width="2" height="2" fill="#fff"/><rect x="-6" y="-1" width="2" height="2" fill="#fff"/><rect x="4" y="-1" width="2" height="2" fill="#fff"/>';
-			(inRiver ? swimL : walkL).appendChild(pop);
-			setTimeout(function () { pop.parentNode && pop.parentNode.removeChild(pop); }, 450);
+			puff(f.x, f.y - 6, inRiver ? swimL : walkL);
 			ensureLoop();
 		}
 
@@ -156,7 +192,10 @@
 			if (!desk || !desk.matches || svg.classList.contains('compact')) { return; }
 			if (e.target.closest && e.target.closest('a, button, [role="button"], summary, select, input, textarea, label')) { return; }
 			var p = toSvg(e.clientX, e.clientY); if (!p) { return; }
-			spawn({ x: clamp(p.x, 0, W), y: clamp(p.y, 0, H) });
+			var q = { x: clamp(p.x, 0, W), y: clamp(p.y, 0, H) };
+			if (clicks < 2) { spawn(q); clicks++; }
+			else if (clicks === 2) { putOnBench(q); clicks++; }
+			else { clearAll(); clicks = 0; }
 		});
 
 		function draw(f, now) {

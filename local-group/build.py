@@ -334,7 +334,7 @@ def mit():
     g = Grid()
     WING, WING_L, WING_D, WING_HL = '#d8c49a', '#e8d8b2', '#bba67c', '#f4e8c8'          # warm sandstone
     DR, DR_L, DR_D, DR_HL = '#dccdaa', '#ebdfc4', '#c3b38d', '#f6eedb'                  # slightly paler stone for the drums
-    WINC, GLASS, DOOR, DOORD = '#7d8aa3', '#56627f', '#9a3b30', '#7a2c25'
+    WINC, GLASS, GLASS_LO, DOOR, DOORD = '#7d8aa3', '#56627f', '#58647f', '#9a3b30', '#7a2c25'
     PATINA, CAPC = ('#a9b8aa', '#93a596'), ('#f0ead8', '#e2dac4', '#c9c1ac')
     # wings: a blank band under the cornice, short windows above tall ones that reach down near the ground;
     # the windows are 2px wide with 2px between them, like the gaps between the columns
@@ -360,7 +360,8 @@ def mit():
             if y <= cy - 4: g.px(x, y, CAPC[0] if x <= -4 else (CAPC[2] if x >= 5 else CAPC[1]))
     # portico: glazed wall behind the columns, flat entablature with the lettering band, 8 columns, three doors, steps
     g.rect(-16, -25, 16, -2, WING)
-    g.rect(-15, -22, 15, -2, GLASS)
+    g.rect(-15, -22, 15, -13, GLASS)
+    g.rect(-15, -12, 15, -2, GLASS_LO)                              # the lower glazing: same colour by day, but it glows at night (see WINDOW_COLOURS)
     g.hline(-25, -17, 17, WING_HL); g.hline(-24, -17, 17, WING_L); g.hline(-23, -17, 17, WING)
     for x in range(-14, 15, 2): g.px(x, -23, WING_D)
     g.hline(-22, -16, 16, WING_D)
@@ -585,7 +586,7 @@ NEXT_DATE = NEXT["date"].strip()
 # ------------------------------------------------------------------ night mode: lit windows + the moon/sun button
 # Windows are found by their colour in each sprite; at night the sprite is dimmed (an SVG colour filter, see style.css)
 # and these pixels are drawn again on top in warm light, each window with its own slightly different warmth.
-WINDOW_COLOURS = {"harvard": {'#3f4f73'}, "mit": {'#7d8aa3'}, "bu": {'#44587a', '#8aa3c4', '#e8b84a'}}
+WINDOW_COLOURS = {"harvard": {'#3f4f73'}, "mit": {'#7d8aa3', '#58647f'}, "bu": {'#44587a', '#8aa3c4', '#e8b84a'}}
 LIGHTS = ['#ffe27a', '#ffd058', '#ffeaa0', '#ffd866']
 def night_lights(spr, colours):
     lit = {k for k, c in spr.p.items() if c in colours}

@@ -329,36 +329,45 @@ def harvard():
     return g
 
 def mit():
-    """The Great Dome: wide limestone building, 8-column portico, low dome set back on a drum."""
+    """The Great Dome in sandstone: wide wings with tall windows, a flat-roofed portico of 8 columns with three red doors,
+    and the dome in its three tiers (an inscribed drum, a narrower drum, then the shallow patinated dome with a pale cap)."""
     g = Grid()
-    L, L2, L3, SH, WINC, DOME, DOMEH, DOMED, DOMEX = '#d6d9df', '#eceef2', '#fbfbfd', '#c1c5ce', '#7d8aa3', '#b9c6d9', '#d9e3f1', '#98a8c0', '#a9b8cf'
-    # wings: three storeys of windows
-    g.rect(-29, -22, 29, -1, L)
-    g.hline(-22, -29, 29, SH)
-    for top in (-19, -14, -9):
-        for xs in (19, 23, 27):
-            g.sym(xs, top, xs + 1, top + 2, WINC)
-    # drum and dome sit behind the portico
-    g.rect(-13, -37, 13, -25, L)
-    g.hline(-37, -14, 14, L2)
-    for x in range(-12, 13, 3): g.vline(x, -36, -26, SH)
-    g.disc(0, -38, 13, 11, DOME, cond=lambda x, y: y <= -38)
+    WING, WING_L, WING_D, WING_HL = '#d8c49a', '#e8d8b2', '#bba67c', '#f4e8c8'          # warm sandstone
+    DR, DR_L, DR_D, DR_HL = '#dccdaa', '#ebdfc4', '#c3b38d', '#f6eedb'                  # slightly paler stone for the drums
+    WINC, GLASS, DOOR, DOORD = '#7d8aa3', '#56627f', '#9a3b30', '#7a2c25'
+    PATINA, CAPC = ('#a9b8aa', '#93a596'), ('#f0ead8', '#e2dac4', '#c9c1ac')
+    # wings: a blank band under the cornice, short windows above tall ones that reach down near the ground;
+    # the windows are 2px wide with 2px between them, like the gaps between the columns
+    g.rect(-29, -23, 29, -1, WING)
+    g.hline(-23, -29, 29, WING_L); g.hline(-22, -29, 29, WING_D)
+    for x in (19, 23, 27):
+        g.sym(x, -17, x + 1, -14, WINC)
+        g.sym(x, -10, x + 1, -3, WINC)
+    g.hline(-1, -29, 29, WING_D)
+    # dome, tier 1: the wide drum with the date, cornice above it
+    g.rect(-12, -29, 12, -26, DR)
+    for x in range(-4, 5, 2): g.px(x, -27, DR_D)
+    g.hline(-30, -13, 13, DR_HL); g.hline(-29, -12, 12, DR_D); g.hline(-26, -12, 12, DR_D)
+    # tier 2: a narrower drum with its own cornice
+    g.rect(-10, -33, 10, -31, DR)
+    g.hline(-34, -11, 11, DR_HL); g.hline(-33, -10, 10, DR_D); g.hline(-31, -10, 10, DR_D)
+    # tier 3: the shallow dome, striped copper patina below a pale cap
+    cy = -35
+    g.disc(0, cy, 10, 7, PATINA[0], cond=lambda x, y: y <= cy)
     for (x, y), c in list(g.p.items()):
-        if c == DOME and y <= -38:
-            if x <= -7: g.px(x, y, DOMEH)
-            elif x >= 7: g.px(x, y, DOMED)
-            elif x in (-3, 3): g.px(x, y, DOMEX)
-    g.rect(-2, -51, 2, -49, L2); g.hline(-52, -1, 1, DOME); g.px(0, -53, DOME)
-    # portico: steps, shadowed recess, 8 columns, entablature, pediment
-    g.rect(-16, -1, 16, -1, '#e5e7eb'); g.rect(-15, -2, 15, -2, L2)
-    g.rect(-17, -24, 17, -3, SH)
-    for xs in (2, 6, 10, 14):                      # eight columns, lit on the left edge
-        for cx in (xs, -xs - 1):
-            g.vline(cx, -22, -4, L3); g.vline(cx + 1, -22, -4, L2)
-    g.rect(-1, -12, 1, -4, '#4a4e69')
-    g.rect(-18, -24, 18, -23, L2)
-    for i, half in enumerate((18, 15, 12, 9, 6, 3)):
-        g.rect(-half, -25 - i, half, -25 - i, L2 if i else L3)
+        if c == PATINA[0] and y <= cy:
+            if (cy - y) % 2 == 1: g.px(x, y, PATINA[1])
+            if y <= cy - 4: g.px(x, y, CAPC[0] if x <= -4 else (CAPC[2] if x >= 5 else CAPC[1]))
+    # portico: glazed wall behind the columns, flat entablature with the lettering band, 8 columns, three doors, steps
+    g.rect(-16, -25, 16, -2, WING)
+    g.rect(-15, -22, 15, -2, GLASS)
+    g.hline(-25, -17, 17, WING_HL); g.hline(-24, -17, 17, WING_L); g.hline(-23, -17, 17, WING)
+    for x in range(-14, 15, 2): g.px(x, -23, WING_D)
+    g.hline(-22, -16, 16, WING_D)
+    for x in (-15, -11, -7, -3, 2, 6, 10, 14):                     # 2px columns, 2px gaps, a 3px gap in the middle
+        g.vline(x, -21, -3, WING_HL); g.vline(x + 1, -21, -3, WING_L); g.px(x + 1, -21, WING)
+    g.rect(-1, -10, 1, -2, DOOR); g.rect(-5, -9, -4, -2, DOORD); g.rect(4, -9, 5, -2, DOORD)
+    g.rect(-17, -1, 17, -1, WING_D); g.rect(-16, -2, 16, -2, WING_L)
     g.outline(OL)
     return g
 

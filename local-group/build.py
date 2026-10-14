@@ -1340,8 +1340,16 @@ def about_page():
                 else '<span class="p-site tba">Website TBA</span>')
         rows.append(f'<li><span class="p-ico">{star}</span><div><h3>{esc(o["name"])}</h3>'
                     f'<p class="p-pos{"" if pos else " tba"}">{esc(pos) if pos else "Position TBA"}</p>{site}</div></li>')
-    main = '<section class="card organisers"><h2>Organisers</h2><ul class="people">' + "".join(rows) + '</ul></section>'
-    return subpage("About", "Who runs The Local Group.", "About The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology, and the people who organise it.", main)
+    panels = []
+    for mt in data.get("meetings", []):                                   # one panel per kind of meeting: the pie, a heading, and a description
+        kind = mt["kind"]
+        if kind not in FREQUENCIES: raise SystemExit(f'about.json: meetings kind must be one of {", ".join(FREQUENCIES)}')
+        name, desc, _ = FREQUENCIES[kind]
+        paras = "".join(f"<p>{esc(t.strip())}</p>" for t in (mt.get("text") or "").split("\n\n") if t.strip())
+        panels.append(f'<section class="card about-meet"><span class="am-ico">{icon_svg(pie_icon(FREQUENCIES[kind][2]), 3, "q-svg")}</span>'
+                      f'<div><h2>{esc(mt.get("title") or name + " meetings")}</h2><p class="am-freq">{esc(desc[0].upper() + desc[1:])}</p>{paras}</div></section>')
+    main = "\n\t\t".join(panels) + ('\n\t\t' if panels else '') + '<section class="card organisers"><h2>Organisers</h2><ul class="people">' + "".join(rows) + '</ul></section>'
+    return subpage("About", "What is The Local Group?", "About The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology, and the people who organise it.", main)
 
 (OUT / "schedule.html").write_text(schedule_page(), encoding="utf-8")
 (OUT / "harvard.html").write_text(campus_page("harvard"), encoding="utf-8")

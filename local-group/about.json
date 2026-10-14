@@ -1,5 +1,17 @@
 {
-  "_note": "Edit this file, then run: python3 local-group/build.py.  Leave position or url empty to show 'TBA'.",
+  "_note": "Edit this file, then run: python3 local-group/build.py.  Leave position or url empty to show 'TBA'.  Each entry in 'meetings' is a panel (kind: monthly or semesterly); separate paragraphs in its text with a blank line (\\n\\n).",
+  "meetings": [
+    {
+      "kind": "monthly",
+      "title": "Monthly meetings",
+      "text": "Placeholder: a description of the monthly meetings will go here. What they are about, who they are for, and what to expect when you come along."
+    },
+    {
+      "kind": "semesterly",
+      "title": "Semesterly meetings",
+      "text": "Placeholder: a description of the semesterly meetings will go here. What they are about, how they differ from the monthly meetings, and what to expect."
+    }
+  ],
   "organisers": [
     {
       "name": "Richard Brooks",

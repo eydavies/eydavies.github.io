@@ -286,17 +286,22 @@ a.m-ico:hover svg, a.m-ico:focus-visible svg { transform: translateY(-2px); filt
 .m-freq { position: absolute; top: 0; right: 0; line-height: 0; }
 .q-svg { display: block; }
 .m-when span + span { margin-left: 0.9rem; padding-left: 0.9rem; border-left: 3px solid rgba(29, 43, 83, 0.25); }
-.venue { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1.6rem; }
+/* the Where card: icon | text | Directions button (kept in the top-right corner); on phones the text drops below the icon */
+.venue { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1.1rem; margin-bottom: 1.6rem; }
+.venue > div { min-width: 0; }
+@media (max-width: 520px) {
+	.venue { grid-template-columns: 1fr auto; align-items: start; }
+	.venue > div { grid-column: 1 / -1; grid-row: 2; }
+}
 .venue h2 { margin: 0 0 0.5rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
 .v-room { margin: 0; font-size: clamp(0.8rem, 2.8vw, 1.05rem); line-height: 1.5; color: var(--c); }
 .v-bldg { margin: 0.35rem 0 0; font-size: 0.55rem; line-height: 1.8; }
 .v-addr { margin-top: 0.1rem; color: #5a6389; }                      /* the street address, last line of the Where card */
-.venue { flex-wrap: wrap; }
 .room-link { color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .room-link:hover, .room-link:focus-visible { color: var(--c); }
 /* the little map button on a campus page: opens Google Maps directions */
 .dir {
-	margin-left: auto; display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.75rem;
+	align-self: start; justify-self: end; display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.75rem;
 	font-size: 0.55rem; color: var(--navy); text-decoration: none; background: var(--cream);
 	border: 3px solid var(--navy); box-shadow: 3px 3px 0 #3a4a8a;
 }

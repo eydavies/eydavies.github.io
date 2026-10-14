@@ -1055,6 +1055,7 @@ CAMPUS_ICON = {k: icon_svg(c["sprite"](), 2, "m-svg", snow=True) for k, c in CAM
 # Where each meeting place is, for the directions links (a campus without an entry here, e.g. Harvard for now,
 # gets no map icon and its room is not a link). Directions open Google Maps with the place as the destination.
 DIRECTIONS = {
+    "harvard": dict(building="Center for Astrophysics | Harvard & Smithsonian", place="Center for Astrophysics, 60 Garden St, Cambridge, MA 02138"),
     "mit": dict(building="MIT Kavli Institute", place="MIT Building 37, 70 Vassar St, Cambridge, MA 02139"),
     "bu":  dict(building="College of Arts & Sciences", place="College of Arts & Sciences, 725 Commonwealth Ave, Boston, MA 02215"),
 }

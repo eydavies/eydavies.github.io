@@ -2,7 +2,7 @@
   "_note": "Edit this file, then run: python3 local-group/build.py.  campus: harvard | mit | bu.  type: chalk | colloquium | workshop.  time / room / food are shown as typed ('TBA' or blank shows 'Time TBA' / 'Room TBA').  A meeting's room falls back to its campus's room in 'venues'.",
   "venues": {
     "harvard": {
-      "room": "TBA"
+      "room": "G-04 (Pratt Conference Room)"
     },
     "mit": {
       "room": "37-252 (Marlar Lounge)"

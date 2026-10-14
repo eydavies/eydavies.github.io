@@ -476,8 +476,7 @@ def observers():
     tel.p = {(-x, y): c for (x, y), c in tel.p.items()}          # mirror: the tube now points up-left
     tel.pre = {(-x, y): c for (x, y), c in tel.pre.items()}
     v, ptr, third = STARGAZERS
-    obs_cls = "obs obs-r" if NEXT["campus"] in ("harvard", "mit") else "obs"     # obs-r: phones keep the telescope clear of the bubble
-    return (f'<g class="{obs_cls}"><g transform="translate(340 30)" aria-hidden="true" pointer-events="none">'
+    return (f'<g class="obs"><g transform="translate(340 30)" aria-hidden="true" pointer-events="none">'
             f'<g>{svg_paths(tel)}<g class="snow">{svg_paths(snow_layer(tel))}</g></g>'
             f'<g transform="translate(10 0)">{svg_paths(person(*v, -1, 1))}</g>'
             f'<g transform="translate(18 0)">{svg_paths(person(*ptr, -1, 1, point=True))}</g>'
@@ -629,10 +628,9 @@ GALAXY = galaxy_svg()
 
 # On phones the top row is lifted LIFT art pixels toward the header; this finds the highest thing on the map
 # (so menu.js can start the view just above it, with no blank band under the header).
-LIFT = 32
+LIFT = 40
 def compact_top():
     tops = [CAMPUSES[k]["y"] + CAMPUSES[k]["sprite"]().bbox()[1] - LIFT for k in ("harvard", "mit")]
-    tops.append(12 + telescope().bbox()[1])                        # tip of the telescope (its feet sit at y = 12 on phones)
     if NEXT["campus"] in ("harvard", "mit"):                       # speech bubble above the host (drawn at 2x on phones)
         c = CAMPUSES[NEXT["campus"]]; tops.append(c["y"] + c["tip"][1] - 56 - LIFT)
     return min(tops)
@@ -699,7 +697,7 @@ HTML = r'''<!DOCTYPE html>
 </html>
 '''
 
-html = (HTML.replace("@@VIEW@@", VIEW).replace("@@COMPACT@@", COMPACT_VIEW).replace("@@CTOP@@", str(compact_top())).replace("@@CBOT@@", "216").replace("@@BRIDGE@@", svg_paths(bridge())).replace("@@BRIDGEX@@", str(BRIDGE_X)).replace("@@OBSERVERS@@", observers()).replace("@@W@@", str(W)).replace("@@GALAXY@@", GALAXY).replace("@@GALW@@", str(GAL_W)).replace("@@GALH@@", str(GAL_H))
+html = (HTML.replace("@@VIEW@@", VIEW).replace("@@COMPACT@@", COMPACT_VIEW).replace("@@CTOP@@", str(compact_top())).replace("@@CBOT@@", "226").replace("@@BRIDGE@@", svg_paths(bridge())).replace("@@BRIDGEX@@", str(BRIDGE_X)).replace("@@OBSERVERS@@", observers()).replace("@@W@@", str(W)).replace("@@GALAXY@@", GALAXY).replace("@@GALW@@", str(GAL_W)).replace("@@GALH@@", str(GAL_H))
         .replace("@@RIVERCFG@@", f"{RIVER_Y},{AMP},{PERIOD}")
         .replace("@@SEASON@@", BUILD_SEASON).replace("@@PARTICLES@@", PARTICLES)
         .replace("@@FLOWERS@@", svg_paths(flowers)).replace("@@SPRING@@", svg_paths(spring_extra)).replace("@@LITTER@@", svg_paths(litter))

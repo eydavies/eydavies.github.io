@@ -188,12 +188,11 @@ h1 {
 /* narrow screens (class set by menu.js): the map is small, so double the bubble and name tags */
 .compact .bscale { transform: scale(2); }
 /* ...and re-arrange the map a little: lift the top row and the river toward the header, bring the sides in. */
-.compact .rv, .compact .tt { transform: translate(0, -32px); }
-.compact .cg-harvard { transform: translate(10px, -32px); }
-.compact .cg-mit { transform: translate(-10px, -32px); }
-.compact .te { display: none; }
-.compact .obs { transform: translate(-118px, -18px); }      /* telescope group: up and in, between Harvard and MIT */
-.compact .obs-r { transform: translate(-40px, -18px); }      /* ...unless a speech bubble is there: then just right of MIT */
+.compact .rv { transform: translate(0, -24px); }                      /* the river lifts less than the top row: more room between them */
+.compact .tt { transform: translate(0, -40px); }
+.compact .cg-harvard { transform: translate(10px, -40px); }
+.compact .cg-mit { transform: translate(-10px, -40px); }
+.compact .te, .compact .obs { display: none; }                       /* trees that would be cut off; the telescope people */
 .compact .bot { transform: translate(0, calc(var(--drop, 0) * 1px)); }   /* BU and the lower trees drop to use spare height (set by menu.js) */
 .compact .tag { transform-origin: 0 11px; transform: scale(2); }
 

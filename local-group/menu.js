@@ -37,8 +37,8 @@
 		var top = Number(svg.getAttribute('data-ctop')) - 6;
 		var vh = box.height / scale;
 		svg.setAttribute('viewBox', [vb[0], top, vb[2], vh].join(' '));
-		var free = Math.max(0, vh - (Number(svg.getAttribute('data-cbot')) - top));
-		svg.style.setProperty('--drop', Math.min(free * 0.6, 45).toFixed(1));
+		var free = Math.max(0, vh - (Number(svg.getAttribute('data-cbot')) + 10 - top));
+		svg.style.setProperty('--drop', (10 + Math.min(free * 0.6, 40)).toFixed(1));   /* at least 10 so BU's bubble clears the river */
 	}
 	fit();
 	window.addEventListener('resize', fit);

@@ -1150,7 +1150,7 @@ def meeting_card(m, venues, on_campus_page=False):
             f'</div><span class="m-freq" role="img" title="{esc(FREQUENCIES[freq][0])}: {esc(FREQUENCIES[freq][1])}" '
             f'aria-label="{esc(FREQUENCIES[freq][0])} meeting: {esc(FREQUENCIES[freq][1])}">{FREQ_ICON[freq]}</span></header>'
             f'<ul class="talks">{talks}</ul>'
-            f'<p class="m-food"><span class="f-ico">{FOOD_ICON}</span><span>Food provided by {food_html}</span></p></article></li>')
+            f'<p class="m-food"><span class="f-ico">{FOOD_ICON}</span><span>Catering provided by {food_html}</span></p></article></li>')
 
 def schedule_page():
     data = load_schedule(); venues = data.get("venues", {})

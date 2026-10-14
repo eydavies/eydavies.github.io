@@ -216,6 +216,7 @@ h1 {
 .compact .cg-mit { transform: translate(-10px, -40px); }
 .mob { display: none; }                                              /* extra trees that only phones get (see phone_trees in build.py) */
 .compact .mob { display: inline; }
+.compact .clip { display: none; }                                   /* a tree the screen edge would cut off (set by menu.js) */
 .compact .te, .compact .obs { display: none; }                       /* trees that would be cut off; the telescope people */
 .compact .bot { transform: translate(0, calc(var(--drop, 0) * 1px)); }   /* BU and the lower trees drop to use spare height (set by menu.js) */
 .compact .tag { transform-origin: 0 11px; transform: scale(2); }

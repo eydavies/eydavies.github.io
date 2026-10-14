@@ -1170,9 +1170,9 @@ CAMPUS_ICON = {k: icon_svg(c["sprite"](), 2, "m-svg", snow=True) for k, c in CAM
 # Where each meeting place is, for the directions links (a campus without an entry here, e.g. Harvard for now,
 # gets no map icon and its room is not a link). Directions open Google Maps with the place as the destination.
 DIRECTIONS = {
-    "harvard": dict(building="Center for Astrophysics | Harvard & Smithsonian", place="Center for Astrophysics, 60 Garden St, Cambridge, MA 02138"),
-    "mit": dict(building="MIT Kavli Institute", place="MIT Building 37, 70 Vassar St, Cambridge, MA 02139"),
-    "bu":  dict(building="College of Arts & Sciences", place="College of Arts & Sciences, 725 Commonwealth Ave, Boston, MA 02215"),
+    "harvard": dict(building="Center for Astrophysics | Harvard & Smithsonian", place="Center for Astrophysics, 60 Garden St, Cambridge, MA 02138", address="60 Garden Street, Cambridge, MA 02138"),
+    "mit": dict(building="MIT Kavli Institute", place="MIT Building 37, 70 Vassar St, Cambridge, MA 02139", address="70 Vassar Street, Cambridge, MA 02139"),
+    "bu":  dict(building="College of Arts & Sciences", place="College of Arts & Sciences, 725 Commonwealth Ave, Boston, MA 02215", address="725 Commonwealth Avenue, Boston, MA 02215"),
 }
 def maps_url(key):
     return "https://www.google.com/maps/dir/?api=1&destination=" + urllib.parse.quote(DIRECTIONS[key]["place"])
@@ -1262,7 +1262,7 @@ def campus_page(key):
             f'aria-label="Directions to {esc(dr["building"])} on Google Maps (opens in a new tab)">{MAP_ICON}<span>Directions</span></a>') if dr else ""
     main = (f'<section class="card venue" style="--c:{c["color"]}"><span class="m-ico">{CAMPUS_ICON[key]}</span>'
             f'<div><h2>Where</h2><p class="v-room">{esc(room)}</p>{bldg}</div>{link}</section>\n\t\t' + body)
-    return subpage(c["label"], f"Meetings hosted at {c['label']}.", f"Meetings of The Local Group hosted at {c['label']}, with the room and the schedule of talks.", main)
+    return subpage(c["label"], esc(dr["address"]) if dr else f"Meetings hosted at {c['label']}.", f"Meetings of The Local Group hosted at {c['label']}, with the room and the schedule of talks.", main)
 
 SCHED = r'''<!DOCTYPE html>
 <html lang="en" data-season="@@SEASON@@">

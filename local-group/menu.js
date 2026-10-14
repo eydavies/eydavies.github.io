@@ -66,6 +66,17 @@
 			drop = Math.max(0, Math.min(drop, 60));
 		}
 		svg.style.setProperty('--drop', drop.toFixed(1));
+		cullTrees(box);
+	}
+	/* phones: never show a tree the screen edge cuts in half, whatever the phone's height; hide it instead */
+	function cullTrees(box) {
+		var trees = svg.querySelectorAll('g.tt, g.bot'), i, r;
+		for (i = 0; i < trees.length; i++) { trees[i].classList.remove('clip'); }
+		for (i = 0; i < trees.length; i++) {
+			if (trees[i].classList.contains('cg') || getComputedStyle(trees[i]).display === 'none') { continue; }
+			r = trees[i].getBoundingClientRect();
+			if (r.bottom > box.bottom - 1 || r.top < box.top + 1 || r.left < box.left + 1 || r.right > box.right - 1) { trees[i].classList.add('clip'); }
+		}
 	}
 	fit();
 	window.addEventListener('resize', fit);

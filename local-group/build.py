@@ -1221,13 +1221,39 @@ def meeting_card(m, venues, on_campus_page=False):
     else:
         ico = f'<a class="m-ico" href="{c["href"]}" tabindex="-1" aria-hidden="true">{CAMPUS_ICON[m["campus"]]}</a>'     # the name link beside it does the job for keyboards and screen readers
         where = f'{d:%A} at <a href="{c["href"]}">{c["label"]}<span class="sr">: room and all of its meetings</span></a>'
-    return (f'<li id="{m["date"]}" data-freq="{freq}"><article class="card meeting" style="--c:{c["color"]}">'
+    return (f'<li id="{m["date"]}" data-date="{m["date"]}" data-freq="{freq}"><article class="card meeting" style="--c:{c["color"]}">'
             f'<header>{ico}<div><h2><time datetime="{m["date"]}">{d:%B} {d.day}, {d.year}</time></h2><p class="m-where">{where}</p>'
             f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{room_html}</span></p>'
             f'</div><span class="m-freq" role="img" title="{esc(FREQUENCIES[freq][0])}: {esc(FREQUENCIES[freq][1])}" '
             f'aria-label="{esc(FREQUENCIES[freq][0])} meeting: {esc(FREQUENCIES[freq][1])}">{FREQ_ICON[freq]}</span></header>'
             f'<ul class="talks">{talks}</ul>'
             f'<p class="m-food"><span class="f-ico">{FOOD_ICON}</span><span>Catering provided by {food_html}</span></p></article></li>')
+
+def boston_today():
+    """Today's date in Boston (the page's JavaScript re-sorts with the visitor's clock, so a meeting moves to 'Past events' the day after it)."""
+    try:
+        import zoneinfo
+        return datetime.datetime.now(zoneinfo.ZoneInfo("America/New_York")).date()
+    except Exception:
+        return datetime.date.today()
+
+def meeting_lists(ms, venues, on_campus_page=False):
+    """Upcoming meetings (soonest first), then a 'Past events' toggle holding the older ones (most recent first)."""
+    today = boston_today().isoformat()
+    up = sorted([m for m in ms if m["date"] >= today], key=lambda m: m["date"])
+    past = sorted([m for m in ms if m["date"] < today], key=lambda m: m["date"], reverse=True)
+    here = " here" if on_campus_page else ""
+    none, noup = f"No meetings are scheduled{here} yet.", f"No upcoming meetings are scheduled{here} yet."
+    msg = "" if up else (noup if past else none)
+    card = lambda m: meeting_card(m, venues, on_campus_page=on_campus_page)
+    return (f'<ol class="meetings" id="upcoming">' + "".join(card(m) for m in up) + '</ol>\n\t\t'
+            f'<p class="card empty" id="no-upcoming" data-none="{esc(none)}" data-noup="{esc(noup)}" '
+            f'data-nomatch="No upcoming meetings match this selection."{"" if msg else " hidden"}>{esc(msg)}</p>\n\t\t'
+            f'<section class="past" id="past" aria-label="Past events"{"" if past else " hidden"}>'
+            f'<h2 class="past-h">Past events</h2>'
+            f'<button type="button" class="past-toggle" aria-expanded="false" aria-controls="past-list">'
+            f'<span class="pt-sign" aria-hidden="true">+</span><span>Past events</span> <span class="pt-count">({len(past)})</span></button>'
+            f'<ol class="meetings past-list" id="past-list">' + "".join(card(m) for m in past) + '</ol></section>')
 
 def schedule_page():
     data = load_schedule(); venues = data.get("venues", {})
@@ -1236,14 +1262,14 @@ def schedule_page():
                 f'<span class="l-ico">{icon}</span><span><b>{name}</b><br>{esc(desc)}</span></button></li>')
     legend = "".join(key_item("type", k, TALK_ICON[k], name, desc) for k, (name, desc, _) in TALK_TYPES.items())
     freqs = "".join(key_item("freq", k, FREQ_ICON[k], name, desc) for k, (name, desc, _) in FREQUENCIES.items())
-    meetings = [meeting_card(m, venues) for m in sorted(data["meetings"], key=lambda m: m["date"])]
+    meetings = meeting_lists(data["meetings"], venues)
     main = (f'<section class="card legend" id="key" aria-label="Key">'
             f'<div class="legend-head"><h2>Key<span class="key-note" hidden> (filtered)</span></h2>'
             f'<button type="button" class="key-toggle" aria-expanded="true" aria-controls="key-body" title="Hide the key">'
             f'<span aria-hidden="true">-</span><span class="sr">Hide the key</span></button></div>'
             f'<div class="legend-body" id="key-body"><div><h3>Talk types</h3><ul>{legend}</ul></div>'
             f'<div><h3>Meeting frequency</h3><ul>{freqs}</ul></div></div></section>\n\t\t'
-            f'<ol class="meetings">\n\t\t\t' + "\n\t\t\t".join(meetings) + '\n\t\t</ol>\n\t\t'
+            + meetings + '\n\t\t'
             f'<p class="sr" id="filter-status" role="status" aria-live="polite"></p>\n\t\t'
             f'<p class="card empty" id="no-match" hidden>No meetings match this selection. Click the highlighted icon in the key to clear it.</p>')
     page = subpage("Schedule", "Upcoming meetings and talks.", "Upcoming meetings and talks of The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology.", main)
@@ -1254,15 +1280,14 @@ def campus_page(key):
     c = CAMPUSES[key]; data = load_schedule(); venues = data.get("venues", {})
     room = tba(venues.get(key, {}).get("room"), "Room")
     mine = [m for m in sorted(data["meetings"], key=lambda m: m["date"]) if m["campus"] == key]
-    cards = "".join(meeting_card(m, venues, on_campus_page=True) for m in mine)
-    body = (f'<ol class="meetings">{cards}</ol>' if mine else '<p class="card empty">No meetings are scheduled here yet.</p>')
+    body = meeting_lists(mine, venues, on_campus_page=True)
     dr = DIRECTIONS.get(key)
     bldg = (f'<p class="v-bldg">{esc(dr["building"])}</p><p class="v-bldg v-addr">{esc(dr["address"])}</p>') if dr else ""
     link = (f'<a class="dir" href="{esc(maps_url(key))}" target="_blank" rel="noopener" title="Directions on Google Maps" '
             f'aria-label="Directions to {esc(dr["building"])} on Google Maps (opens in a new tab)">{MAP_ICON}<span>Directions</span></a>') if dr else ""
     main = (f'<section class="card venue" style="--c:{c["color"]}"><span class="m-ico">{CAMPUS_ICON[key]}</span>'
             f'<div><h2>Where</h2><p class="v-room">{esc(room)}</p>{bldg}</div>{link}</section>\n\t\t' + body)
-    return subpage(c["label"], f"Meetings hosted at {c['label']}.", f"Meetings of The Local Group hosted at {c['label']}, with the room and the schedule of talks.", main)
+    return subpage(c["label"], f"Meetings hosted at {c['label']}.", f"Meetings of The Local Group hosted at {c['label']}, with the room and the schedule of talks.", main).replace("</body>", '<script defer src="schedule.js"></script>\n</body>')
 
 SCHED = r'''<!DOCTYPE html>
 <html lang="en" data-season="@@SEASON@@">

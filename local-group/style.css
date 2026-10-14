@@ -267,7 +267,22 @@ body.sched .card { box-shadow: 4px 4px 0 #3a4a8a; }
 .js .key-toggle { display: inline-flex; }
 .key-toggle:hover { background: #fff; transform: translate(2px, 2px); box-shadow: 1px 1px 0 #3a4a8a; }
 .legend.is-collapsed .legend-body { display: none; }
-.meetings > li[hidden], .talks li[hidden], #no-match[hidden], .key-note[hidden] { display: none; }
+#no-upcoming[hidden], #past[hidden], .meetings > li[hidden], .talks li[hidden], #no-match[hidden], .key-note[hidden] { display: none; }
+/* upcoming meetings come first; the past ones sit under a "Past events" button (without scripts the list is simply shown) */
+#upcoming:empty { display: none; }
+.past { margin-top: 1.6rem; }
+.past-h { margin: 0 0 1rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cream); }
+.past-toggle { display: none; }
+.js .past-h { display: none; }
+.js .past-toggle {
+	display: flex; align-items: center; gap: 0.7rem; margin: 0 auto; padding: 0.6rem 0.9rem;
+	font: inherit; font-size: 0.6rem; color: var(--navy); background: var(--cream); cursor: pointer;
+	border: 3px solid var(--navy); box-shadow: 3px 3px 0 #3a4a8a;
+}
+.js .past-toggle:hover { background: #fff; transform: translate(2px, 2px); box-shadow: 1px 1px 0 #3a4a8a; }
+.pt-sign { display: inline-block; width: 0.8em; text-align: center; font-size: 0.9rem; line-height: 1; }
+.js .past:not(.open) .past-list { display: none; }
+.js .past-list { margin-top: 1.6rem; }
 .talks li.first { border-top: 0; }
 .l-ico { flex: none; width: 3.6rem; display: flex; justify-content: center; }
 .legend b { font-weight: 400; font-size: 0.7rem; }

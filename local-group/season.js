@@ -5,6 +5,7 @@
    To preview a season, add ?season=winter (or spring / summer / fall) to the address; add ?xmas to see the tree, ?night or ?day for night mode. */
 (function () {
 	'use strict';
+	document.documentElement.classList.add('js');                      /* lets the stylesheet tell apart pages where scripts run (collapsible lists) */
 	var BY_MONTH = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'fall', 'fall', 'fall', 'winter'];
 
 	function bostonDate() {                        /* { month: 0 = January, day: 1-31 } */

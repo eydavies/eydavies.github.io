@@ -8,8 +8,8 @@
 	<meta name="theme-color" content="#0f1535">
 	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%238fd16c'/%3E%3Cpath fill='%233f95d8' d='M0 6h16v6H0z'/%3E%3Cpath fill='%235bb8f0' d='M0 6h16v4H0z'/%3E%3C/svg%3E">
 	<link rel="preload" href="PressStart2P.woff2" as="font" type="font/woff2" crossorigin>
-	<script src="season.js?v=e2794e1f"></script>
-	<link rel="stylesheet" href="style.css?v=e16fa70c">
+	<script src="season.js?v=767ba024"></script>
+	<link rel="stylesheet" href="style.css?v=07b0f6a8">
 </head>
 <body class="sched">
 	<a class="skip-link" href="#main">Skip to content</a>
@@ -46,7 +46,10 @@
 					<path fill="#5bb8f0" d="M12 7h1v1h-1zM13 8h1v1h-1zM13 9h1v1h-1zM14 10h1v1h-1zM14 11h1v1h-1z"/>
 					<path fill="#ffffff" d="M8 2h1v1h-1z"/>
 					<path fill="#2b2438" d="M7 -1h3v1h-3zM6 0h1v1h-1zM10 0h1v1h-1zM5 1h1v1h-1zM11 1h1v1h-1zM5 2h1v1h-1zM11 2h1v1h-1zM5 3h1v1h-1zM11 3h1v1h-1zM0 4h5v1h-5zM11 4h5v1h-5zM-1 5h1v1h-1zM16 5h1v1h-1zM-1 6h1v1h-1zM16 6h1v1h-1zM-1 7h1v1h-1zM16 7h1v1h-1zM-1 8h1v1h-1zM16 8h1v1h-1zM-1 9h1v1h-1zM16 9h1v1h-1zM-1 10h1v1h-1zM16 10h1v1h-1zM-1 11h1v1h-1zM16 11h1v1h-1zM-1 12h1v1h-1zM16 12h1v1h-1zM-1 13h1v1h-1zM16 13h1v1h-1zM0 14h16v1h-16z"/></svg><span>Directions</span></a></section>
-		<p class="card empty">No meetings are scheduled here yet.</p>
+		<ol class="meetings" id="upcoming"></ol>
+		<p class="card empty" id="no-upcoming" data-none="No meetings are scheduled here yet." data-noup="No upcoming meetings are scheduled here yet." data-nomatch="No upcoming meetings match this selection.">No meetings are scheduled here yet.</p>
+		<section class="past" id="past" aria-label="Past events" hidden><h2 class="past-h">Past events</h2><button type="button" class="past-toggle" aria-expanded="false" aria-controls="past-list"><span class="pt-sign" aria-hidden="true">+</span><span>Past events</span> <span class="pt-count">(0)</span></button><ol class="meetings past-list" id="past-list"></ol></section>
 	</main>
+<script defer src="schedule.js?v=92cdc726"></script>
 </body>
 </html>

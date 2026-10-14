@@ -640,31 +640,32 @@ SKATER_SKIN, SAILOR_SKIN = '#f1c27d', '#ffd9a8'
 
 # fall: the rower. Two frames: at the catch the oars reach forward, at the finish they sweep back and splash
 def rower(frame):
-    """Seen from above: a cream racing shell with a rower in a blue top and brown hair, and two oars (2 frames)."""
-    g = Grid(); JERSEY, JERSEYD, HAIR, OAR, BLADE = '#3f78d6', '#2b56a8', '#6b4226', '#8a5a3b', '#cc0000'
-    g.rect(-8, 0, 7, 1, '#fffaf0'); g.px(8, 0, '#fffaf0'); g.px(-9, 0, '#fffaf0')
-    g.hline(0, 3, 6, '#cc0000')
-    cx = -1 if frame == 0 else -3                    # catch: leaning forward, arms reaching back for the oars; finish: leaning back
-    if frame == 0:
-        for (x, y) in ((-4, -2), (-3, -3), (-2, -4)): g.px(x, y, OAR)
-        g.px(-1, -4, BLADE); g.px(0, -4, BLADE)
-        for (x, y) in ((-4, 3), (-3, 4), (-2, 5)): g.px(x, y, OAR)
-        g.px(-1, 5, BLADE); g.px(0, 5, BLADE)
-    else:
-        for (x, y) in ((-4, -2), (-5, -3)): g.px(x, y, OAR)
-        g.px(-6, -4, BLADE); g.px(-7, -4, BLADE)
-        for (x, y) in ((-4, 3), (-5, 4)): g.px(x, y, OAR)
-        g.px(-6, 5, BLADE); g.px(-7, 5, BLADE)
-    g.rect(cx - 1, -2, cx + 1, 3, JERSEY)            # shoulders and back, seen from above
-    g.rect(cx - 1, 0, cx - 1, 1, JERSEYD); g.rect(cx + 1, -2, cx + 1, -2, JERSEYD); g.rect(cx + 1, 3, cx + 1, 3, JERSEYD)
-    g.rect(cx, -1, cx + 1, 2, HAIR)                  # the head, from above
-    g.px(cx - 1, -1, ROWER_SKIN); g.px(cx - 1, 2, ROWER_SKIN)       # hands on the oar handles
-    if frame == 0: g.px(cx - 2, -2, ROWER_SKIN); g.px(cx - 2, 3, ROWER_SKIN)
+    """Side-on: a cream racing shell (bow to the right) and a rower facing the stern, one oar swinging (2 frames).
+    Catch: leaning forward with arms stretched, the blade dips in ahead. Finish: leaning back, hands at the chest, blade out behind."""
+    g = Grid(); JERSEY, HAIR, OAR, BLADE, SHORTS, SHOE = '#3f78d6', '#6b4226', '#8a5a3b', '#cc0000', '#2f3e46', '#2b2438'
+    def line(x0, y0, x1, y1, col):
+        n = max(abs(x1 - x0), abs(y1 - y0))
+        for i in range(n + 1): g.px(round(x0 + (x1 - x0) * i / n), round(y0 + (y1 - y0) * i / n), col)
+    g.rect(-9, -1, 8, 0, '#fffaf0'); g.px(9, -1, '#fffaf0'); g.hline(-1, 3, 6, '#cc0000')
+    if frame == 0:                                   # catch
+        hip, sh, hx = 1, -1, -3
+        line(-2, -7, -7, -5, ROWER_SKIN)                                        # arms stretched out to the handle
+        line(-8, -5, 6, 2, OAR); line(5, 2, 6, 2, BLADE); g.px(4, 2, BLADE)
+    else:                                            # finish
+        hip, sh, hx = 3, 3, 2
+        line(3, -7, 2, -5, ROWER_SKIN)                                          # hands drawn in to the chest
+        line(2, -5, -12, 2, OAR); line(-12, 2, -11, 2, BLADE); g.px(-10, 2, BLADE)
+    g.rect(hip - 3, -3, hip, -3, SHORTS); g.px(-4, -3, SHORTS); g.px(-4, -2, SHORTS); g.px(-5, -2, SHOE)        # legs out to the stretcher
+    g.rect(hip - 1, -2, hip + 1, -2, OAR)                                                                        # the seat
+    g.rect(sh - 1, -8, sh + 1, -7, JERSEY); g.rect(sh, -6, sh + 2, -4, JERSEY)                                  # shoulders and back
+    g.rect(hx, -11, hx + 2, -9, HAIR); g.rect(hx, -10, hx, -9, ROWER_SKIN)                                      # head: hair, face towards the stern
     g.outline(OL)
-    for x in (-12, -14, -17): g.px(x, 0 if x == -12 else 1, '#ffffff')
-    g.px(-15, 0, '#ffffff'); g.px(-18, 0, '#ffffff')
-    if frame == 1:                                   # splashes where the blades leave the water
-        for (x, y) in ((-9, -5), (-10, -3), (-9, 6), (-10, 4)): g.px(x, y, '#ffffff')
+    for x in (-12, -14, -17): g.px(x, -1 if x == -12 else 0, '#ffffff')
+    g.px(-15, -1, '#ffffff'); g.px(-18, -1, '#ffffff')
+    if frame == 1:                                   # splashes where the blade leaves the water
+        for (x, y) in ((-13, 0), (-14, 1), (-9, 1)): g.px(x, y, '#ffffff')
+    else:
+        for (x, y) in ((7, 1), (8, 2)): g.px(x, y, '#ffffff')
     return g
 
 # winter: an ice-skater in a red hat and a yellow scarf, leaning into a long forward glide: push off, then glide

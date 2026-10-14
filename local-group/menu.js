@@ -57,7 +57,16 @@
 		var vh = box.height / scale;
 		svg.setAttribute('viewBox', [vb[0], top, vb[2], vh].join(' '));
 		var free = Math.max(0, vh - (Number(svg.getAttribute('data-cbot')) + 10 - top));
-		svg.style.setProperty('--drop', (10 + Math.min(free * 0.6, 40)).toFixed(1));   /* at least 10 so BU's bubble clears the river */
+		var drop = 10 + Math.min(free * 0.6, 40);
+		var bubble = svg.querySelector('.bot .bscale'), riverEl = svg.querySelector('.rv > g');
+		if (bubble && riverEl) {
+			/* BU is hosting: put it as high as it goes, so its speech bubble sits just under the river (a small gap) */
+			svg.style.setProperty('--drop', '0');
+			var gap = 7;                                                                  /* art pixels between river and bubble */
+			drop = (riverEl.getBoundingClientRect().bottom - bubble.getBoundingClientRect().top) / scale + gap;
+			drop = Math.max(0, Math.min(drop, 60));
+		}
+		svg.style.setProperty('--drop', drop.toFixed(1));
 	}
 	fit();
 	window.addEventListener('resize', fit);

@@ -49,8 +49,7 @@
 .lf { fill: var(--lf); } .lfh { fill: var(--lfh); } .lfd { fill: var(--lfd); }
 
 /* things that only exist in some seasons */
-.snow, .g-flowers, .g-spring, .g-litter, .p, .spring-only, .bt { display: none; }
-:root[data-season="spring"] .spring-only { display: inline; }
+.snow, .g-flowers, .g-spring, .g-litter, .p, .bt { display: none; }
 /* what's on the river: fall rower, winter skater, spring ducks, summer sailboat */
 :root[data-season="fall"] .bt-fall, :root[data-season="winter"] .bt-winter,
 :root[data-season="spring"] .bt-spring, :root[data-season="summer"] .bt-summer { display: inline; }
@@ -193,6 +192,8 @@ h1 {
 @keyframes fade { 0%, 88% { opacity: 1; } 100% { opacity: 0; } }
 .fa { animation: legs-a 0.6s steps(1, end) infinite; }
 .fb { animation: legs-b 0.6s steps(1, end) infinite; }
+/* the rower's stroke is slower than the skater's stride */
+.fa.row, .fb.row { animation-duration: 1.2s; }
 @keyframes legs-a { 0% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes legs-b { 0% { opacity: 0; } 50% { opacity: 1; } }
 

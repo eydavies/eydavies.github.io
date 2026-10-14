@@ -964,4 +964,16 @@ PAGE = r'''<!DOCTYPE html>
 '''
 for fname, name, color in (("mailing-list.html", "Mailing List", "#1d2b53"),):
     (OUT / fname).write_text(PAGE.replace("@@NAME@@", name).replace("@@COLOR@@", color).replace("@@SEASON@@", BUILD_SEASON), encoding="utf-8")
+# Cache-busting: tag the local CSS/JS links with a hash of the file, so a browser that cached an
+# older style.css or menu.js always fetches the new one (a stale stylesheet shows every season's art at once).
+import hashlib, re
+def _ver(name):
+    return hashlib.md5((OUT / name).read_bytes()).hexdigest()[:8]
+_V = {n: _ver(n) for n in ("style.css", "menu.js", "season.js")}
+for _page in OUT.glob("*.html"):
+    _t = _page.read_text(encoding="utf-8")
+    for _n, _h in _V.items():
+        _t = re.sub(r'(?:src|href)="%s(?:\?v=\w+)?"' % re.escape(_n),
+                    lambda m, _n=_n, _h=_h: m.group(0).split('"')[0] + '"%s?v=%s"' % (_n, _h), _t)
+    _page.write_text(_t, encoding="utf-8")
 print("built The Local Group:", NEXT["campus"], "-", NEXT_DATE)

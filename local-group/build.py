@@ -757,24 +757,49 @@ CAMPUS_ICON = {k: icon_svg(c["sprite"](), 2, "m-svg", snow=True) for k, c in CAM
 
 def esc(t): return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-def schedule_page():
-    data = json.loads((HERE / "schedule.json").read_text(encoding="utf-8"))
-    legend = "".join(f'<li>{TALK_ICON[k]}<span><b>{name}</b><br>{esc(desc)}</span></li>' for k, (name, desc, _) in TALK_TYPES.items())
-    meetings = []
-    for m in sorted(data["meetings"], key=lambda m: m["date"]):
-        d = datetime.date.fromisoformat(m["date"]); c = CAMPUSES[m["campus"]]
-        talks = "".join(
-            f'<li><span class="t-ico" title="{TALK_TYPES[t["type"]][0]}">{TALK_ICON[t["type"]]}<span class="sr">{TALK_TYPES[t["type"]][0]}: </span></span>'
-            f'<span class="t-text"><span class="t-title">{esc(t.get("title") or "Untitled talk")}</span>'
-            f'<span class="t-speaker">{esc(t.get("speaker") or "Speaker TBA")}</span></span></li>' for t in m["talks"])
-        meetings.append(
-            f'<li><article class="card meeting" style="--c:{c["color"]}">'
-            f'<header><span class="m-ico">{CAMPUS_ICON[m["campus"]]}</span>'
-            f'<div><h2>{d:%B} {d.day}, {d.year}</h2><p class="m-where">{d:%A} at {c["label"]}</p><p class="m-food">Food provided by {esc(m.get("food") or "TBA")}</p></div></header>'
+def tba(value, label):
+    v = (value or "").strip()
+    return f"{label} TBA" if v.upper() in ("", "TBA") else v
+
+def load_schedule(): return json.loads((HERE / "schedule.json").read_text(encoding="utf-8"))
+
+def meeting_card(m, venues, on_campus_page=False):
+    """One meeting. On the main schedule the campus icon and name link to that campus's page."""
+    d = datetime.date.fromisoformat(m["date"]); c = CAMPUSES[m["campus"]]
+    talks = "".join(
+        f'<li><span class="t-ico" title="{TALK_TYPES[t["type"]][0]}">{TALK_ICON[t["type"]]}<span class="sr">{TALK_TYPES[t["type"]][0]}: </span></span>'
+        f'<span class="t-text"><span class="t-title">{esc(t.get("title") or "Untitled talk")}</span>'
+        f'<span class="t-speaker">{esc(t.get("speaker") or "Speaker TBA")}</span></span></li>' for t in m["talks"])
+    room = tba(m.get("room") or venues.get(m["campus"], {}).get("room"), "Room")
+    if on_campus_page:
+        ico, where = "", f"{d:%A}"
+    else:
+        ico = f'<a class="m-ico" href="{c["href"]}" aria-label="{c["label"]}: room and all of its meetings">{CAMPUS_ICON[m["campus"]]}</a>'
+        where = f'{d:%A} at <a href="{c["href"]}">{c["label"]}</a>'
+    return (f'<li id="{m["date"]}"><article class="card meeting" style="--c:{c["color"]}">'
+            f'<header>{ico}<div><h2>{d:%B} {d.day}, {d.year}</h2><p class="m-where">{where}</p>'
+            f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{esc(room)}</span></p>'
+            f'<p class="m-food">Food provided by {esc(m.get("food") or "TBA")}</p></div></header>'
             f'<ul class="talks">{talks}</ul></article></li>')
+
+def schedule_page():
+    data = load_schedule(); venues = data.get("venues", {})
+    legend = "".join(f'<li>{TALK_ICON[k]}<span><b>{name}</b><br>{esc(desc)}</span></li>' for k, (name, desc, _) in TALK_TYPES.items())
+    meetings = [meeting_card(m, venues) for m in sorted(data["meetings"], key=lambda m: m["date"])]
     main = (f'<section class="card legend" aria-label="Talk types"><h2>Talk types</h2><ul>{legend}</ul></section>\n\t\t'
             f'<ol class="meetings">\n\t\t\t' + "\n\t\t\t".join(meetings) + '\n\t\t</ol>')
     return subpage("Schedule", "Upcoming meetings and talks.", "Upcoming meetings and talks of The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology.", main)
+
+def campus_page(key):
+    """Harvard / MIT / BU page: the room at the top, then only the meetings held there."""
+    c = CAMPUSES[key]; data = load_schedule(); venues = data.get("venues", {})
+    room = tba(venues.get(key, {}).get("room"), "Room")
+    mine = [m for m in sorted(data["meetings"], key=lambda m: m["date"]) if m["campus"] == key]
+    cards = "".join(meeting_card(m, venues, on_campus_page=True) for m in mine)
+    body = (f'<ol class="meetings">{cards}</ol>' if mine else '<p class="card empty">No meetings are scheduled here yet.</p>')
+    main = (f'<section class="card venue" style="--c:{c["color"]}"><span class="m-ico">{CAMPUS_ICON[key]}</span>'
+            f'<div><h2>Where</h2><p class="v-room">{esc(room)}</p></div></section>\n\t\t' + body)
+    return subpage(c["label"], f"Meetings hosted at {c['label']}.", f"Meetings of The Local Group hosted at {c['label']}, with the room and the schedule of talks.", main)
 
 SCHED = r'''<!DOCTYPE html>
 <html lang="en" data-season="@@SEASON@@">
@@ -830,6 +855,9 @@ def about_page():
     return subpage("About", "Who runs The Local Group.", "About The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology, and the people who organise it.", main)
 
 (OUT / "schedule.html").write_text(schedule_page(), encoding="utf-8")
+(OUT / "harvard.html").write_text(campus_page("harvard"), encoding="utf-8")
+(OUT / "mit.html").write_text(campus_page("mit"), encoding="utf-8")
+(OUT / "bu.html").write_text(campus_page("bu"), encoding="utf-8")
 (OUT / "about.html").write_text(about_page(), encoding="utf-8")
 
 PAGE = r'''<!DOCTYPE html>
@@ -856,9 +884,6 @@ PAGE = r'''<!DOCTYPE html>
 </body>
 </html>
 '''
-for fname, name, color in (("harvard.html", "Harvard", "#a51c30"), ("mit.html", "MIT", "#5f6168"),
-                           ("bu.html", "Boston University", "#cc0000"),
-                           ("mailing-list.html", "Mailing List", "#1d2b53"),
-                           ):
+for fname, name, color in (("mailing-list.html", "Mailing List", "#1d2b53"),):
     (OUT / fname).write_text(PAGE.replace("@@NAME@@", name).replace("@@COLOR@@", color).replace("@@SEASON@@", BUILD_SEASON), encoding="utf-8")
 print("built The Local Group:", NEXT["campus"], "-", NEXT_DATE)

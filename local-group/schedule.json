@@ -1,9 +1,22 @@
 {
-  "_note": "Edit this file, then run: python3 local-group/build.py.  campus: harvard | mit | bu.  type: chalk | colloquium | workshop.  food: who is providing food.",
+  "_note": "Edit this file, then run: python3 local-group/build.py.  campus: harvard | mit | bu.  type: chalk | colloquium | workshop.  time / room / food are shown as typed ('TBA' or blank shows 'Time TBA' / 'Room TBA').  A meeting's room falls back to its campus's room in 'venues'.",
+  "venues": {
+    "harvard": {
+      "room": "TBA"
+    },
+    "mit": {
+      "room": "TBA"
+    },
+    "bu": {
+      "room": "TBA"
+    }
+  },
   "meetings": [
     {
       "date": "2026-10-21",
       "campus": "bu",
+      "time": "TBA",
+      "room": "",
       "food": "TBA",
       "talks": [
         {
@@ -26,6 +39,9 @@
     {
       "date": "2026-11-18",
       "campus": "harvard",
+      "time": "TBA",
+      "room": "",
+      "food": "TBA",
       "talks": [
         {
           "type": "chalk",
@@ -42,12 +58,14 @@
           "title": "Untitled talk",
           "speaker": "Speaker TBA"
         }
-      ],
-      "food": "TBA"
+      ]
     },
     {
       "date": "2026-12-16",
       "campus": "mit",
+      "time": "TBA",
+      "room": "",
+      "food": "TBA",
       "talks": [
         {
           "type": "chalk",
@@ -64,8 +82,7 @@
           "title": "Untitled talk",
           "speaker": "Speaker TBA"
         }
-      ],
-      "food": "TBA"
+      ]
     }
   ]
 }

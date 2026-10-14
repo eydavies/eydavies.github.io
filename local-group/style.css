@@ -117,7 +117,7 @@ h1 {
 }
 .intro { text-align: center; padding: 0 1rem; }
 .tagline { max-width: 82ch; margin-left: auto; margin-right: auto; }
-@media (max-width: 899px) { .tagline { font-size: 0.875rem; } }                 /* phones and tablets: 14px */
+@media (max-width: 899px) { .tagline { font-size: 0.8125rem; } }                /* phones and tablets: 13px */
 
 /* ---------- Home header: a night sky (galaxy + stellar stream) that fades into the grass ---------- */
 :root { --px: 4px; }                          /* one art pixel of the header, in screen pixels */
@@ -214,6 +214,8 @@ h1 {
 .compact .tt { transform: translate(0, -40px); }
 .compact .cg-harvard { transform: translate(10px, -40px); }
 .compact .cg-mit { transform: translate(-10px, -40px); }
+.mob { display: none; }                                              /* extra trees that only phones get (see phone_trees in build.py) */
+.compact .mob { display: inline; }
 .compact .te, .compact .obs { display: none; }                       /* trees that would be cut off; the telescope people */
 .compact .bot { transform: translate(0, calc(var(--drop, 0) * 1px)); }   /* BU and the lower trees drop to use spare height (set by menu.js) */
 .compact .tag { transform-origin: 0 11px; transform: scale(2); }

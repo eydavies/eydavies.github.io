@@ -152,6 +152,23 @@ for _lo, _hi in ((X0, -1), (W, X1)):
             col = _xr.choice(['#e8782a', '#d9452f', '#e9b52e', '#c2561c'])
             litter.px(x, y, col); litter.px(x + 1, y, col)
 
+# phones show a taller crop (down to about y = 330), so carry the ground detail below the original map too
+_xd = random.Random(13); _DY = 112
+for _ in range(round(226 * _DY / H * 0.8)):
+    x, y = _xd.randint(0, W - 3), _xd.randint(H, H + _DY)
+    ground.px(x, y, '.tuft'); ground.px(x + 1, y + 1, '.tuft'); ground.px(x - 1, y + 1, '.tuft')
+for _ in range(round(68 * _DY / H)):
+    flowers.px(_xd.randint(1, W - 2), _xd.randint(H, H + _DY), _xd.choice(['#ffffff', '#ffd1e0', '#fff3a0']))
+for _ in range(round(34 * _DY / H)):
+    cx, cy, col = _xd.randint(2, W - 3), _xd.randint(H, H + _DY), _xd.choice(['#ff8fb8', '#ffffff', '#fff070', '#c9a6ff'])
+    for _k in range(3): spring_extra.px(cx + _xd.randint(-2, 2), cy + _xd.randint(-1, 1), col)
+for _ in range(round(40 * _DY / H)):
+    cx, cy = _xd.randint(2, W - 3), _xd.randint(H, H + _DY)
+    for _k in range(4):
+        x, y = cx + _xd.randint(-3, 3), cy + _xd.randint(-1, 1)
+        col = _xd.choice(['#e8782a', '#d9452f', '#e9b52e', '#c2561c'])
+        litter.px(x, y, col); litter.px(x + 1, y, col)
+
 def snow_layer(spr, pred=None):
     """White caps on every upward-facing edge of a sprite, a bit thicker on flat tops."""
     pre = spr.pre; top = {k for k, c in pre.items() if (k[0], k[1] - 1) not in pre and (pred is None or pred(c))}
@@ -193,15 +210,47 @@ for _lo, _hi in ((X0 + 8, -30), (W + 30, X1 - 8)):
         _y = _tr.choice([_tr.randint(34, 74), _tr.randint(172, 216)])
         TREE_SPOTS.append((_x, _y, _tr.choice([0, 1, 1])))
         _x += _tr.randint(22, 46)
-def tree_svg(i, x, y, big):
+def tree_svg(i, x, y, big, cls=None):
     t = tree(bool(big))
     snow = snow_layer(t, pred=lambda c: c.startswith('.lf'))
     out = (f'<g class="tv{i % 3}" transform="translate({x} {y})">{svg_paths(t)}'
             f'<g class="snow">{svg_paths(snow)}</g></g>')
     # phones: "tt" trees lift with the river, "bot" trees drop with BU, "te" trees are hidden (they would be cut off)
-    cls = ("tt" if y < 100 else "bot") + (" te" if x < 56 or x > 326 or (x, y) == (238, 60) else "")
+    if cls is None: cls = ("tt" if y < 100 else "bot") + (" te" if x < 56 or x > 326 or (x, y) == (238, 60) else "")
     return f'<g class="{cls}">{out}</g>'          # "tt": top-half trees move up with the river on phones
 trees_svg = "\n\t\t\t".join(tree_svg(i, x, y, b) for i, (x, y, b) in enumerate(TREE_SPOTS))
+
+# Phones (see menu.js) show only x 46..334 and re-arrange the map, which leaves the few trees that fit looking lonely. Add
+# phone-only trees, spread evenly with "best candidate" sampling around everything that is already there. Positions are
+# in phone-view coordinates (the "tt" group is lifted 40 and the "bot" group dropped ~14 by style.css, so convert back).
+def phone_trees():
+    rnd = random.Random(17)
+    BOX = [(62, -26, 140, 66), (244, -26, 318, 66),            # Harvard and MIT with their name tags
+           (148, 136, 234, 232), (212, 106, 330, 180),         # BU with its tag, and its speech bubble
+           (148, 194, 280, 218), (40, 68, 340, 110),           # the people walking to BU, and the river
+           (62, -90, 190, -20), (190, -90, 318, -20),          # a bubble above Harvard or MIT
+           (120, 28, 204, 60), (172, 28, 252, 60)]             # ...and the people walking to either
+    pts = []                                                    # centres of the trees already shown on phones
+    for (x, y, b) in TREE_SPOTS:
+        if 56 <= x <= 326 and (x, y) != (238, 60) and x <= W: pts.append((x, (y - 40 if y < 100 else y + 14) - 8))
+    boxes = BOX + [(x - 10, y - 12, x + 10, y + 12) for (x, y) in pts]
+    out = []
+    def ok(x, y):
+        return not any(bx0 - 9 < x < bx1 + 9 and by0 - 11 < y < by1 + 11 for bx0, by0, bx1, by1 in boxes)
+    for zone, n, (ylo, yhi) in (("tt", 5, (-6, 62)), ("bot", 15, (122, 312))):
+        for _ in range(n):
+            best = None
+            for _k in range(80):
+                x, y = rnd.randint(58, 322), rnd.randint(ylo, yhi) - 8
+                if not ok(x, y): continue
+                d = min([math.hypot(x - px, (y - py) * 1.15) for px, py in pts] + [60])
+                if best is None or d > best[0]: best = (d, x, y)
+            if best is None: continue
+            _, x, y = best; pts.append((x, y)); boxes.append((x - 10, y - 12, x + 10, y + 12))
+            out.append((x, y + 8 + (40 if zone == "tt" else -14), rnd.choice([0, 1, 1]), zone))
+    return out
+PHONE_TREES = phone_trees()
+trees_svg += "\n\t\t\t" + "\n\t\t\t".join(tree_svg(100 + i, x, y, b, "mob " + z) for i, (x, y, b, z) in enumerate(PHONE_TREES))
 
 def xmas_tree():
     """A small decorated Christmas tree with a gold star: only shown on 25 December (see season.js)."""

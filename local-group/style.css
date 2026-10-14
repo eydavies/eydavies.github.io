@@ -256,8 +256,10 @@ body.sched .card { box-shadow: 4px 4px 0 #3a4a8a; }
 .m-where a:hover, .m-where a:focus-visible { color: var(--navy); }
 a.m-ico:hover svg, a.m-ico:focus-visible svg { transform: translateY(-2px); filter: brightness(1.1); }
 .m-when { display: flex; flex-wrap: wrap; gap: 0.3rem 0; margin: 0.45rem 0 0; font-size: 0.55rem; line-height: 1.8; }
-.m-freq { display: inline-flex; align-items: center; gap: 0.4rem; }
-.q-svg { display: block; margin: -4px 0; flex: none; }
+/* the pie showing monthly / semesterly: top right of the card's heading on desktop, bottom right on phones */
+.meeting header { position: relative; }
+.m-freq { position: absolute; top: 0; right: 0; line-height: 0; }
+.q-svg { display: block; }
 .m-when span + span { margin-left: 0.9rem; padding-left: 0.9rem; border-left: 3px solid rgba(29, 43, 83, 0.25); }
 .venue { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1.6rem; }
 .venue h2 { margin: 0 0 0.5rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -287,7 +289,7 @@ a.m-ico:hover svg, a.m-ico:focus-visible svg { transform: translateY(-2px); filt
 .t-text { display: flex; flex-direction: column; gap: 0.4rem; }
 .t-title { font-size: 0.7rem; line-height: 1.5; }
 .t-speaker { font-size: 0.5rem; line-height: 1.6; color: #5a6389; }
-@media (max-width: 520px) { .m-when { flex-direction: column; align-items: flex-start; } .m-when span + span { margin-left: 0; padding-left: 0; border-left: 0; } .m-ico, .t-ico, .f-ico { width: 7.3rem; } .meeting h2 { font-size: 0.72rem; } .meeting header, .talks li, .m-food { gap: 0.8rem; } }
+@media (max-width: 520px) { .m-when { flex-direction: column; align-items: flex-start; } .m-when span + span { margin-left: 0; padding-left: 0; border-left: 0; } .m-freq { top: auto; bottom: 0; } .m-ico, .t-ico, .f-ico { width: 7.3rem; } .meeting h2 { font-size: 0.72rem; } .meeting header, .talks li, .m-food { gap: 0.8rem; } }
 
 /* ---------- About ---------- */
 .organisers h2 { margin: 0 0 0.6rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }

@@ -1142,9 +1142,9 @@ def meeting_card(m, venues, on_campus_page=False):
         where = f'{d:%A} at <a href="{c["href"]}">{c["label"]}</a>'
     return (f'<li id="{m["date"]}"><article class="card meeting" style="--c:{c["color"]}">'
             f'<header>{ico}<div><h2>{d:%B} {d.day}, {d.year}</h2><p class="m-where">{where}</p>'
-            f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{room_html}</span>'
-            f'<span class="m-freq" title="{esc(FREQUENCIES[freq][1])}">{FREQ_ICON[freq]}{esc(FREQUENCIES[freq][0])}</span></p>'
-            f'</div></header>'
+            f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{room_html}</span></p>'
+            f'</div><span class="m-freq" role="img" title="{esc(FREQUENCIES[freq][0])}: {esc(FREQUENCIES[freq][1])}" '
+            f'aria-label="{esc(FREQUENCIES[freq][0])} meeting: {esc(FREQUENCIES[freq][1])}">{FREQ_ICON[freq]}</span></header>'
             f'<ul class="talks">{talks}</ul>'
             f'<p class="m-food"><span class="f-ico">{FOOD_ICON}</span><span>Food provided by {food_html}</span></p></article></li>')
 
@@ -1154,7 +1154,7 @@ def schedule_page():
     freqs = "".join(f'<li><span class="l-ico">{FREQ_ICON[k]}</span><span><b>{name}</b><br>{esc(desc)}</span></li>' for k, (name, desc, _) in FREQUENCIES.items())
     meetings = [meeting_card(m, venues) for m in sorted(data["meetings"], key=lambda m: m["date"])]
     main = (f'<section class="card legend" aria-label="Key"><div><h2>Talk types</h2><ul>{legend}</ul></div>'
-            f'<div><h2>Meetings</h2><ul>{freqs}</ul></div></section>\n\t\t'
+            f'<div><h2>Meeting frequency</h2><ul>{freqs}</ul></div></section>\n\t\t'
             f'<ol class="meetings">\n\t\t\t' + "\n\t\t\t".join(meetings) + '\n\t\t</ol>')
     return subpage("Schedule", "Upcoming meetings and talks.", "Upcoming meetings and talks of The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology.", main)
 

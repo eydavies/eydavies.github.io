@@ -1,0 +1,71 @@
+{
+  "_note": "Edit this file, then run: python3 local-group/build.py.  campus: harvard | mit | bu.  type: chalk | colloquium | workshop.  food: who is providing food.",
+  "meetings": [
+    {
+      "date": "2026-10-21",
+      "campus": "bu",
+      "food": "TBA",
+      "talks": [
+        {
+          "type": "chalk",
+          "title": "Untitled talk",
+          "speaker": "Speaker TBA"
+        },
+        {
+          "type": "colloquium",
+          "title": "Untitled talk",
+          "speaker": "Speaker TBA"
+        },
+        {
+          "type": "chalk",
+          "title": "Untitled talk",
+          "speaker": "Speaker TBA"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-18",
+      "campus": "harvard",
+      "talks": [
+        {
+          "type": "chalk",
+          "title": "Untitled talk",
+          "speaker": "Speaker TBA"
+        },
+        {
+          "type": "chalk",
+          "title": "Untitled talk",
+          "speaker": "Speaker TBA"
+        },
+        {
+          "type": "colloquium",
+          "title": "Untitled talk",
+          "speaker": "Speaker TBA"
+        }
+      ],
+      "food": "TBA"
+    },
+    {
+      "date": "2026-12-16",
+      "campus": "mit",
+      "talks": [
+        {
+          "type": "chalk",
+          "title": "Untitled talk",
+          "speaker": "Speaker TBA"
+        },
+        {
+          "type": "colloquium",
+          "title": "Untitled talk",
+          "speaker": "Speaker TBA"
+        },
+        {
+          "type": "workshop",
+          "title": "Untitled talk",
+          "speaker": "Speaker TBA"
+        }
+      ],
+      "food": "TBA"
+    }
+  ]
+}

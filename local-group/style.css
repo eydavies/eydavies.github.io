@@ -1,0 +1,262 @@
+/* The Local Group: a small standalone pixel-art site, deliberately unlike the main one. */
+@font-face {
+	font-family: 'Press Start 2P';
+	src: url(PressStart2P.woff2) format('woff2');
+	font-weight: 400;
+	font-display: swap;
+}
+
+:root {
+	--navy: #1d2b53;
+	--cream: #f7f2d0;
+	--ring: #ffb454;
+	--pixel-font: 'Press Start 2P', ui-monospace, 'Courier New', monospace;
+}
+
+/* ---------- Seasons: season.js sets <html data-season="winter|spring|summer|fall"> ---------- */
+:root, :root[data-season="summer"] {
+	--grass: #8fd16c; --tuft: #76bb55;
+	--pzs: #6fb450; --pz: #f3e7b4; --pzo: #b9a96b; --pth: #efe2ad; --pthd: #d8c78a;
+	--rv1: #5bb8f0; --rv2: #3f95d8; --rvo: #245a94; --shm: #d4efff;
+	--lf: #4fae5a; --lfh: #7fd88a; --lfd: #3d9248;
+	--title: #fff; --title-shadow: #1d2b53;
+}
+:root[data-season="spring"] {
+	--grass: #a0dd7a; --tuft: #84c95f; --pzs: #7bc35b;
+	--lf: #79d484; --lfh: #b4f0ae; --lfd: #58b868;
+}
+:root[data-season="fall"] {
+	--grass: #b2c35a; --tuft: #97a944; --pzs: #8c9e48;
+	--lf: #e8782a; --lfh: #f7a64a; --lfd: #c2561c;
+}
+:root[data-season="winter"] {
+	--grass: #e8f0f8; --tuft: #c4d5e8;
+	--pzs: #c0cfe1; --pz: #dde6f0; --pzo: #9aaec6; --pth: #d4deea; --pthd: #b9c8da;
+	--rv1: #7ac2ee; --rv2: #58a1d8; --rvo: #38679b; --shm: #eaf7ff;
+	--lf: #3f7d62; --lfh: #5c9c7d; --lfd: #2c5f4b;
+	--title: #1d2b53; --title-shadow: #ffffff;
+}
+/* trees take turns being a different colour */
+:root[data-season="spring"] .tv1 { --lf: #f6b4cf; --lfh: #ffe0ec; --lfd: #e48db0; }
+:root[data-season="spring"] .tv2 { --lf: #fbd0e0; --lfh: #fff1f6; --lfd: #eba5c2; }
+:root[data-season="fall"] .tv1 { --lf: #d9452f; --lfh: #f07a4f; --lfd: #a8301f; }
+:root[data-season="fall"] .tv2 { --lf: #e9b52e; --lfh: #f7d96a; --lfd: #c18d1c; }
+
+.tuft { fill: var(--tuft); }
+.pzs { fill: var(--pzs); } .pz { fill: var(--pz); } .pzo { fill: var(--pzo); }
+.pth { fill: var(--pth); } .pthd { fill: var(--pthd); }
+.rv1 { fill: var(--rv1); } .rv2 { fill: var(--rv2); } .rvo { fill: var(--rvo); } .shm { fill: var(--shm); }
+.lf { fill: var(--lf); } .lfh { fill: var(--lfh); } .lfd { fill: var(--lfd); }
+
+/* things that only exist in some seasons */
+.snow, .g-flowers, .g-spring, .g-litter, .p { display: none; }
+:root[data-season="winter"] .snow, :root[data-season="winter"] .p-winter { display: inline; }
+:root[data-season="spring"] .g-flowers, :root[data-season="summer"] .g-flowers,
+:root[data-season="spring"] .g-spring, :root[data-season="spring"] .p-spring { display: inline; }
+:root[data-season="fall"] .g-litter, :root[data-season="fall"] .p-fall { display: inline; }
+
+/* leaves, petals and snow drift down in whole-pixel steps */
+.pt { animation: drop linear infinite; animation-timing-function: steps(110, end); }
+@keyframes drop {
+	from { transform: translate(var(--x), -8px); }
+	to   { transform: translate(calc(var(--x) + var(--dx)), 236px); }
+}
+.sw { animation: sway 1.5s steps(1, end) infinite; }
+@keyframes sway { 0% { transform: translateX(0); } 50% { transform: translateX(1px); } }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	font-family: var(--pixel-font);
+	color: var(--navy);
+	background: var(--grass);
+}
+
+.topbar { padding: 1rem 1.25rem; }
+.topbar a {
+	display: inline-block;
+	padding: 0.6rem 0.9rem;
+	color: var(--navy);
+	text-decoration: none;
+	font-size: 0.65rem;
+	background: var(--cream);
+	border: 3px solid var(--navy);
+	box-shadow: 3px 3px 0 var(--navy);
+}
+.topbar a:hover { background: #fff; transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--navy); }
+:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+
+h1 {
+	margin: 0;
+	font-size: clamp(1.3rem, 4.6vw, 2.6rem);
+	font-weight: 400;
+	line-height: 1.3;
+	color: var(--title);
+	text-shadow: 0.1em 0.1em 0 var(--title-shadow);
+}
+.tagline {
+	margin: 0.9rem 0 0;
+	font-size: clamp(0.5rem, 1.5vw, 0.75rem);
+	line-height: 1.9;
+}
+.intro { text-align: center; padding: 0 1rem; }
+.tagline { max-width: 82ch; margin-left: auto; margin-right: auto; }
+
+/* ---------- Home header: a night sky (galaxy + stellar stream) that fades into the grass ---------- */
+:root { --px: 4px; }                          /* one art pixel of the header, in screen pixels */
+@media (max-width: 899px) { :root { --px: 3px; } }
+.hero { position: relative; isolation: isolate; overflow-x: clip; padding-bottom: calc(var(--px) * 14); }
+.sky {
+	position: absolute; inset: 0; z-index: -2; pointer-events: none;
+	background: url(hero-stars.svg) 0 0 / calc(256 * var(--px)) calc(128 * var(--px)) repeat, #0f1535;
+	-webkit-mask: linear-gradient(#000, #000) top / 100% calc(100% - 23 * var(--px)) no-repeat,
+	              url(hero-fade.svg) bottom / calc(4 * var(--px)) calc(24 * var(--px)) repeat-x;
+	mask: linear-gradient(#000, #000) top / 100% calc(100% - 23 * var(--px)) no-repeat,
+	      url(hero-fade.svg) bottom / calc(4 * var(--px)) calc(24 * var(--px)) repeat-x;
+}
+.galaxy {
+	position: absolute; top: 0; left: 50%; z-index: -1; pointer-events: none;
+	width: calc(160 * var(--px)); height: calc(46 * var(--px)); transform: translateX(-50%);
+}
+.home .intro { padding-top: max(0.5rem, calc(var(--px) * 37 - 4.1rem)); }
+/* narrow screens: drop the galaxy below the back button so the stream isn't hidden behind it */
+@media (max-width: 899px) {
+	.galaxy { top: 2.6rem; }
+	.home .intro { padding-top: max(0.5rem, calc(var(--px) * 37 - 1.5rem)); }
+}
+.home h1, .sched h1 { color: #fff; text-shadow: 0.1em 0.1em 0 #3a4a8a; }
+.home .tagline, .sched .tagline { color: var(--cream); }
+
+/* ---------- Section buttons under the title ---------- */
+.buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.9rem 1.1rem; margin-top: 1.3rem; }
+.btn {
+	display: inline-block;
+	padding: 0.8rem 1.1rem;
+	color: var(--navy);
+	text-decoration: none;
+	font-size: clamp(0.6rem, 1.6vw, 0.75rem);
+	background: var(--cream);
+	border: 3px solid var(--navy);
+	box-shadow: 4px 4px 0 var(--navy);
+}
+.btn:hover { background: #fff; transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--navy); }
+.btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--navy); }
+
+/* ---------- Home: the pixel river scene ---------- */
+.scene-wrap { flex: 1 1 0; min-height: 440px; position: relative; }
+.scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* the water shimmers in three frames */
+.sh { opacity: 0; animation: shimmer 2.7s steps(1, end) infinite; }
+.sh2 { animation-delay: 0.9s; }
+.sh3 { animation-delay: 1.8s; }
+@keyframes shimmer { 0% { opacity: 1; } 33.34% { opacity: 0; } 100% { opacity: 0; } }
+
+/* ---------- Clickable campuses ---------- */
+.campus { cursor: pointer; outline: none; }
+.bldg { transition: transform 0.12s steps(2, end); }
+.campus:hover .bldg,
+.campus:focus-visible .bldg { transform: translateY(-2px); filter: brightness(1.12); }
+
+.tagbd { fill: var(--c); }
+.tagbg { fill: #fff; }
+.tagtx { fill: var(--c); }
+.campus:hover .tagbg, .campus:focus-visible .tagbg { fill: var(--c); }
+.campus:hover .tagtx, .campus:focus-visible .tagtx { fill: #fff; }
+.campus:focus-visible .plaza { filter: drop-shadow(0 0 0 var(--ring)) brightness(1.15); }
+.campus:focus-visible .tagbd { fill: var(--ring); }
+
+/* ---------- Next-meeting speech bubble and the people walking to it ---------- */
+.bob { animation: bob 1.6s steps(1, end) infinite; }
+@keyframes bob { 0% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+
+.walk-l { animation: walk-l 16s steps(70, end) infinite; }
+.walk-r { animation: walk-r 16s steps(70, end) infinite; }
+@keyframes walk-l { from { transform: translateX(70px); } to { transform: translateX(0); } }
+@keyframes walk-r { from { transform: translateX(-70px); } to { transform: translateX(0); } }
+.fade { animation: fade 16s linear infinite; }
+@keyframes fade { 0%, 88% { opacity: 1; } 100% { opacity: 0; } }
+.fa { animation: legs-a 0.6s steps(1, end) infinite; }
+.fb { animation: legs-b 0.6s steps(1, end) infinite; }
+@keyframes legs-a { 0% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes legs-b { 0% { opacity: 0; } 50% { opacity: 1; } }
+
+/* narrow screens (class set by menu.js): the map is small, so double the bubble and name tags */
+.compact .bscale { transform: scale(2); }
+.compact .tag { transform-origin: 0 11px; transform: scale(2); }
+
+.campus.go .bldg { animation: hop 0.4s steps(1, end) forwards; }
+@keyframes hop {
+	0%   { transform: translateY(-2px); }
+	20%  { transform: translateY(0); }
+	45%  { transform: translateY(-5px); }
+	70%  { transform: translateY(-7px); }
+	90%  { transform: translateY(-3px); }
+}
+
+/* ---------- Schedule ---------- */
+.sched .intro { padding-top: 0.5rem; }
+.sched-main { flex: 1; width: 100%; max-width: 46rem; margin: 0 auto; padding: 1.4rem 1.25rem 4rem; }
+.card { background: var(--cream); border: 3px solid var(--navy); box-shadow: 4px 4px 0 var(--navy); padding: 1.1rem 1.2rem; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.legend { margin-bottom: 1.8rem; }
+.legend h2 { margin: 0 0 0.9rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
+.legend ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr)); gap: 0.9rem 1.6rem; }
+.legend li { display: flex; align-items: center; gap: 0.8rem; font-size: 0.55rem; line-height: 1.9; }
+.legend b { font-weight: 400; font-size: 0.7rem; }
+.legend svg { flex: none; }
+
+.meetings { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6rem; }
+.meeting header { display: flex; align-items: center; gap: 1.1rem; }
+.m-ico { flex: none; width: 8rem; display: flex; justify-content: center; align-items: flex-end; }
+.meeting h2 { margin: 0; font-size: clamp(0.8rem, 2.8vw, 1.05rem); font-weight: 400; line-height: 1.5; }
+.m-where { margin: 0.35rem 0 0; font-size: 0.55rem; line-height: 1.8; color: var(--c); }
+.m-food { margin: 0.4rem 0 0; font-size: 0.5rem; line-height: 1.8; color: #5a6389; }
+.talks { list-style: none; margin: 1rem 0 0; padding: 0.4rem 0 0; border-top: 3px solid rgba(29, 43, 83, 0.15); }
+.talks li { display: flex; align-items: center; gap: 1.1rem; padding: 0.7rem 0; }
+.talks li + li { border-top: 3px dotted rgba(29, 43, 83, 0.15); }
+.t-ico { flex: none; width: 8rem; display: flex; justify-content: center; }
+.t-text { display: flex; flex-direction: column; gap: 0.4rem; }
+.t-title { font-size: 0.7rem; line-height: 1.5; }
+.t-speaker { font-size: 0.5rem; line-height: 1.6; color: #5a6389; }
+@media (max-width: 520px) { .m-ico, .t-ico { width: 7.3rem; } .meeting h2 { font-size: 0.72rem; } .meeting header, .talks li { gap: 0.8rem; } }
+
+/* ---------- About ---------- */
+.organisers h2 { margin: 0 0 0.6rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
+.people { list-style: none; margin: 0; padding: 0; }
+.people li { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 0; }
+.people li + li { border-top: 3px dotted rgba(29, 43, 83, 0.15); }
+.p-ico { flex: none; width: 2rem; padding-top: 0.15rem; display: flex; justify-content: center; }
+.people h3 { margin: 0; font-size: clamp(0.75rem, 2.4vw, 0.95rem); font-weight: 400; line-height: 1.5; }
+.p-pos { margin: 0.4rem 0 0; font-size: 0.55rem; line-height: 1.8; }
+.p-site { display: inline-block; margin-top: 0.3rem; font-size: 0.55rem; line-height: 1.8; color: #a51c30; overflow-wrap: anywhere; }
+a.p-site:hover { background: var(--navy); color: var(--cream); }
+.tba { color: #7b84a8; }
+
+/* ---------- Placeholder pages ---------- */
+.sub-main {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 2rem 1.25rem 6rem;
+}
+.sub-main h1 { color: var(--c); text-shadow: 0.1em 0.1em 0 var(--navy); }
+
+@media (prefers-reduced-motion: reduce) {
+	.sh { animation: none; }
+	.sh1 { opacity: 1; }
+	.bldg { transition: none; }
+	.bob, .fade, .fb, .pt, .sw { animation: none; }
+	.p { display: none !important; }
+	.fb { opacity: 0; }
+	.fa { animation: none; opacity: 1; }
+	.walk-l, .walk-r { animation: none; transform: translateX(var(--off, 0px)); }
+}

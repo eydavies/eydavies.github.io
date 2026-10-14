@@ -1,0 +1,25 @@
+{
+  "_note": "Edit this file, then run: python3 local-group/build.py.  Leave position or url empty to show 'TBA'.",
+  "organisers": [
+    {
+      "name": "Richard Brooks",
+      "position": "",
+      "url": ""
+    },
+    {
+      "name": "Elliot Y. Davies",
+      "position": "Postdoctoral Associate, MIT Kavli Institute",
+      "url": "https://eydavies.github.io/"
+    },
+    {
+      "name": "Jacob Nibauer",
+      "position": "",
+      "url": ""
+    },
+    {
+      "name": "Nathaniel Starkman",
+      "position": "",
+      "url": ""
+    }
+  ]
+}

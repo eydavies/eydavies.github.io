@@ -175,6 +175,35 @@ def tree_svg(i, x, y, big):
     return f'<g class="{cls}">{out}</g>'          # "tt": top-half trees move up with the river on phones
 trees_svg = "\n\t\t\t".join(tree_svg(i, x, y, b) for i, (x, y, b) in enumerate(TREE_SPOTS))
 
+def xmas_tree():
+    """A small decorated Christmas tree with a gold star: only shown on 25 December (see season.js)."""
+    g = Grid()
+    G1, G2, G3, TRUNK = '#2f8f4e', '#3fae62', '#237a41', '#8a5a3b'
+    g.rect(-1, -3, 1, -1, TRUNK)
+    tiers = [(-4, 8, 7), (-8, 6, 6), (-12, 4, 5), (-15, 2, 4)]   # (bottom row, rows, half-width at the bottom)
+    for bot, n, hw in tiers:
+        for k in range(n):
+            half = max(1, hw - k)
+            y = bot - k
+            for x in range(-half, half + 1):
+                g.px(x, y, G2 if x < -half // 3 else (G3 if x > half // 2 else G1))
+    g.rect(-1, -20, 1, -18, '#3fae62')
+    g.px(0, -21, G2)
+    g.px(0, -22, '#ffd23f'); g.rect(-1, -23, 1, -23, '#ffd23f'); g.px(0, -24, '#ffd23f'); g.px(-2, -23, '#fff3a0'); g.px(2, -23, '#fff3a0')
+    for x, y, c in ((-4, -5, '#e63946'), (3, -6, '#ffd23f'), (-2, -9, '#4aa3ff'), (3, -10, '#e63946'), (-1, -13, '#ffd23f'), (1, -16, '#4aa3ff'), (-5, -4, '#4aa3ff'), (5, -4, '#e63946')):
+        g.px(x, y, c)
+    g.outline(OL)
+    return g
+def xmas_lights():
+    """Two sets of blinking lights, alternating, laid over the tree."""
+    a, b = Grid(), Grid()
+    for (x, y) in ((-3, -7), (2, -7), (-6, -4), (6, -5), (0, -11), (-3, -11), (2, -14)): a.px(x, y, '#fff3a0')
+    for (x, y) in ((0, -6), (4, -8), (-4, -9), (3, -12), (-2, -15), (1, -9)): b.px(x, y, '#ffffff')
+    return svg_paths(a), svg_paths(b)
+_xa, _xb = xmas_lights()
+XMAS_SVG = (f'<g class="xmas tt" aria-hidden="true"><g transform="translate(160 66)">{svg_paths(xmas_tree())}'
+            f'<g class="xla">{_xa}</g><g class="xlb">{_xb}</g></g></g>')
+
 # ------------------------------------------------------------------ buildings
 def harvard():
     """Elliot House: red-brick Georgian Revival with a white belfry under a green copper dome."""
@@ -188,20 +217,20 @@ def harvard():
                 if (x + (y % 2) * 2) % 4 == 0: g.px(x, y, BRD)
     def window(x, y):                       # 3x5 pane in a white frame with a sill
         g.rect(x - 1, y - 1, x + 3, y + 5, ST); g.rect(x, y, x + 2, y + 4, GL); g.px(x + 1, y + 2, ST)
-    brick(-25, -20, 25, -1)
-    g.hline(-1, -25, 25, ST)
+    brick(-27, -20, 27, -1)
+    g.hline(-1, -27, 27, ST)
     # slate roof with chimneys and dormers
-    for i, half in enumerate((27, 26, 24, 23, 21)):
+    for i, half in enumerate((29, 28, 26, 25, 23)):
         g.rect(-half, -21 - i, half, -21 - i, SLL if i % 2 else SL)
     for sx in (-1, 1):
-        for xc in (11, 19):
+        for xc in (12, 21):
             x0 = sx * xc - 1
             g.rect(x0, -24, x0 + 2, -21, ST); g.px(x0 + 1, -23, GL)
     brick(15, -29, 17, -24); g.hline(-30, 14, 18, ST)
     brick(-17, -29, -15, -24); g.hline(-30, -18, -14, ST)
     # windows on both floors, either side of the tower
     for sx in (-1, 1):
-        for xs in (9, 15, 21):
+        for xs in (10, 16, 22):
             x = xs if sx > 0 else -xs - 2
             window(x, -17); window(x, -9)
     # entrance
@@ -227,10 +256,10 @@ def mit():
     g = Grid()
     L, L2, L3, SH, WINC, DOME, DOMEH, DOMED, DOMEX = '#d6d9df', '#eceef2', '#fbfbfd', '#c1c5ce', '#7d8aa3', '#b9c6d9', '#d9e3f1', '#98a8c0', '#a9b8cf'
     # wings: three storeys of windows
-    g.rect(-31, -22, 31, -1, L)
-    g.hline(-22, -31, 31, SH)
+    g.rect(-29, -22, 29, -1, L)
+    g.hline(-22, -29, 29, SH)
     for top in (-19, -14, -9):
-        for xs in (20, 24, 28):
+        for xs in (19, 23, 27):
             g.sym(xs, top, xs + 1, top + 2, WINC)
     # drum and dome sit behind the portico
     g.rect(-13, -37, 13, -25, L)
@@ -290,50 +319,85 @@ def text_grid(word, x0, y0, c):
 def text_width(word): return sum(len(FONT[ch][0]) for ch in word) + len(word) - 1
 
 def dahod():
-    """Dahod Family Alumni Center (BU): warm-brick Georgian hall with a white pedimented entrance, slate roof, dormers and a cupola."""
+    """Dahod Family Alumni Center (BU): cream limestone Gothic Revival mansion: crenellated entrance tower with a
+    pointed-arch door and lancet windows, a tall chimney, two gables, green slate roof and a flag."""
     g = Grid()
-    BR, BRD, ST, SL, SLL, GL, DOOR = '#c9825a', '#b06c46', '#f3ead8', '#4a4e69', '#5f6488', '#3f4f73', '#6b3a2e'
-    RED, REDH = '#cc0000', '#e8504a'
-    def brick(x0, y0, x1, y1):
-        g.rect(x0, y0, x1, y1, BR)
+    ST, STL, STD = '#e6d6a8', '#f4ead0', '#cbb887'
+    SLT, SLTD = '#6f9a8c', '#557f73'
+    GLS, GLSL, DOOR, DOORD = '#44587a', '#8aa3c4', '#6b3a2e', '#4a2a22'
+    CHIM, POT = '#c98c5c', '#b5563a'
+    def ashlar(x0, y0, x1, y1):                      # limestone blocks: coursing lines with staggered joints
+        g.rect(x0, y0, x1, y1, ST)
         for y in range(y0, y1 + 1):
-            for x in range(x0, x1 + 1):
-                if (x + (y % 2) * 2) % 4 == 0: g.px(x, y, BRD)
-    def window(x, y):                       # 3x5 pane in a white frame
-        g.rect(x - 1, y - 1, x + 3, y + 5, ST); g.rect(x, y, x + 2, y + 4, GL); g.px(x + 1, y + 2, ST)
-    brick(-26, -20, 26, -1)
-    g.hline(-1, -26, 26, ST)                # stone base
-    # hipped slate roof, narrowing to a ridge
-    for i, half in enumerate((28, 26, 24, 22, 20, 18, 16, 14)):
-        g.rect(-half, -21 - i, half, -21 - i, SLL if i % 2 else SL)
-    # dormers either side of the entrance
-    for sx in (-1, 1):
-        for xc in (12, 20):
-            x0 = sx * xc - 1
-            g.rect(x0 - 1, -25, x0 + 3, -22, ST); g.rect(x0, -24, x0 + 2, -22, GL)
-    # windows on both floors
-    for sx in (-1, 1):
-        for xs in (11, 17, 22):
-            x = xs if sx > 0 else -xs - 2
-            window(x, -17); window(x, -9)
-    # entrance pavilion: white pediment, columns, red awning over the door
-    for i, half in enumerate((10, 8, 6, 4, 2)):
-        g.rect(-half, -26 - i, half, -26 - i, ST if i != 4 else ST)
-    g.rect(-9, -21, 9, -20, ST)
-    g.rect(-1, -24, 1, -22, GL)
-    brick(-8, -19, 8, -2)
-    g.rect(-4, -17, 4, -14, ST); g.rect(-3, -16, 3, -15, GL); g.px(0, -16, ST); g.px(0, -15, ST)
-    for cx in (-7, 6):
-        g.rect(cx, -19, cx + 1, -2, ST)
-    g.rect(-5, -12, 5, -11, RED); g.hline(-10, -5, 5, REDH)
-    g.rect(-3, -9, 3, -2, DOOR); g.px(0, -9, ST); g.vline(0, -8, -2, BRD)
-    g.rect(-9, -1, 9, -1, '#e5e7eb')
-    # cupola on the ridge with a red BU flag
-    g.rect(-5, -34, 5, -29, ST)
-    g.rect(-3, -33, -2, -30, GL); g.rect(2, -33, 3, -30, GL); g.rect(-1, -33, 1, -30, ST)
-    for i, half in enumerate((6, 5, 4, 3, 2, 1)):
-        g.rect(-half, -35 - i, half, -35 - i, SLL if i % 2 else SL)
-    g.vline(0, -45, -41, OL); g.rect(1, -45, 3, -44, RED)
+            if y % 4 == 0:
+                for x in range(x0, x1 + 1): g.px(x, y, STD)
+            elif (x0 + y) % 2 == 0:
+                pass
+        for y in range(y0, y1 + 1):
+            if y % 4 != 0:
+                for x in range(x0, x1 + 1):
+                    if (x + (y // 4) * 3) % 8 == 0: g.px(x, y, STD)
+    def lancet(x, top, h, w=2):                      # slim pointed window in a pale surround
+        g.rect(x - 1, top - 1, x + w, top + h, STL)
+        g.rect(x, top, x + w - 1, top + h - 1, GLS)
+        g.px(x, top, GLSL)
+        if w == 2: g.px(x + 1, top, STL)
+        g.vline(x, top + 1, top + h - 1, GLSL if h > 4 else GLS)
+    def gable(cx, wall_top, half):                   # stone gable with a pale coping and a finial
+        for i in range(half + 1):
+            y = wall_top - i; h = half - i
+            g.rect(cx - h, y, cx + h, y, ST)
+            for x in (cx - h, cx + h): g.px(x, y, SLT if i < half else STL)
+            if i < half:
+                for x in (cx - h - 1, cx + h + 1): g.px(x, y - 1, SLTD)
+        g.px(cx, wall_top - half, STL); g.vline(cx, wall_top - half - 3, wall_top - half - 1, STL)
+    # slate roof showing behind the tower
+    for i, half in enumerate((13, 11, 9, 7, 5)):
+        g.rect(-half, -39 - i, half, -39 - i, SLTD if i % 2 else SLT)
+    # tall chimney with pots, left of the tower top
+    g.rect(-9, -51, -5, -36, CHIM); g.rect(-10, -52, -4, -51, STD)
+    for y in range(-50, -37, 3):
+        for x in range(-9, -4): g.px(x, y, '#b57a4c')
+    g.rect(-8, -55, -7, -53, POT); g.rect(-6, -54, -5, -53, POT)
+    # wings
+    ashlar(-28, -28, -11, -5); gable(-19, -28, 8)
+    ashlar(11, -30, 28, -5); gable(19, -30, 8)
+    # central tower
+    ashlar(-10, -35, 10, -5)
+    g.rect(-11, -36, 11, -36, STL); g.hline(-35, -10, 10, STD)
+    for x in range(-10, 11):
+        if (x + 10) % 4 < 2: g.rect(x, -38, x, -37, ST)
+    g.hline(-37, -11, 11, STL)
+    # gable windows
+    for cx, top in ((-19, -26), (19, -28)):
+        for dx in (-3, 0, 3): g.px(cx + dx, top, GLS); g.px(cx + dx, top + 1, GLS)
+    # lancet windows, two floors on each wing, three above the door on the tower
+    for x in (-25, -20, -15):
+        lancet(x, -24, 6); lancet(x, -15, 6)
+    for x in (14, 19, 24):
+        lancet(x, -26, 6); lancet(x, -17, 6)
+    lancet(-7, -32, 8); lancet(-1, -32, 8, 3); lancet(6, -32, 8)
+    # name plate and a small light by the door
+    for x in range(-5, 6, 2): g.px(x, -20, STD)
+    
+    # pointed arch doorway with a dark wooden door
+    for i, half in enumerate((5, 5, 5, 5, 5, 5, 5, 5, 4, 3, 2, 1)):
+        g.rect(-half, -5 - i, half, -5 - i, STL)
+    for i, half in enumerate((4, 4, 4, 4, 4, 4, 4, 4, 3, 2, 1, 0)):
+        if i > 10: continue
+        g.rect(-half, -5 - i, half, -5 - i, DOOR)
+    g.vline(0, -14, -5, DOORD)
+    g.rect(-2, -13, -1, -12, '#e8b84a'); g.rect(1, -13, 2, -12, '#e8b84a')
+    # terrace wall with balusters, steps up to the door
+    g.rect(-29, -4, 29, -1, STL)
+    for x in range(-29, 30):
+        if x % 3 == 0:
+            g.rect(x, -3, x, -2, STD)
+    g.rect(-29, -4, 29, -4, STD)
+    g.rect(-5, -4, 5, -1, STL); g.hline(-3, -5, 5, STD); g.hline(-2, -6, 6, STL)
+    # flagpole and a white flag with a small red crest
+    g.vline(3, -60, -39, '#6b6f7a')
+    g.rect(4, -60, 10, -55, '#ffffff'); g.hline(-58, 5, 9, '#cc0000'); g.vline(7, -59, -56, '#cc0000')
     g.outline(OL)
     return g
 
@@ -425,9 +489,9 @@ def bubble(date, color, side):
 
 CAMPUSES = {
     #            page          label                color      sprite   tag      x    y   plaza  bubble tip (dx, dy, side)  walkers' direction
-    "harvard": dict(href="harvard.html", label="Harvard", color="#a51c30", sprite=harvard, word="HARVARD", x=90, y=77, rx=30, tip=(16, -36, 'right'), walk=-1),
+    "harvard": dict(href="harvard.html", label="Harvard", color="#a51c30", sprite=harvard, word="HARVARD", x=90, y=77, rx=34, tip=(16, -36, 'right'), walk=-1),
     "mit":     dict(href="mit.html", label="MIT", color="#5f6168", sprite=mit, word="MIT", x=290, y=77, rx=34, tip=(-16, -36, 'left'), walk=1),
-    "bu":      dict(href="bu.html", label="Boston University", color="#cc0000", sprite=dahod, word="BOSTON U", x=190, y=190, rx=27, tip=(24, -34, 'right'), walk=-1),
+    "bu":      dict(href="bu.html", label="Boston University", color="#cc0000", sprite=dahod, word="BOSTON U", x=190, y=190, rx=34, tip=(30, -34, 'right'), walk=-1),
 }
 if NEXT["campus"] not in CAMPUSES:
     raise SystemExit("next-meeting.json: campus must be one of " + ", ".join(CAMPUSES))
@@ -798,17 +862,21 @@ html = (HTML.replace("@@VIEW@@", VIEW).replace("@@COMPACT@@", COMPACT_VIEW).repl
         .replace("@@FLOWERS@@", svg_paths(flowers)).replace("@@SPRING@@", svg_paths(spring_extra)).replace("@@LITTER@@", svg_paths(litter))
         .replace("@@GROUND@@", svg_paths(ground)).replace("@@RIVER@@", svg_paths(river))
         .replace("@@SH1@@", svg_paths(SHIM[0])).replace("@@SH2@@", svg_paths(SHIM[1])).replace("@@SH3@@", svg_paths(SHIM[2]))
-        .replace("@@TREES@@", trees_svg).replace("@@BOAT@@", boat_svg()).replace("@@BOATY@@", str(yc(40)))
+        .replace("@@TREES@@", trees_svg + "\n\t\t\t" + XMAS_SVG).replace("@@BOAT@@", boat_svg()).replace("@@BOATY@@", str(yc(40)))
         .replace("@@CAMPUSES@@", "\n\t\t\t".join(campus(k) for k in ("harvard", "mit", "bu"))))
 (OUT / "index.html").write_text(html, encoding="utf-8")
 
 # ------------------------------------------------------------------ schedule page (data in schedule.json)
 def chalk_icon():
-    """A little chalkboard (15 x 12)."""
-    g = Grid(); WOOD, SLATE, CHALK, TRAY = '#8a5a3b', '#2f4a3f', '#f4f4f0', '#cfb98f'
-    g.rect(0, 0, 14, 11, WOOD); g.rect(1, 1, 13, 9, SLATE)
-    g.hline(10, 2, 12, TRAY); g.px(11, 10, CHALK)
-    g.hline(3, 3, 8, CHALK); g.hline(5, 3, 6, CHALK); g.hline(5, 8, 11, CHALK); g.hline(7, 3, 10, CHALK)
+    """A chalkboard on a wooden frame with a chalk tray, equations and a little orbit sketch (25 x 17)."""
+    g = Grid(); WOOD, SLATE, CHALK, TRAY, DUST = '#8a5a3b', '#2f4a3f', '#f4f4f0', '#cfb98f', '#a9b8ae'
+    g.rect(0, 0, 24, 16, WOOD); g.rect(1, 1, 23, 13, SLATE)
+    g.rect(1, 14, 23, 15, TRAY); g.hline(14, 1, 23, '#e3d3ad')
+    g.rect(4, 14, 6, 14, CHALK); g.rect(18, 14, 20, 15, DUST)                  # a stick of chalk and an eraser in the tray
+    g.hline(3, 3, 12, CHALK); g.hline(5, 3, 8, CHALK); g.hline(5, 10, 13, CHALK)
+    g.hline(7, 3, 11, CHALK); g.hline(9, 3, 7, CHALK); g.hline(9, 9, 12, CHALK); g.hline(11, 3, 10, CHALK)
+    for x, y in ((17, 4), (18, 4), (19, 4), (16, 5), (20, 5), (16, 6), (20, 6), (17, 7), (18, 7), (19, 7)): g.px(x, y, CHALK)   # circle
+    g.px(18, 5, '#ffd23f'); g.px(21, 9, CHALK); g.px(15, 10, CHALK); g.hline(10, 17, 22, CHALK)
     g.outline(OL)
     return g
 
@@ -848,6 +916,8 @@ TALK_TYPES = {"chalk": ("Chalk talk", "at the board, no slides", chalk_icon),
               "colloquium": ("Colloquium", "a talk with slides", projector_icon),
               "workshop": ("Workshop", "open group discussion", table_icon)}
 TALK_ICON = {k: icon_svg(v[2](), 2, "t-svg") for k, v in TALK_TYPES.items()}
+_WIDTHS = {k: (lambda b: b[2] - b[0] + 1)(c['sprite']().bbox()) for k, c in CAMPUSES.items()}
+assert len(set(_WIDTHS.values())) == 1, f'campus icons must all be the same width: {_WIDTHS}'
 CAMPUS_ICON = {k: icon_svg(c["sprite"](), 2, "m-svg", snow=True) for k, c in CAMPUSES.items()}
 
 def esc(t): return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")

@@ -177,6 +177,12 @@ h1 {
 /* ---------- Next-meeting speech bubble and the people walking to it ---------- */
 .bob { animation: bob 1.6s steps(1, end) infinite; }
 .dbob { animation: bob 1.2s steps(1, end) infinite; }
+/* Christmas tree: only on 25 December (season.js sets data-xmas); the two light sets blink in turn */
+.xmas { display: none; }
+:root[data-xmas] .xmas { display: inline; }
+.xla { animation: xl 1.6s steps(1, end) infinite; }
+.xlb { animation: xl 1.6s steps(1, end) infinite 0.8s; }
+@keyframes xl { 0% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes bob { 0% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
 
 .walk-l { animation: walk-l 16s steps(70, end) infinite; }
@@ -275,7 +281,7 @@ a.p-site:hover { background: var(--navy); color: var(--cream); }
 	.sh { animation: none; }
 	.sh1 { opacity: 1; }
 	.bldg { transition: none; }
-	.bob, .dbob, .fade, .fb, .pt, .sw { animation: none; }
+	.bob, .dbob, .xla, .xlb, .fade, .fb, .pt, .sw { animation: none; }
 	.p { display: none !important; }
 	.fb { opacity: 0; }
 	.fa { animation: none; opacity: 1; }

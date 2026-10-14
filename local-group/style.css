@@ -69,6 +69,14 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* The area outside the page (what shows when you pull the page past its top or bottom edge on a phone or trackpad):
+   the deep blue of the night sky at the top, and the ground colour at the bottom (season.js adds .lower once you are
+   scrolled to the lower half). Pages without a sky header (the placeholder pages) just use the ground colour. */
+html { background: #0f1535; }
+html.lower { background: var(--grass); }
+:root:has(body.sub) { background: var(--grass); }
+:root[data-time="night"].lower { background: #34503f; background: color-mix(in srgb, var(--grass) 55%, #0e1640); }
+
 body {
 	margin: 0;
 	min-height: 100vh;
@@ -160,7 +168,7 @@ h1 {
 @keyframes shimmer { 0% { opacity: 1; } 33.34% { opacity: 0; } 100% { opacity: 0; } }
 
 /* ---------- Clickable campuses ---------- */
-.campus { cursor: pointer; outline: none; }
+.campus { outline: none; }
 .bldg { transition: transform 0.12s steps(2, end); }
 .campus:hover .bldg,
 .campus:focus-visible .bldg { transform: translateY(-2px); filter: brightness(1.12); }
@@ -293,7 +301,7 @@ a.p-site:hover { background: var(--navy); color: var(--cream); }
 .tod {
 	position: absolute; top: 1rem; right: 1.25rem; z-index: 3;
 	display: inline-flex; align-items: center; justify-content: center;
-	width: 3rem; height: 2.6rem; padding: 0; cursor: pointer;
+	width: 3rem; height: 2.6rem; padding: 0;
 	background: var(--cream); border: 3px solid var(--navy); box-shadow: 3px 3px 0 var(--navy);
 }
 .tod:hover { background: #fff; transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--navy); }
@@ -308,3 +316,8 @@ a.p-site:hover { background: var(--navy); color: var(--cream); }
 :root[data-time="night"] .dim { filter: url(#dim); }
 /* the ground is just the page background: give it the same 45% blend towards deep blue as the filter above */
 :root[data-time="night"] body.home { background: #34503f; background: color-mix(in srgb, var(--grass) 55%, #0e1640); }
+
+/* ---------- Old-school pixel cursors: a classic arrow, and a pointing hand over anything clickable ---------- */
+/* (2 CSS px per art pixel, plus a 4x copy for sharp high-density screens; hotspots: the arrow tip and the fingertip) */
+html, body { cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAkCAYAAACTz/ouAAAAbElEQVR42uXXuw0AIAgEUEewchj330tjYUNi/MFxRpIr4ZVAiCmXlmBVMMAMggG91CE4oA65AWqQO3AN0QDHEB2wDdECyxA9MIWeAYYQHSBX7Cx+gNoiggNywDUEA0YN7wBm54058M8FSPtPVLba6JVlCmyrAAAAAElFTkSuQmCC") 0 0, default; cursor: -webkit-image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAkCAYAAACTz/ouAAAAbElEQVR42uXXuw0AIAgEUEewchj330tjYUNi/MFxRpIr4ZVAiCmXlmBVMMAMggG91CE4oA65AWqQO3AN0QDHEB2wDdECyxA9MIWeAYYQHSBX7Cx+gNoiggNywDUEA0YN7wBm54058M8FSPtPVLba6JVlCmyrAAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABICAYAAACwc3YrAAAAmElEQVR42u3auQ2AQAxFQUogohj67wtSRILQHrZXY8kFTPzfth/n9fyt2gEAdAaUAwEAdAa8Lz0IAGAwID0IAGAyIB0IACAYEA4CAEgGmA4CAEgOGA4CACgG6A4CACgOaAYBACwG+A0CAEgO+BoRWx8AYDYg3SACABA8dIeDAACCgycAgNUA5eIRAAABFQBAqS5VHQ+QDHADlCKifr+zCdcAAAAASUVORK5CYII=") 2x) 0 0, default; cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAkCAYAAACTz/ouAAAAbElEQVR42uXXuw0AIAgEUEewchj330tjYUNi/MFxRpIr4ZVAiCmXlmBVMMAMggG91CE4oA65AWqQO3AN0QDHEB2wDdECyxA9MIWeAYYQHSBX7Cx+gNoiggNywDUEA0YN7wBm54058M8FSPtPVLba6JVlCmyrAAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABICAYAAACwc3YrAAAAmElEQVR42u3auQ2AQAxFQUogohj67wtSRILQHrZXY8kFTPzfth/n9fyt2gEAdAaUAwEAdAa8Lz0IAGAwID0IAGAyIB0IACAYEA4CAEgGmA4CAEgOGA4CACgG6A4CACgOaAYBACwG+A0CAEgO+BoRWx8AYDYg3SACABA8dIeDAACCgycAgNUA5eIRAAABFQBAqS5VHQ+QDHADlCKifr+zCdcAAAAASUVORK5CYII=") 2x) 0 0, default; }
+a, a *, button, button *, .campus, .campus *, [role="button"], summary, label[for], select { cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAgCAYAAAAFQMh/AAAAaklEQVR42mNgIAAExKz+I2MGegG6WwyzCB3Q3AGjFo9aPGAW0yybDVqLaeYgulmMSyOpFpOcGOluMakGkQswHDDoLKY2GDwW08sBoxYPvMW0cgDJReeoxTS3mFoOoHp9PGoxzSymFA86iwE0Ufcnjdr7vAAAAABJRU5ErkJggg==") 9 0, pointer; cursor: -webkit-image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAgCAYAAAAFQMh/AAAAaklEQVR42mNgIAAExKz+I2MGegG6WwyzCB3Q3AGjFo9aPGAW0yybDVqLaeYgulmMSyOpFpOcGOluMakGkQswHDDoLKY2GDwW08sBoxYPvMW0cgDJReeoxTS3mFoOoHp9PGoxzSymFA86iwE0Ufcnjdr7vAAAAABJRU5ErkJggg==") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAABACAYAAABGHBTIAAAAlElEQVR42u3Zyw2AIBAFQErwZDH235d2IDFmYRfmJXuGeSc+rf3McV7327TVAgy8GLCX8gUAAwMDAwMDAwMDJwGXu2wAAwPXLggYuBj464LR4PCDDTBwcXD0hkanWwAw8Obg7AEG3g28WgHAwMDAwMCVwdUKCH/UAwYGBgYGngjOVkD630NgYGBgYOCB4NkDDLw5+AGuANzGeIXZVAAAAABJRU5ErkJggg==") 2x) 9 0, pointer; cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAgCAYAAAAFQMh/AAAAaklEQVR42mNgIAAExKz+I2MGegG6WwyzCB3Q3AGjFo9aPGAW0yybDVqLaeYgulmMSyOpFpOcGOluMakGkQswHDDoLKY2GDwW08sBoxYPvMW0cgDJReeoxTS3mFoOoHp9PGoxzSymFA86iwE0Ufcnjdr7vAAAAABJRU5ErkJggg==") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAABACAYAAABGHBTIAAAAlElEQVR42u3Zyw2AIBAFQErwZDH235d2IDFmYRfmJXuGeSc+rf3McV7327TVAgy8GLCX8gUAAwMDAwMDAwMDJwGXu2wAAwPXLggYuBj464LR4PCDDTBwcXD0hkanWwAw8Obg7AEG3g28WgHAwMDAwMCVwdUKCH/UAwYGBgYGngjOVkD630NgYGBgYOCB4NkDDLw5+AGuANzGeIXZVAAAAABJRU5ErkJggg==") 2x) 9 0, pointer; }

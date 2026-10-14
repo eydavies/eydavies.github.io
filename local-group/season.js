@@ -29,4 +29,14 @@
 	if ((today.month === 11 && today.day === 25) || /[?&]xmas\b/.test(window.location.search)) {
 		document.documentElement.setAttribute('data-xmas', '1');
 	}
+
+	/* which colour sits behind the page when it is pulled past an edge: sky at the top, ground at the bottom (see style.css) */
+	var root = document.documentElement;
+	function lowerHalf() {
+		var max = root.scrollHeight - window.innerHeight, y = window.pageYOffset || 0;
+		root.classList.toggle('lower', max > 0 && y > max / 2);
+	}
+	window.addEventListener('scroll', lowerHalf, { passive: true });
+	window.addEventListener('resize', lowerHalf);
+	window.addEventListener('load', lowerHalf);
 })();

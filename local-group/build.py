@@ -648,24 +648,23 @@ def rower(frame):
         for i in range(n + 1): g.px(round(x0 + (x1 - x0) * i / n), round(y0 + (y1 - y0) * i / n), col)
     g.rect(-9, -1, 8, 0, '#fffaf0'); g.px(9, -1, '#fffaf0'); g.hline(-1, 3, 6, '#cc0000')
     if frame == 0:                                   # catch
-        hip, sh, hx = 1, -1, -3
-        line(-2, -7, -7, -5, ROWER_SKIN)                                        # arms stretched out to the handle
-        line(-8, -5, 6, 2, OAR); line(5, 2, 6, 2, BLADE); g.px(4, 2, BLADE)
+        hip, sh, hx = 1, -1, -2
+        line(-2, -5, -4, -4, ROWER_SKIN)                                        # arms stretched out to the handle
+        line(-5, -4, 5, 1, OAR); g.px(5, 1, BLADE); g.px(4, 1, BLADE)
     else:                                            # finish
-        hip, sh, hx = 3, 3, 2
-        line(3, -7, 2, -5, ROWER_SKIN)                                          # hands drawn in to the chest
-        line(2, -5, -12, 2, OAR); line(-12, 2, -11, 2, BLADE); g.px(-10, 2, BLADE)
-    g.rect(hip - 3, -3, hip, -3, SHORTS); g.px(-4, -3, SHORTS); g.px(-4, -2, SHORTS); g.px(-5, -2, SHOE)        # legs out to the stretcher
-    g.rect(hip - 1, -2, hip + 1, -2, OAR)                                                                        # the seat
-    g.rect(sh - 1, -8, sh + 1, -7, JERSEY); g.rect(sh, -6, sh + 2, -4, JERSEY)                                  # shoulders and back
-    g.rect(hx, -11, hx + 2, -9, HAIR); g.rect(hx, -10, hx, -9, ROWER_SKIN)                                      # head: hair, face towards the stern
+        hip, sh, hx = 2, 2, 1
+        line(3, -5, 2, -4, ROWER_SKIN)                                          # hands drawn in to the chest
+        line(2, -4, -8, 1, OAR); g.px(-8, 1, BLADE); g.px(-7, 1, BLADE)
+    g.rect(hip - 3, -2, hip, -2, SHORTS); g.px(hip - 4, -2, SHOE)                                                # legs out to the stretcher
+    g.rect(sh, -5, sh + 1, -3, JERSEY)                                                                           # shoulders and back
+    g.rect(hx, -7, hx + 1, -6, HAIR); g.px(hx, -6, ROWER_SKIN)                                                   # head: hair, face towards the stern
     g.outline(OL)
     for x in (-12, -14, -17): g.px(x, -1 if x == -12 else 0, '#ffffff')
     g.px(-15, -1, '#ffffff'); g.px(-18, -1, '#ffffff')
     if frame == 1:                                   # splashes where the blade leaves the water
-        for (x, y) in ((-13, 0), (-14, 1), (-9, 1)): g.px(x, y, '#ffffff')
+        for (x, y) in ((-10, 0), (-9, 2), (-11, 2)): g.px(x, y, '#ffffff')
     else:
-        for (x, y) in ((7, 1), (8, 2)): g.px(x, y, '#ffffff')
+        for (x, y) in ((7, 0), (7, 2)): g.px(x, y, '#ffffff')
     return g
 
 # winter: an ice-skater in a red hat and a yellow scarf, leaning into a long forward glide: push off, then glide

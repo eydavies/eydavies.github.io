@@ -2,7 +2,7 @@
    Loaded (tiny, not deferred) in <head> so the page never flashes the wrong colours.
      Dec-Feb winter (snow)   Mar-May spring (blossom)   Jun-Aug summer   Sep-Nov fall (foliage)
    i.e. the season changes on 1 Dec, 1 Mar, 1 Jun and 1 Sep (Boston time); on 25 Dec a Christmas tree appears.
-   To preview a season, add ?season=winter (or spring / summer / fall) to the address; add ?xmas to see the tree. */
+   To preview a season, add ?season=winter (or spring / summer / fall) to the address; add ?xmas to see the tree, ?night or ?day for night mode. */
 (function () {
 	'use strict';
 	var BY_MONTH = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'fall', 'fall', 'fall', 'winter'];
@@ -20,6 +20,12 @@
 	var season = forced ? (forced[1] === 'autumn' ? 'fall' : forced[1]) : BY_MONTH[bostonDate().month];
 	document.documentElement.setAttribute('data-season', season);
 	var today = bostonDate();
+	/* night mode: remembered between visits; ?night / ?day force it (handy for previews) */
+	var night = false;
+	try { night = window.localStorage.getItem('lg-night') === '1'; } catch (e) { /* storage blocked: stay in day mode */ }
+	if (/[?&]night\b/.test(window.location.search)) { night = true; }
+	if (/[?&]day\b/.test(window.location.search)) { night = false; }
+	if (night) { document.documentElement.setAttribute('data-time', 'night'); }
 	if ((today.month === 11 && today.day === 25) || /[?&]xmas\b/.test(window.location.search)) {
 		document.documentElement.setAttribute('data-xmas', '1');
 	}

@@ -5,6 +5,25 @@
 
 	var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+	/* ---------- the moon / sun button: day <-> night (season.js applies the saved choice before first paint) ---------- */
+	var tod = document.getElementById('tod'), root = document.documentElement;
+	function syncTod() {
+		if (!tod) { return; }
+		var night = root.getAttribute('data-time') === 'night';
+		tod.setAttribute('aria-pressed', night ? 'true' : 'false');
+		tod.setAttribute('aria-label', night ? 'Switch to day mode' : 'Switch to night mode');
+		tod.setAttribute('title', night ? 'Day mode' : 'Night mode');
+	}
+	if (tod) {
+		syncTod();
+		tod.addEventListener('click', function () {
+			var night = root.getAttribute('data-time') !== 'night';
+			if (night) { root.setAttribute('data-time', 'night'); } else { root.removeAttribute('data-time'); }
+			try { window.localStorage.setItem('lg-night', night ? '1' : '0'); } catch (e) { /* fine: just not remembered */ }
+			syncTod();
+		});
+	}
+
 	/* ---------- buildings hop before the page changes ---------- */
 	var links = Array.prototype.slice.call(document.querySelectorAll('.campus'));
 	links.forEach(function (a) {

@@ -288,3 +288,23 @@ a.p-site:hover { background: var(--navy); color: var(--cream); }
 	.fa { animation: none; opacity: 1; }
 	.walk-l, .walk-r { animation: none; transform: translateX(var(--off, 0px)); }
 }
+
+/* ---------- Night mode (home page only): the moon/sun button sets <html data-time="night"> ---------- */
+.tod {
+	position: absolute; top: 1rem; right: 1.25rem; z-index: 3;
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 3rem; height: 2.6rem; padding: 0; cursor: pointer;
+	background: var(--cream); border: 3px solid var(--navy); box-shadow: 3px 3px 0 var(--navy);
+}
+.tod:hover { background: #fff; transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--navy); }
+.tod:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--navy); }
+.tod span { display: inline-flex; }
+.tod-svg { display: block; image-rendering: pixelated; }
+.tod-sun { display: none !important; }
+:root[data-time="night"] .tod-moon { display: none !important; }
+:root[data-time="night"] .tod-sun { display: inline-flex !important; }
+.lit { display: none; }
+:root[data-time="night"] .lit { display: inline; }
+:root[data-time="night"] .dim { filter: url(#dim); }
+/* the ground is just the page background: give it the same 45% blend towards deep blue as the filter above */
+:root[data-time="night"] body.home { background: #34503f; background: color-mix(in srgb, var(--grass) 55%, #0e1640); }

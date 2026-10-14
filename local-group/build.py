@@ -496,6 +496,63 @@ if NEXT["campus"] not in CAMPUSES:
     raise SystemExit("next-meeting.json: campus must be one of " + ", ".join(CAMPUSES))
 NEXT_DATE = NEXT["date"].strip()
 
+# ------------------------------------------------------------------ night mode: lit windows + the moon/sun button
+# Windows are found by their colour in each sprite; at night the sprite is dimmed (an SVG colour filter, see style.css)
+# and these pixels are drawn again on top in warm light, each window with its own slightly different warmth.
+WINDOW_COLOURS = {"harvard": {'#3f4f73'}, "mit": {'#7d8aa3'}, "bu": {'#44587a', '#8aa3c4', '#e8b84a'}}
+LIGHTS = ['#ffe27a', '#ffd058', '#ffeaa0', '#ffd866']
+def night_lights(spr, colours):
+    lit = {k for k, c in spr.p.items() if c in colours}
+    seen, comps = set(), []
+    for k in sorted(lit, key=lambda k: (k[1], k[0])):
+        if k in seen: continue
+        stack, comp = [k], []
+        seen.add(k)
+        while stack:
+            x, y = stack.pop(); comp.append((x, y))
+            for q in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if q in lit and q not in seen: seen.add(q); stack.append(q)
+        comps.append(comp)
+    g, halo = Grid(), Grid()
+    for i, comp in enumerate(comps):
+        col = LIGHTS[(comp[0][0] * 7 + comp[0][1] * 3 + i) % len(LIGHTS)]
+        for (x, y) in comp:
+            g.px(x, y, col)
+            for q in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if q in spr.p and q not in lit: halo.px(q[0], q[1], '#ffd866')     # a soft glow on the frame around it
+    return f'<g opacity=".28">{svg_paths(halo)}</g>{svg_paths(g)}'
+
+def icon_svg(spr, scale, cls, snow=False):
+    x0, y0, x1, y1 = spr.bbox(); w, h = x1 - x0 + 1, y1 - y0 + 1
+    inner = svg_paths(spr) + (f'<g class="snow">{svg_paths(snow_layer(spr))}</g>' if snow else '')
+    return (f'<svg class="{cls}" viewBox="{x0} {y0} {w} {h}" width="{w * scale}" height="{h * scale}" '
+            f'shape-rendering="crispEdges" aria-hidden="true" focusable="false">{inner}</svg>')
+
+def moon_icon():
+    """A crescent moon with a few stars (13 x 13)."""
+    g = Grid(); M, MS = '#fff0b8', '#e9c96e'
+    g.disc(6, 6, 6, 6, M); 
+    for (x, y), c in list(g.p.items()):
+        if ((x - 9) / 5.3) ** 2 + ((y - 4) / 5.3) ** 2 <= 1: del g.p[(x, y)]
+    for (x, y) in ((1, 7), (2, 9), (3, 10)): g.px(x, y, MS)
+    g.outline(OL)
+    g.px(10, 9, '#ffe9a8'); g.px(11, 7, '#ffe9a8'); g.px(9, 11, '#ffe9a8')
+    return g
+
+def sun_icon():
+    """A sun with short rays (13 x 13)."""
+    g = Grid(); S, SH = '#ffd23f', '#f0a830'
+    g.disc(6, 6, 3.6, 3.6, S)
+    for (x, y), c in list(g.p.items()):
+        if x + y >= 14: g.px(x, y, SH)
+    for (x, y) in ((6, 0), (6, 1), (6, 11), (6, 12), (0, 6), (1, 6), (11, 6), (12, 6),
+                   (2, 2), (3, 3), (10, 2), (9, 3), (2, 10), (3, 9), (10, 10), (9, 9)): g.px(x, y, S)
+    g.outline(OL)
+    return g
+
+TOD_BUTTON = ('<button class="tod" type="button" id="tod" aria-pressed="false" aria-label="Switch to night mode" title="Night mode">'
+              f'<span class="tod-moon">{icon_svg(moon_icon(), 2, "tod-svg")}</span><span class="tod-sun">{icon_svg(sun_icon(), 2, "tod-svg")}</span></button>')
+
 def campus(key):
     c = CAMPUSES[key]
     spr = c["sprite"]()
@@ -509,17 +566,15 @@ def campus(key):
     extra_after = ""
     if nxt:
         tx, ty, side = c["tip"]
-        extra_after = (f'<g aria-hidden="true">{walkers(c["walk"])}</g>\n\t\t\t\t\t'
+        extra_after = (f'<g class="dim" aria-hidden="true">{walkers(c["walk"])}</g>\n\t\t\t\t\t'
                        f'<g transform="translate({tx} {ty})"><g class="bscale"><g class="bob">{svg_paths(bubble(NEXT_DATE, c["color"], side))}</g></g></g>')
     return f'''<g class="cg cg-{key}{' bot' if key == 'bu' else ''}"><g transform="translate({c["x"]} {c["y"]})">
 				<a class="campus{' next' if nxt else ''}" href="{c["href"]}" style="--c:{c["color"]}" aria-label="{label}">
 					<rect x="-{rx + 3}" y="-60" width="{2 * rx + 6}" height="78" fill="none" pointer-events="all"/>
-					{extra_before}
-					{shadow}
-					<g class="plaza">{plz}</g>
+					<g class="dim">{extra_before}{shadow}<g class="plaza">{plz}</g></g>
 					<g class="bldg"><g transform="translate({dx} 0)">
-					{svg_paths(spr)}
-					<g class="snow">{svg_paths(snow_layer(spr))}</g>
+					<g class="dim">{svg_paths(spr)}<g class="snow">{svg_paths(snow_layer(spr))}</g></g>
+					<g class="lit" aria-hidden="true">{night_lights(spr, WINDOW_COLOURS[key])}</g>
 					</g></g>
 					{extra_after}
 					<g class="tag">{tag(c["word"])}</g>
@@ -558,7 +613,7 @@ def observers():
     tel.p = {(-x, y): c for (x, y), c in tel.p.items()}          # mirror: the tube now points up-left
     tel.pre = {(-x, y): c for (x, y), c in tel.pre.items()}
     v, ptr, third = STARGAZERS
-    return (f'<g class="obs"><g transform="translate(340 30)" aria-hidden="true" pointer-events="none">'
+    return (f'<g class="obs dim"><g transform="translate(340 30)" aria-hidden="true" pointer-events="none">'
             f'<g>{svg_paths(tel)}<g class="snow">{svg_paths(snow_layer(tel))}</g></g>'
             f'<g transform="translate(10 0)">{svg_paths(person(*v, -1, 1))}</g>'
             f'<g transform="translate(18 0)">{svg_paths(person(*ptr, -1, 1, point=True))}</g>'
@@ -832,6 +887,7 @@ HTML = r'''<!DOCTYPE html>
 		<header class="topbar">
 			<a href="../">&lt; Elliot Y. Davies</a>
 		</header>
+		@@TOD@@
 
 		<div class="intro">
 			<h1>The Local Group</h1>
@@ -846,7 +902,13 @@ HTML = r'''<!DOCTYPE html>
 
 	<main class="scene-wrap" id="main">
 		<svg class="scene" viewBox="@@VIEW@@" data-view="@@VIEW@@" data-compact="@@COMPACT@@" data-ctop="@@CTOP@@" data-cbot="@@CBOT@@" data-river="@@RIVERCFG@@" data-w="@@W@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" role="group" aria-label="Pixel map of the Charles River with Harvard and MIT on the north bank and Boston University on the south bank">
-			<g aria-hidden="true">
+			<defs>
+				<!-- night: every colour moves 45% of the way towards a deep blue (same blend as the page background in style.css) -->
+				<filter id="dim" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+					<feColorMatrix type="matrix" values="0.55 0 0 0 0.025  0 0.55 0 0 0.039  0 0 0.55 0 0.1125  0 0 0 1 0"/>
+				</filter>
+			</defs>
+			<g aria-hidden="true" class="dim">
 				<g>@@GROUND@@</g>
 				<g class="g-flowers">@@FLOWERS@@</g>
 				<g class="g-spring">@@SPRING@@</g>
@@ -871,7 +933,7 @@ HTML = r'''<!DOCTYPE html>
 </html>
 '''
 
-html = (HTML.replace("@@VIEW@@", VIEW).replace("@@COMPACT@@", COMPACT_VIEW).replace("@@CTOP@@", str(compact_top())).replace("@@CBOT@@", "226").replace("@@BRIDGE@@", svg_paths(bridge())).replace("@@BRIDGEX@@", str(BRIDGE_X)).replace("@@OBSERVERS@@", observers()).replace("@@W@@", str(W)).replace("@@GALAXY@@", GALAXY).replace("@@GALW@@", str(GAL_W)).replace("@@GALH@@", str(GAL_H))
+html = (HTML.replace("@@TOD@@", TOD_BUTTON).replace("@@VIEW@@", VIEW).replace("@@COMPACT@@", COMPACT_VIEW).replace("@@CTOP@@", str(compact_top())).replace("@@CBOT@@", "226").replace("@@BRIDGE@@", svg_paths(bridge())).replace("@@BRIDGEX@@", str(BRIDGE_X)).replace("@@OBSERVERS@@", observers()).replace("@@W@@", str(W)).replace("@@GALAXY@@", GALAXY).replace("@@GALW@@", str(GAL_W)).replace("@@GALH@@", str(GAL_H))
         .replace("@@RIVERCFG@@", f"{RIVER_Y},{AMP},{PERIOD}")
         .replace("@@SEASON@@", BUILD_SEASON).replace("@@PARTICLES@@", PARTICLES)
         .replace("@@FLOWERS@@", svg_paths(flowers)).replace("@@SPRING@@", svg_paths(spring_extra)).replace("@@LITTER@@", svg_paths(litter))
@@ -920,12 +982,6 @@ def table_icon():
     g.rect(8, 3, 10, 4, PAPER); g.px(15, 3, MUG); g.px(15, 4, MUG)
     g.outline(OL)
     return g
-
-def icon_svg(spr, scale, cls, snow=False):
-    x0, y0, x1, y1 = spr.bbox(); w, h = x1 - x0 + 1, y1 - y0 + 1
-    inner = svg_paths(spr) + (f'<g class="snow">{svg_paths(snow_layer(spr))}</g>' if snow else '')
-    return (f'<svg class="{cls}" viewBox="{x0} {y0} {w} {h}" width="{w * scale}" height="{h * scale}" '
-            f'shape-rendering="crispEdges" aria-hidden="true" focusable="false">{inner}</svg>')
 
 TALK_TYPES = {"chalk": ("Chalk talk", "at the board, no slides", chalk_icon),
               "colloquium": ("Colloquium", "a talk with slides", projector_icon),

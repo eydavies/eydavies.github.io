@@ -864,6 +864,39 @@ def compact_top():
         c = CAMPUSES[NEXT["campus"]]; tops.append(c["y"] + c["tip"][1] - 56 - LIFT)
     return min(tops)
 
+# ------------------------------------------------------------------ easter egg: two little figures who appear where you click
+# (desktop only, see menu.js). Facing right; menu.js mirrors them. 'w' = walking (2 frames), 's' = swimming (head and
+# shoulders above the water, 2 frames of ripples). A has dark skin and B light skin.
+def egg_figure(kind, frame, swim=False):
+    g = Grid()
+    if kind == 'A':       # a young student: red beanie, green hoodie, backpack
+        SKIN, HAT, BAND, TOP, TOPD, PANTS, PACK = '#7a4a2a', '#e63946', '#ff8a8a', '#3fa46a', '#2f8a56', '#3a5a9a', '#f2b134'
+        g.px(0, -12, '#ffffff'); g.rect(-1, -11, 1, -11, HAT); g.rect(-1, -10, 1, -10, BAND)
+        g.rect(-1, -9, 1, -8, SKIN); g.px(1, -9, '#1d1d1d')
+        g.rect(-1, -7, 1, -4, TOP); g.px(0, -5, TOPD); g.px(-2, -6, TOP)
+        g.rect(-3, -7, -2, -5, PACK); g.px(-3, -4, PACK)
+    else:                 # an older man: white hair, round glasses, scarf, mustard cardigan and a walking stick
+        SKIN, HAIR, GLS, SCARF, TOP, TOPD, PANTS = '#f1c27d', '#f4f4f0', '#2b2438', '#c0392b', '#e0a030', '#b9791c', '#6b4a2e'
+        g.rect(-1, -11, 1, -10, HAIR); g.px(-2, -10, HAIR); g.px(-2, -9, HAIR)
+        g.rect(-1, -9, 1, -8, SKIN); g.px(0, -9, GLS); g.px(1, -9, GLS)
+        g.rect(-1, -7, 1, -7, SCARF); g.px(-2, -7, SCARF); g.px(-2, -6, SCARF)
+        g.rect(-1, -6, 1, -4, TOP); g.px(0, -5, TOPD); g.px(0, -4, TOPD); g.px(2, -6, TOP)
+        if not swim: g.vline(3, -6, -1, '#6b4429')
+    if swim:
+        g.outline(OL)
+        for x in ((-3, -2, 2, 3) if frame == 0 else (-2, -1, 1, 2)): g.px(x, -6, '.shm')
+        return g
+    if frame == 0:
+        for y in (-3, -2): g.px(-1, y, PANTS); g.px(1, y, PANTS)
+        g.px(-1, -1, '#2b2438'); g.px(1, -1, '#2b2438')
+    else:
+        for y in (-3, -2): g.px(0, y, PANTS)
+        g.px(0, -1, '#2b2438'); g.px(-1, -1, '#2b2438')
+    g.outline(OL)
+    return g
+EGG_DEFS = "".join(f'<g id="egg-{k}-{t}{f}">{svg_paths(egg_figure(k, f, t == "s"))}</g>' for k in "AB" for t in "ws" for f in (0, 1))
+EGG_OBST = ";".join(f'{c["x"]},{c["y"] - (62 if c["y"] < 100 else 46)},{c["y"] + 17},32' for c in CAMPUSES.values())     # x, top, bottom, half-width of each building
+
 # ------------------------------------------------------------------ page
 HTML = r'''<!DOCTYPE html>
 <html lang="en" data-season="@@SEASON@@">
@@ -901,8 +934,9 @@ HTML = r'''<!DOCTYPE html>
 	</div>
 
 	<main class="scene-wrap" id="main">
-		<svg class="scene" viewBox="@@VIEW@@" data-view="@@VIEW@@" data-compact="@@COMPACT@@" data-ctop="@@CTOP@@" data-cbot="@@CBOT@@" data-river="@@RIVERCFG@@" data-w="@@W@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" role="group" aria-label="Pixel map of the Charles River with Harvard and MIT on the north bank and Boston University on the south bank">
+		<svg class="scene" viewBox="@@VIEW@@" data-view="@@VIEW@@" data-compact="@@COMPACT@@" data-ctop="@@CTOP@@" data-cbot="@@CBOT@@" data-river="@@RIVERCFG@@" data-bridge="@@BRIDGEX@@" data-obst="@@OBST@@" data-w="@@W@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" role="group" aria-label="Pixel map of the Charles River with Harvard and MIT on the north bank and Boston University on the south bank">
 			<defs>
+				@@EGGDEFS@@
 				<!-- night: every colour moves 45% of the way towards a deep blue (same blend as the page background in style.css) -->
 				<filter id="dim" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
 					<feColorMatrix type="matrix" values="0.55 0 0 0 0.025  0 0.55 0 0 0.039  0 0 0.55 0 0.1125  0 0 0 1 0"/>
@@ -919,6 +953,7 @@ HTML = r'''<!DOCTYPE html>
 					<g class="sh sh2">@@SH2@@</g>
 					<g class="sh sh3">@@SH3@@</g>
 					<g id="boat" transform="translate(40 @@BOATY@@)">@@BOAT@@</g>
+					<g id="egg-swim" aria-hidden="true" pointer-events="none"></g>
 					<g transform="translate(@@BRIDGEX@@ 0)">@@BRIDGE@@</g>
 				</g>
 				@@TREES@@
@@ -926,6 +961,7 @@ HTML = r'''<!DOCTYPE html>
 
 			@@OBSERVERS@@
 			@@CAMPUSES@@
+			<g id="egg-walk" class="dim" aria-hidden="true" pointer-events="none"></g>
 			@@PARTICLES@@
 		</svg>
 	</main>
@@ -934,7 +970,7 @@ HTML = r'''<!DOCTYPE html>
 '''
 
 html = (HTML.replace("@@TOD@@", TOD_BUTTON).replace("@@VIEW@@", VIEW).replace("@@COMPACT@@", COMPACT_VIEW).replace("@@CTOP@@", str(compact_top())).replace("@@CBOT@@", "226").replace("@@BRIDGE@@", svg_paths(bridge())).replace("@@BRIDGEX@@", str(BRIDGE_X)).replace("@@OBSERVERS@@", observers()).replace("@@W@@", str(W)).replace("@@GALAXY@@", GALAXY).replace("@@GALW@@", str(GAL_W)).replace("@@GALH@@", str(GAL_H))
-        .replace("@@RIVERCFG@@", f"{RIVER_Y},{AMP},{PERIOD}")
+        .replace("@@RIVERCFG@@", f"{RIVER_Y},{AMP},{PERIOD},{HALF}").replace("@@EGGDEFS@@", EGG_DEFS).replace("@@OBST@@", EGG_OBST)
         .replace("@@SEASON@@", BUILD_SEASON).replace("@@PARTICLES@@", PARTICLES)
         .replace("@@FLOWERS@@", svg_paths(flowers)).replace("@@SPRING@@", svg_paths(spring_extra)).replace("@@LITTER@@", svg_paths(litter))
         .replace("@@GROUND@@", svg_paths(ground)).replace("@@RIVER@@", svg_paths(river))

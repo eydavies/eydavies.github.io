@@ -877,11 +877,12 @@ def egg_figure(kind, frame, swim=False):
         g.rect(-1, -7, 1, -4, TOP); g.px(0, -5, TOPD); g.px(-2, -6, TOP); g.px(2, -6, TOP)
     else:                 # slightly longer brown hair, brown-and-green checked cardigan, dark trousers
         HAIR, BRN, GRN, PANTS = '#6b4226', '#8b5a2b', '#4f8f4a', '#464a5c'
-        g.rect(-1, -11, 1, -10, HAIR); g.px(-2, -10, HAIR); g.px(-2, -9, HAIR); g.px(-2, -8, HAIR)
+        g.rect(-1, -11, 1, -10, HAIR); g.px(-2, -10, HAIR); g.px(-2, -9, HAIR)
         g.rect(-1, -9, 1, -8, SKIN)
         for y in range(-7, -3):
             for x in (-1, 0, 1): g.px(x, y, BRN if (x + y) % 2 == 0 else GRN)
         g.px(-2, -6, BRN); g.px(2, -6, GRN)
+        g.px(0, -7, '#ffffff'); g.px(1, -7, '#ffffff'); g.px(1, -6, '#ffffff')       # white undershirt showing at the open collar
     if swim:
         g.outline(OL)
         for x in ((-3, -2, 2, 3) if frame == 0 else (-2, -1, 1, 2)): g.px(x, -6, '.shm')
@@ -909,11 +910,12 @@ def egg_sit():
     cx = 3                                                                       # longer brown hair, checked cardigan
     HAIR, BRN, GRN = '#6b4226', '#8b5a2b', '#4f8f4a'
     g.rect(cx - 1, -11, cx + 1, -10, HAIR)
-    for x in (cx - 2, cx + 2): g.rect(x, -10, x, -8, HAIR)
+    for x in (cx - 2, cx + 2): g.rect(x, -10, x, -9, HAIR)
     g.rect(cx - 1, -9, cx + 1, -8, SKIN)
     for y in range(-7, -4):
         for x in range(cx - 2, cx + 3):
             if abs(x - cx) <= 1 or y >= -7 and y <= -6: g.px(x, y, BRN if (x + y) % 2 == 0 else GRN)
+    g.px(cx, -7, '#ffffff'); g.px(cx, -6, '#ffffff')                              # white undershirt at the open collar
     for x in (cx - 2, cx + 2): g.px(x, -5, SKIN)
     g.rect(cx - 1, -3, cx + 1, -2, '#464a5c'); g.px(cx - 1, -1, SHOE); g.px(cx + 1, -1, SHOE)
     g.rect(-6, -4, 6, -4, WOODL)                                                 # seat (the legs hang below it)

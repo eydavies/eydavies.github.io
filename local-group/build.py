@@ -365,16 +365,18 @@ PEOPLE = [("#e63946", "#3b2a20", "#3a4a8a", '#ffd9a8', 0),
           ("#f4a261", "#e9c46a", "#5b5b7a", '#f1c27d', -6.4),
           ("#6a4c93", "#1d1d1d", "#2f3e46", '#c68642', -9.6),
           ("#e9c46a", "#1d1d1d", "#3a4a8a", '#5c3a21', -12.8)]
+SPRING_EXTRA = [("#4a90d9", "#a8532a", "#4a4e69", '#ffd9a8', -1.6)]     # one more person out walking, in spring only
 WALK = 70   # how far (art pixels) the walkers travel; must match walk-l / walk-r in style.css
 
 def walkers(dirn):
     out = []
-    for i, (shirt, hair, pants, skin, delay) in enumerate(PEOPLE):
+    for i, (shirt, hair, pants, skin, delay) in enumerate(PEOPLE + SPRING_EXTRA):
         a, b = svg_paths(person(shirt, hair, pants, skin, dirn, 0)), svg_paths(person(shirt, hair, pants, skin, dirn, 1))
         cls = 'walk-l' if dirn < 0 else 'walk-r'
-        off = -dirn * round(WALK * (0.08 + 0.19 * i))      # resting place if animation is switched off
-        out.append(f'<g transform="translate(0 3)"><g class="{cls}" style="animation-delay:{delay}s;--off:{off}px">'
-                   f'<g class="fade" style="animation-delay:{delay}s"><g class="fa">{a}</g><g class="fb">{b}</g></g></g></g>')
+        off = -dirn * round(WALK * (0.08 + 0.19 * i if i < len(PEOPLE) else 0.6))      # resting place if animation is switched off
+        wrap = '<g class="spring-only">' if i >= len(PEOPLE) else '<g>'
+        out.append(f'{wrap}<g transform="translate(0 3)"><g class="{cls}" style="animation-delay:{delay}s;--off:{off}px">'
+                   f'<g class="fade" style="animation-delay:{delay}s"><g class="fa">{a}</g><g class="fb">{b}</g></g></g></g></g>')
     return "\n\t\t\t\t\t".join(out)
 
 def dirt_path(dirn):
@@ -497,7 +499,11 @@ PARTICLES = (f'<g class="p p-fall" aria-hidden="true" pointer-events="none">{par
              f'<g class="p p-spring" aria-hidden="true" pointer-events="none">{particles("petal", 20, ["#ffc2d9", "#ffffff", "#ffa8c8"], 12)}</g>'
              f'<g class="p p-winter" aria-hidden="true" pointer-events="none">{particles("snow", 70, ["#ffffff", "#ffffff", "#eaf4ff"], 13)}</g>')
 
-# ------------------------------------------------------------------ boat
+# ------------------------------------------------------------------ what goes along the river, by season
+# Origin (0, 0) = the middle of the river; everything faces right and moves right. JS moves the whole #boat group.
+SKATER_SKIN, SAILOR_SKIN = '#f1c27d', '#ffd9a8'
+
+# fall: the rower
 boat = Grid()
 boat.rect(-8, 0, 7, 1, '#fffaf0'); boat.px(8, 0, '#fffaf0'); boat.px(-9, 0, '#fffaf0')
 boat.hline(0, 3, 6, '#cc0000')
@@ -508,9 +514,81 @@ boat.outline(OL)
 for x in (-12, -14, -17): boat.px(x, 0 if x == -12 else 1, '#ffffff')
 boat.px(-15, 0, '#ffffff'); boat.px(-18, 0, '#ffffff')
 
-# everyone on the map: the walkers, the rower and the stargazers. Exactly one person in three has dark skin.
-_ALL_SKINS = [p[3] for p in PEOPLE] + [ROWER_SKIN] + [p[3] for p in STARGAZERS]
-assert 3 * sum(k in DARK_SKIN for k in _ALL_SKINS) == len(_ALL_SKINS), "keep exactly one person in three dark-skinned"
+# winter: an ice-skater in a red hat and a yellow scarf, striding left-right-left, scattering ice
+def skater(frame):
+    g = Grid(); HAT, FACE, SCARF, COAT, GLOVE, PANTS, BOOT, BLADE = '#e63946', SKATER_SKIN, '#ffd23f', '#3a6ea5', '#f4f4f0', '#2f3e46', '#4a3a30', '#e8f0f8'
+    g.rect(-1, -11, 1, -10, HAT); g.px(0, -12, HAT); g.px(0, -13, '#ffffff')          # bobble hat
+    g.rect(-1, -9, 1, -9, FACE); g.px(1, -9, FACE); g.px(1, -9, '#2b2438') if False else None
+    g.rect(-1, -8, 1, -8, FACE); g.px(1, -9, '#2b2438')                               # face with an eye
+    g.rect(-1, -7, 1, -3, COAT)                                                       # coat
+    g.hline(-7, -4, -2, SCARF) if frame == 0 else (g.hline(-7, -2, -2, SCARF), g.hline(-8, -4, -3, SCARF))
+    if frame == 0: g.px(2, -6, COAT); g.px(3, -6, GLOVE); g.px(-2, -4, COAT); g.px(-3, -3, GLOVE)   # arms swing
+    else:          g.px(2, -4, COAT); g.px(3, -3, GLOVE); g.px(-2, -6, COAT); g.px(-3, -6, GLOVE)
+    if frame == 0:
+        for y in range(-2, 2): g.px(1, y, PANTS)
+        g.px(1, 2, BOOT); g.hline(3, 0, 3, BLADE)
+        for (x, y) in ((0, -2), (-1, -1), (-2, 0), (-3, 1)): g.px(x, y, PANTS)
+        g.px(-4, 2, BOOT); g.hline(3, -6, -3, BLADE)
+    else:
+        for y in range(-2, 2): g.px(-1, y, PANTS)
+        g.px(-1, 2, BOOT); g.hline(3, -2, 1, BLADE)
+        for (x, y) in ((0, -2), (1, -1), (2, 0), (3, 1)): g.px(x, y, PANTS)
+        g.px(4, 2, BOOT); g.hline(3, 3, 6, BLADE)
+    g.outline(OL)
+    for (x, y) in ((-9, 3), (-12, 4), (-15, 3), (-18, 4), (-11, 2), (-21, 3)): g.px(x, y, '#ffffff')      # ice shavings
+    return g
+
+# spring: a mother duck and three ducklings in single file
+def duck(mother):
+    g = Grid()
+    if mother:
+        BODY, WING, HEAD, BEAK, RING = '#a98462', '#c8a47e', '#2e8b57', '#f5b82e', '#ffffff'
+        g.rect(-4, -1, 3, 1, BODY); g.rect(-3, -1, 1, -1, WING); g.px(-5, -2, BODY); g.px(-5, -1, BODY)
+        g.px(3, -2, RING); g.rect(3, -4, 5, -3, HEAD); g.px(4, -2, HEAD); g.hline(-3, 6, 7, BEAK); g.px(5, -4, '#1d1d1d')
+    else:
+        BODY, HEAD, BEAK = '#ffd93d', '#ffe680', '#f08a24'
+        g.rect(-2, 0, 1, 1, BODY); g.px(-3, 0, BODY); g.rect(1, -2, 2, -1, HEAD); g.px(3, -1, BEAK); g.px(2, -2, '#1d1d1d')
+    g.outline(OL)
+    for dx, dy in ((-7, 1), (-8, 2)) if mother else ((-5, 1), (-6, 1)): g.px(dx, dy, '#ffffff')              # ripples
+    return g
+
+def ducks_svg():
+    mom = f'<g class="dbob" style="animation-delay:0s">{svg_paths(duck(True))}</g>'
+    kids = "".join(f'<g transform="translate({-14 - 9 * i} {(1, 0, 1)[i]})"><g class="dbob" style="animation-delay:{0.4 + 0.4 * i:.1f}s">{svg_paths(duck(False))}</g></g>' for i in range(3))
+    return mom + kids
+
+# summer: a little one-person sailboat with a red pennant
+def sailboat(frame):
+    g = Grid(); HULL, STRIPE, KEEL, MAST, SAIL, SAILS, JIB, JACKET, CAP = '#fffaf0', '#cc2f2f', '#2b4a8a', '#8a5a3b', '#fffaf0', '#e4dcc4', '#cfe8ff', '#ff8a3d', '#cc2f2f'
+    g.hline(0, -8, 8, HULL); g.px(9, -1, HULL); g.hline(1, -7, 7, STRIPE); g.hline(2, -5, 4, KEEL)
+    g.vline(0, -13, -1, MAST)
+    for y in range(-13, -4):                                            # mainsail, behind the mast, bulging a pixel in frame 1
+        w = int((y + 13) * 0.7) + 1 + (1 if frame and -10 <= y <= -6 else 0)
+        g.hline(y, -w, -1, SAIL); g.px(-1, y, SAILS)
+    g.hline(-4, -9, -1, MAST)                                           # boom
+    for y in range(-11, -4):                                            # jib, in front of the mast
+        g.hline(y, 1, 1 + int((y + 11) * 0.6), JIB)
+    g.hline(-2, -5, -3, JACKET) if False else None
+    g.rect(-5, -1, -2, -1, JACKET); g.rect(-4, -3, -3, -2, SAILOR_SKIN); g.hline(-3, -4, -3, CAP)   # the sailor
+    g.px(1, -13, STRIPE); g.px(2, -13, STRIPE); g.px(1, -12, STRIPE)   # pennant
+    g.outline(OL)
+    for (x, y) in ((-11, 1), (-13, 2), (-16, 1), (-19, 2)): g.px(x, y, '#ffffff')
+    return g
+
+def boat_svg():
+    sk = f'<g class="fa">{svg_paths(skater(0))}</g><g class="fb">{svg_paths(skater(1))}</g>'
+    sl = f'<g class="fa">{svg_paths(sailboat(0))}</g><g class="fb">{svg_paths(sailboat(1))}</g>'
+    return (f'<g class="bt bt-fall">{svg_paths(boat)}</g><g class="bt bt-winter">{sk}</g>'
+            f'<g class="bt bt-spring">{ducks_svg()}</g><g class="bt bt-summer">{sl}</g>')
+
+# everyone on the map. In every season exactly one person in three has dark skin:
+# the 5 walkers + 3 stargazers + whoever is on the river (fall rower, winter skater, summer sailor); in spring the
+# ducks have no person, so a sixth walker comes out instead.
+DARK = lambda skins: sum(k in DARK_SKIN for k in skins)
+_BASE = [p[3] for p in PEOPLE] + [p[3] for p in STARGAZERS]
+for _season, _extra in (("fall", [ROWER_SKIN]), ("winter", [SKATER_SKIN]), ("summer", [SAILOR_SKIN]), ("spring", [p[3] for p in SPRING_EXTRA])):
+    _all = _BASE + _extra
+    assert 3 * DARK(_all) == len(_all), f"{_season}: keep exactly one person in three dark-skinned"
 
 # ------------------------------------------------------------------ bridge: a cute red truss bridge, seen at a slight angle
 BRIDGE_X = 148      # the bridge crosses the river just left of BU
@@ -703,7 +781,7 @@ html = (HTML.replace("@@VIEW@@", VIEW).replace("@@COMPACT@@", COMPACT_VIEW).repl
         .replace("@@FLOWERS@@", svg_paths(flowers)).replace("@@SPRING@@", svg_paths(spring_extra)).replace("@@LITTER@@", svg_paths(litter))
         .replace("@@GROUND@@", svg_paths(ground)).replace("@@RIVER@@", svg_paths(river))
         .replace("@@SH1@@", svg_paths(SHIM[0])).replace("@@SH2@@", svg_paths(SHIM[1])).replace("@@SH3@@", svg_paths(SHIM[2]))
-        .replace("@@TREES@@", trees_svg).replace("@@BOAT@@", svg_paths(boat)).replace("@@BOATY@@", str(yc(40)))
+        .replace("@@TREES@@", trees_svg).replace("@@BOAT@@", boat_svg()).replace("@@BOATY@@", str(yc(40)))
         .replace("@@CAMPUSES@@", "\n\t\t\t".join(campus(k) for k in ("harvard", "mit", "bu"))))
 (OUT / "index.html").write_text(html, encoding="utf-8")
 

@@ -32,7 +32,7 @@
 :root[data-season="winter"] {
 	--grass: #e8f0f8; --tuft: #c4d5e8;
 	--pzs: #c0cfe1; --pz: #dde6f0; --pzo: #9aaec6; --pth: #d4deea; --pthd: #b9c8da;
-	--rv1: #7ac2ee; --rv2: #58a1d8; --rvo: #38679b; --shm: #eaf7ff;
+	--rv1: #cfe9f7; --rv2: #aad3ec; --rvo: #6d9ec4; --shm: #ffffff;
 	--lf: #3f7d62; --lfh: #5c9c7d; --lfd: #2c5f4b;
 	--title: #1d2b53; --title-shadow: #ffffff;
 }
@@ -49,7 +49,11 @@
 .lf { fill: var(--lf); } .lfh { fill: var(--lfh); } .lfd { fill: var(--lfd); }
 
 /* things that only exist in some seasons */
-.snow, .g-flowers, .g-spring, .g-litter, .p { display: none; }
+.snow, .g-flowers, .g-spring, .g-litter, .p, .spring-only, .bt { display: none; }
+:root[data-season="spring"] .spring-only { display: inline; }
+/* what's on the river: fall rower, winter skater, spring ducks, summer sailboat */
+:root[data-season="fall"] .bt-fall, :root[data-season="winter"] .bt-winter,
+:root[data-season="spring"] .bt-spring, :root[data-season="summer"] .bt-summer { display: inline; }
 :root[data-season="winter"] .snow, :root[data-season="winter"] .p-winter { display: inline; }
 :root[data-season="spring"] .g-flowers, :root[data-season="summer"] .g-flowers,
 :root[data-season="spring"] .g-spring, :root[data-season="spring"] .p-spring { display: inline; }
@@ -172,6 +176,7 @@ h1 {
 
 /* ---------- Next-meeting speech bubble and the people walking to it ---------- */
 .bob { animation: bob 1.6s steps(1, end) infinite; }
+.dbob { animation: bob 1.2s steps(1, end) infinite; }
 @keyframes bob { 0% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
 
 .walk-l { animation: walk-l 16s steps(70, end) infinite; }
@@ -270,7 +275,7 @@ a.p-site:hover { background: var(--navy); color: var(--cream); }
 	.sh { animation: none; }
 	.sh1 { opacity: 1; }
 	.bldg { transition: none; }
-	.bob, .fade, .fb, .pt, .sw { animation: none; }
+	.bob, .dbob, .fade, .fb, .pt, .sw { animation: none; }
 	.p { display: none !important; }
 	.fb { opacity: 0; }
 	.fa { animation: none; opacity: 1; }

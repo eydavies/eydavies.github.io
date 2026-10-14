@@ -192,7 +192,9 @@ h1 {
 .compact .cg-harvard { transform: translate(10px, -32px); }
 .compact .cg-mit { transform: translate(-10px, -32px); }
 .compact .te { display: none; }
-.compact .obs { transform: translate(-30px, -30px); }
+.compact .obs { transform: translate(-118px, -18px); }      /* telescope group: up and in, between Harvard and MIT */
+.compact .obs-r { transform: translate(-40px, -18px); }      /* ...unless a speech bubble is there: then just right of MIT */
+.compact .bot { transform: translate(0, calc(var(--drop, 0) * 1px)); }   /* BU and the lower trees drop to use spare height (set by menu.js) */
 .compact .tag { transform-origin: 0 11px; transform: scale(2); }
 
 .campus.go .bldg { animation: hop 0.4s steps(1, end) forwards; }

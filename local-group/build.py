@@ -36,7 +36,7 @@ if ARGS.date: NEXT["date"] = ARGS.date
 
 W, H = 380, 226            # scene size in art pixels
 VIEW = f"0 0 {W} {H}"
-COMPACT_VIEW = "36 0 308 226"   # tall, narrow screens (phones) crop the empty sides
+COMPACT_VIEW = "46 0 288 226"   # tall, narrow screens (phones) crop the empty sides
 OL = '#2b2438'             # outline colour
 SEASON_BY_MONTH = {12: 'winter', 1: 'winter', 2: 'winter', 3: 'spring', 4: 'spring', 5: 'spring',
                    6: 'summer', 7: 'summer', 8: 'summer', 9: 'fall', 10: 'fall', 11: 'fall'}
@@ -170,8 +170,9 @@ def tree_svg(i, x, y, big):
     snow = snow_layer(t, pred=lambda c: c.startswith('.lf'))
     out = (f'<g class="tv{i % 3}" transform="translate({x} {y})">{svg_paths(t)}'
             f'<g class="snow">{svg_paths(snow)}</g></g>')
-    cls = ("tt " if y < 100 else "") + ("te" if x < 52 or x > 330 else "")      # tt: lifts with the river; te: hidden on phones (cut off)
-    return f'<g class="{cls.strip()}">{out}</g>' if cls.strip() else out          # "tt": top-half trees move up with the river on phones
+    # phones: "tt" trees lift with the river, "bot" trees drop with BU, "te" trees are hidden (they would be cut off)
+    cls = ("tt" if y < 100 else "bot") + (" te" if x < 56 or x > 326 or (x, y) == (238, 60) else "")
+    return f'<g class="{cls}">{out}</g>'          # "tt": top-half trees move up with the river on phones
 trees_svg = "\n\t\t\t".join(tree_svg(i, x, y, b) for i, (x, y, b) in enumerate(TREE_SPOTS))
 
 # ------------------------------------------------------------------ buildings
@@ -428,7 +429,7 @@ def campus(key):
         tx, ty, side = c["tip"]
         extra_after = (f'<g aria-hidden="true">{walkers(c["walk"])}</g>\n\t\t\t\t\t'
                        f'<g transform="translate({tx} {ty})"><g class="bscale"><g class="bob">{svg_paths(bubble(NEXT_DATE, c["color"], side))}</g></g></g>')
-    return f'''<g class="cg cg-{key}"><g transform="translate({c["x"]} {c["y"]})">
+    return f'''<g class="cg cg-{key}{' bot' if key == 'bu' else ''}"><g transform="translate({c["x"]} {c["y"]})">
 				<a class="campus{' next' if nxt else ''}" href="{c["href"]}" style="--c:{c["color"]}" aria-label="{label}">
 					<rect x="-{rx + 3}" y="-60" width="{2 * rx + 6}" height="78" fill="none" pointer-events="all"/>
 					{extra_before}
@@ -475,7 +476,8 @@ def observers():
     tel.p = {(-x, y): c for (x, y), c in tel.p.items()}          # mirror: the tube now points up-left
     tel.pre = {(-x, y): c for (x, y), c in tel.pre.items()}
     v, ptr, third = STARGAZERS
-    return (f'<g class="obs"><g transform="translate(340 30)" aria-hidden="true" pointer-events="none">'
+    obs_cls = "obs obs-r" if NEXT["campus"] in ("harvard", "mit") else "obs"     # obs-r: phones keep the telescope clear of the bubble
+    return (f'<g class="{obs_cls}"><g transform="translate(340 30)" aria-hidden="true" pointer-events="none">'
             f'<g>{svg_paths(tel)}<g class="snow">{svg_paths(snow_layer(tel))}</g></g>'
             f'<g transform="translate(10 0)">{svg_paths(person(*v, -1, 1))}</g>'
             f'<g transform="translate(18 0)">{svg_paths(person(*ptr, -1, 1, point=True))}</g>'
@@ -625,6 +627,16 @@ def galaxy_svg():
 (OUT / "hero-fade.svg").write_text(fade_tile(), encoding="utf-8")
 GALAXY = galaxy_svg()
 
+# On phones the top row is lifted LIFT art pixels toward the header; this finds the highest thing on the map
+# (so menu.js can start the view just above it, with no blank band under the header).
+LIFT = 32
+def compact_top():
+    tops = [CAMPUSES[k]["y"] + CAMPUSES[k]["sprite"]().bbox()[1] - LIFT for k in ("harvard", "mit")]
+    tops.append(12 + telescope().bbox()[1])                        # tip of the telescope (its feet sit at y = 12 on phones)
+    if NEXT["campus"] in ("harvard", "mit"):                       # speech bubble above the host (drawn at 2x on phones)
+        c = CAMPUSES[NEXT["campus"]]; tops.append(c["y"] + c["tip"][1] - 56 - LIFT)
+    return min(tops)
+
 # ------------------------------------------------------------------ page
 HTML = r'''<!DOCTYPE html>
 <html lang="en" data-season="@@SEASON@@">
@@ -661,7 +673,7 @@ HTML = r'''<!DOCTYPE html>
 	</div>
 
 	<main class="scene-wrap" id="main">
-		<svg class="scene" viewBox="@@VIEW@@" data-view="@@VIEW@@" data-compact="@@COMPACT@@" data-river="@@RIVERCFG@@" data-w="@@W@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" role="group" aria-label="Pixel map of the Charles River with Harvard and MIT on the north bank and Boston University on the south bank">
+		<svg class="scene" viewBox="@@VIEW@@" data-view="@@VIEW@@" data-compact="@@COMPACT@@" data-ctop="@@CTOP@@" data-cbot="@@CBOT@@" data-river="@@RIVERCFG@@" data-w="@@W@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" role="group" aria-label="Pixel map of the Charles River with Harvard and MIT on the north bank and Boston University on the south bank">
 			<g aria-hidden="true">
 				<g>@@GROUND@@</g>
 				<g class="g-flowers">@@FLOWERS@@</g>
@@ -687,7 +699,7 @@ HTML = r'''<!DOCTYPE html>
 </html>
 '''
 
-html = (HTML.replace("@@VIEW@@", VIEW).replace("@@COMPACT@@", COMPACT_VIEW).replace("@@BRIDGE@@", svg_paths(bridge())).replace("@@BRIDGEX@@", str(BRIDGE_X)).replace("@@OBSERVERS@@", observers()).replace("@@W@@", str(W)).replace("@@GALAXY@@", GALAXY).replace("@@GALW@@", str(GAL_W)).replace("@@GALH@@", str(GAL_H))
+html = (HTML.replace("@@VIEW@@", VIEW).replace("@@COMPACT@@", COMPACT_VIEW).replace("@@CTOP@@", str(compact_top())).replace("@@CBOT@@", "216").replace("@@BRIDGE@@", svg_paths(bridge())).replace("@@BRIDGEX@@", str(BRIDGE_X)).replace("@@OBSERVERS@@", observers()).replace("@@W@@", str(W)).replace("@@GALAXY@@", GALAXY).replace("@@GALW@@", str(GAL_W)).replace("@@GALH@@", str(GAL_H))
         .replace("@@RIVERCFG@@", f"{RIVER_Y},{AMP},{PERIOD}")
         .replace("@@SEASON@@", BUILD_SEASON).replace("@@PARTICLES@@", PARTICLES)
         .replace("@@FLOWERS@@", svg_paths(flowers)).replace("@@SPRING@@", svg_paths(spring_extra)).replace("@@LITTER@@", svg_paths(litter))

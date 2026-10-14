@@ -28,8 +28,17 @@
 		if (!svg) { return; }
 		var box = svg.getBoundingClientRect();
 		var narrow = box.height > 0 && box.width / box.height < 1.1;
-		svg.setAttribute('viewBox', svg.getAttribute(narrow ? 'data-compact' : 'data-view'));
 		svg.classList.toggle('compact', narrow);
+		if (!narrow) { svg.setAttribute('viewBox', svg.getAttribute('data-view')); return; }
+		/* phones: fixed width, but the view starts just above the highest thing on the map and is as tall as the
+		   screen allows; any spare height is used to space BU further below the river instead of leaving a blank band */
+		var vb = svg.getAttribute('data-compact').split(' ').map(Number);
+		var scale = box.width / vb[2];
+		var top = Number(svg.getAttribute('data-ctop')) - 6;
+		var vh = box.height / scale;
+		svg.setAttribute('viewBox', [vb[0], top, vb[2], vh].join(' '));
+		var free = Math.max(0, vh - (Number(svg.getAttribute('data-cbot')) - top));
+		svg.style.setProperty('--drop', Math.min(free * 0.6, 45).toFixed(1));
 	}
 	fit();
 	window.addEventListener('resize', fit);

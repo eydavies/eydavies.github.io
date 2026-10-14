@@ -15,8 +15,8 @@
     {
       "date": "2026-10-21",
       "campus": "bu",
-      "time": "TBA",
-      "room": "",
+      "time": "11am - 1pm",
+      "room": "Room 500",
       "food": "TBA",
       "talks": [
         {
@@ -38,9 +38,9 @@
     },
     {
       "date": "2026-11-18",
-      "campus": "harvard",
-      "time": "TBA",
-      "room": "",
+      "campus": "bu",
+      "time": "11am - 1pm",
+      "room": "Room 500",
       "food": "TBA",
       "talks": [
         {
@@ -62,9 +62,9 @@
     },
     {
       "date": "2026-12-16",
-      "campus": "mit",
-      "time": "TBA",
-      "room": "",
+      "campus": "bu",
+      "time": "11am - 1pm",
+      "room": "Room 500",
       "food": "TBA",
       "talks": [
         {

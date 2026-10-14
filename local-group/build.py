@@ -671,24 +671,22 @@ def rower(frame):
 # with the free leg lifted behind (the scarf streams back the whole time, so it always looks like forward motion)
 def skater(frame):
     g = Grid(); HAT, FACE, SCARF, COAT, GLOVE, PANTS, BOOT, BLADE = '#e63946', SKATER_SKIN, '#ffd23f', '#3a6ea5', '#f4f4f0', '#2f3e46', '#4a3a30', '#e8f0f8'
-    g.rect(0, -11, 2, -10, HAT); g.px(1, -12, HAT); g.px(1, -13, '#ffffff')           # bobble hat, head pushed forward
-    g.rect(0, -9, 2, -8, FACE); g.px(2, -9, '#2b2438')                                # face with an eye
-    g.hline(-7, 0, 2, SCARF)                                                          # scarf, with a tail streaming behind
-    for (x, y) in ((-1, -7), (-2, -7 + frame), (-3, -6 + frame), (-4, -6 + frame)): g.px(x, y, SCARF)
-    g.rect(0, -6, 2, -6, COAT); g.rect(-1, -5, 1, -3, COAT)                           # coat, leaning forward
-    g.px(-2, -4, COAT); g.px(-3, -4, GLOVE)                                           # hands held behind the back
+    g.rect(0, -8, 2, -8, HAT); g.px(1, -9, '#ffffff')                                 # bobble hat, head pushed forward
+    g.rect(0, -7, 2, -6, FACE); g.px(2, -7, '#2b2438')                                # face with an eye
+    g.hline(-5, 0, 2, SCARF)                                                          # scarf, with a tail streaming behind
+    for (x, y) in ((-1, -5), (-2, -5 + frame), (-3, -4 + frame)): g.px(x, y, SCARF)
+    g.rect(0, -4, 2, -4, COAT); g.rect(-1, -3, 1, -2, COAT)                           # coat, leaning forward
+    g.px(-2, -3, COAT); g.px(-3, -3, GLOVE)                                           # hands held behind the back
     if frame == 0:                                                                    # push-off: one leg stretched out behind
-        for y in range(-2, 2): g.px(1, y, PANTS)
-        g.px(1, 2, BOOT); g.hline(3, 0, 3, BLADE)
-        for (x, y) in ((0, -2), (-1, -1), (-2, 0), (-3, 1)): g.px(x, y, PANTS)
-        g.px(-4, 2, BOOT); g.hline(3, -6, -3, BLADE)
+        g.px(1, -1, PANTS); g.px(1, 0, PANTS); g.px(1, 1, BOOT); g.hline(2, 0, 3, BLADE)
+        for (x, y) in ((0, -1), (-1, 0), (-2, 1)): g.px(x, y, PANTS)
+        g.px(-3, 1, BOOT); g.hline(2, -5, -2, BLADE)
     else:                                                                             # glide: free leg lifted behind
-        for y in range(-2, 2): g.px(1, y, PANTS)
-        g.px(1, 2, BOOT); g.hline(3, -1, 3, BLADE)
-        for (x, y) in ((0, -2), (-1, -2), (-2, -1), (-3, -1)): g.px(x, y, PANTS)
-        g.px(-4, -1, BOOT); g.px(-5, -1, BLADE)
+        g.px(1, -1, PANTS); g.px(1, 0, PANTS); g.px(1, 1, BOOT); g.hline(2, -1, 3, BLADE)
+        for (x, y) in ((0, -1), (-1, -1), (-2, 0)): g.px(x, y, PANTS)
+        g.px(-3, 0, BOOT); g.px(-4, 0, BLADE)
     g.outline(OL)
-    for (x, y) in ((-9, 3), (-12, 4), (-15, 3), (-18, 4), (-11, 2), (-21, 3)): g.px(x, y, '#ffffff')      # ice shavings
+    for (x, y) in ((-8, 3), (-11, 4), (-14, 3), (-17, 4), (-10, 2), (-20, 3)): g.px(x, y, '#ffffff')      # ice shavings
     return g
 
 # spring: a mother duck and three ducklings in single file

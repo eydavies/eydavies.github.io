@@ -1257,12 +1257,12 @@ def campus_page(key):
     cards = "".join(meeting_card(m, venues, on_campus_page=True) for m in mine)
     body = (f'<ol class="meetings">{cards}</ol>' if mine else '<p class="card empty">No meetings are scheduled here yet.</p>')
     dr = DIRECTIONS.get(key)
-    bldg = f'<p class="v-bldg">{esc(dr["building"])}</p>' if dr else ""
+    bldg = (f'<p class="v-bldg">{esc(dr["building"])}</p><p class="v-bldg v-addr">{esc(dr["address"])}</p>') if dr else ""
     link = (f'<a class="dir" href="{esc(maps_url(key))}" target="_blank" rel="noopener" title="Directions on Google Maps" '
             f'aria-label="Directions to {esc(dr["building"])} on Google Maps (opens in a new tab)">{MAP_ICON}<span>Directions</span></a>') if dr else ""
     main = (f'<section class="card venue" style="--c:{c["color"]}"><span class="m-ico">{CAMPUS_ICON[key]}</span>'
             f'<div><h2>Where</h2><p class="v-room">{esc(room)}</p>{bldg}</div>{link}</section>\n\t\t' + body)
-    return subpage(c["label"], esc(dr["address"]) if dr else f"Meetings hosted at {c['label']}.", f"Meetings of The Local Group hosted at {c['label']}, with the room and the schedule of talks.", main)
+    return subpage(c["label"], f"Meetings hosted at {c['label']}.", f"Meetings of The Local Group hosted at {c['label']}, with the room and the schedule of talks.", main)
 
 SCHED = r'''<!DOCTYPE html>
 <html lang="en" data-season="@@SEASON@@">

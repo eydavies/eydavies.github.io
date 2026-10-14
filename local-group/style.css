@@ -290,6 +290,7 @@ a.m-ico:hover svg, a.m-ico:focus-visible svg { transform: translateY(-2px); filt
 .venue h2 { margin: 0 0 0.5rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
 .v-room { margin: 0; font-size: clamp(0.8rem, 2.8vw, 1.05rem); line-height: 1.5; color: var(--c); }
 .v-bldg { margin: 0.35rem 0 0; font-size: 0.55rem; line-height: 1.8; }
+.v-addr { margin-top: 0.1rem; color: #5a6389; }                      /* the street address, last line of the Where card */
 .venue { flex-wrap: wrap; }
 .room-link { color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .room-link:hover, .room-link:focus-visible { color: var(--c); }

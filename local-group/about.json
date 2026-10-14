@@ -3,23 +3,23 @@
   "organisers": [
     {
       "name": "Richard Brooks",
-      "position": "",
-      "url": ""
+      "position": "Postdoctoral Associate, Boston University",
+      "url": "https://dc-broo3.github.io/richardbrooks.github.io/"
     },
     {
       "name": "Elliot Y. Davies",
-      "position": "Postdoctoral Associate, MIT Kavli Institute",
+      "position": "Postdoctoral Associate, MIT",
       "url": "https://eydavies.github.io/"
     },
     {
       "name": "Jacob Nibauer",
-      "position": "",
-      "url": ""
+      "position": "ITC Fellow & NSF IAIFI Fellow, CfA, Harvard & Smithsonian, MIT",
+      "url": "https://jnibauer.github.io/"
     },
     {
       "name": "Nathaniel Starkman",
-      "position": "",
-      "url": ""
+      "position": "Brinson Prize Fellow & Astrophysics Postdoc, MIT",
+      "url": "https://nstarkman.space/"
     }
   ]
 }

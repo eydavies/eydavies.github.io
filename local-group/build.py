@@ -36,7 +36,7 @@ if ARGS.date: NEXT["date"] = ARGS.date
 
 W, H = 380, 226            # scene size in art pixels
 VIEW = f"0 0 {W} {H}"
-COMPACT_VIEW = "52 0 316 226"   # tall, narrow screens (phones) crop the empty sides
+COMPACT_VIEW = "36 0 308 226"   # tall, narrow screens (phones) crop the empty sides
 OL = '#2b2438'             # outline colour
 SEASON_BY_MONTH = {12: 'winter', 1: 'winter', 2: 'winter', 3: 'spring', 4: 'spring', 5: 'spring',
                    6: 'summer', 7: 'summer', 8: 'summer', 9: 'fall', 10: 'fall', 11: 'fall'}
@@ -168,8 +168,10 @@ TREE_SPOTS = [(22, 66, 1), (44, 36, 0), (200, 70, 1), (238, 60, 0), (352, 68, 1)
 def tree_svg(i, x, y, big):
     t = tree(bool(big))
     snow = snow_layer(t, pred=lambda c: c.startswith('.lf'))
-    return (f'<g class="tv{i % 3}" transform="translate({x} {y})">{svg_paths(t)}'
+    out = (f'<g class="tv{i % 3}" transform="translate({x} {y})">{svg_paths(t)}'
             f'<g class="snow">{svg_paths(snow)}</g></g>')
+    cls = ("tt " if y < 100 else "") + ("te" if x < 52 or x > 330 else "")      # tt: lifts with the river; te: hidden on phones (cut off)
+    return f'<g class="{cls.strip()}">{out}</g>' if cls.strip() else out          # "tt": top-half trees move up with the river on phones
 trees_svg = "\n\t\t\t".join(tree_svg(i, x, y, b) for i, (x, y, b) in enumerate(TREE_SPOTS))
 
 # ------------------------------------------------------------------ buildings
@@ -426,7 +428,7 @@ def campus(key):
         tx, ty, side = c["tip"]
         extra_after = (f'<g aria-hidden="true">{walkers(c["walk"])}</g>\n\t\t\t\t\t'
                        f'<g transform="translate({tx} {ty})"><g class="bscale"><g class="bob">{svg_paths(bubble(NEXT_DATE, c["color"], side))}</g></g></g>')
-    return f'''<g transform="translate({c["x"]} {c["y"]})">
+    return f'''<g class="cg cg-{key}"><g transform="translate({c["x"]} {c["y"]})">
 				<a class="campus{' next' if nxt else ''}" href="{c["href"]}" style="--c:{c["color"]}" aria-label="{label}">
 					<rect x="-{rx + 3}" y="-60" width="{2 * rx + 6}" height="78" fill="none" pointer-events="all"/>
 					{extra_before}
@@ -439,7 +441,7 @@ def campus(key):
 					{extra_after}
 					<g class="tag">{tag(c["word"])}</g>
 				</a>
-			</g>'''
+			</g></g>'''
 
 # ------------------------------------------------------------------ stargazers, top right under the night sky
 def telescope():
@@ -473,12 +475,12 @@ def observers():
     tel.p = {(-x, y): c for (x, y), c in tel.p.items()}          # mirror: the tube now points up-left
     tel.pre = {(-x, y): c for (x, y), c in tel.pre.items()}
     v, ptr, third = STARGAZERS
-    return (f'<g transform="translate(340 30)" aria-hidden="true" pointer-events="none">'
+    return (f'<g class="obs"><g transform="translate(340 30)" aria-hidden="true" pointer-events="none">'
             f'<g>{svg_paths(tel)}<g class="snow">{svg_paths(snow_layer(tel))}</g></g>'
             f'<g transform="translate(10 0)">{svg_paths(person(*v, -1, 1))}</g>'
             f'<g transform="translate(18 0)">{svg_paths(person(*ptr, -1, 1, point=True))}</g>'
             f'<g transform="translate(26 0)">{svg_paths(person(*third, -1, 1))}</g>'
-            f'</g>')
+            f'</g></g>')
 
 # ------------------------------------------------------------------ falling leaves, petals, snow
 def particles(kind, n, colours, seed, wide=False):
@@ -665,13 +667,15 @@ HTML = r'''<!DOCTYPE html>
 				<g class="g-flowers">@@FLOWERS@@</g>
 				<g class="g-spring">@@SPRING@@</g>
 				<g class="g-litter">@@LITTER@@</g>
-				<g>@@RIVER@@</g>
-				<g class="sh sh1">@@SH1@@</g>
-				<g class="sh sh2">@@SH2@@</g>
-				<g class="sh sh3">@@SH3@@</g>
+				<g class="rv">
+					<g>@@RIVER@@</g>
+					<g class="sh sh1">@@SH1@@</g>
+					<g class="sh sh2">@@SH2@@</g>
+					<g class="sh sh3">@@SH3@@</g>
+					<g id="boat" transform="translate(40 @@BOATY@@)">@@BOAT@@</g>
+					<g transform="translate(@@BRIDGEX@@ 0)">@@BRIDGE@@</g>
+				</g>
 				@@TREES@@
-				<g id="boat" transform="translate(40 @@BOATY@@)">@@BOAT@@</g>
-				<g transform="translate(@@BRIDGEX@@ 0)">@@BRIDGE@@</g>
 			</g>
 
 			@@OBSERVERS@@

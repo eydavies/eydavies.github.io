@@ -640,22 +640,26 @@ SKATER_SKIN, SAILOR_SKIN = '#f1c27d', '#ffd9a8'
 
 # fall: the rower. Two frames: at the catch the oars reach forward, at the finish they sweep back and splash
 def rower(frame):
-    g = Grid()
+    """Seen from above: a cream racing shell with a rower in a blue top and brown hair, and two oars (2 frames)."""
+    g = Grid(); JERSEY, JERSEYD, HAIR, OAR, BLADE = '#3f78d6', '#2b56a8', '#6b4226', '#8a5a3b', '#cc0000'
     g.rect(-8, 0, 7, 1, '#fffaf0'); g.px(8, 0, '#fffaf0'); g.px(-9, 0, '#fffaf0')
     g.hline(0, 3, 6, '#cc0000')
-    g.px(-2, 0, '#2b4a8a')
-    if frame == 0:                                   # catch: leaning forward, oars angled ahead
-        g.px(-1, -1, ROWER_SKIN)
-        for (x, y) in ((-4, -2), (-3, -3), (-2, -4)): g.px(x, y, '#8a5a3b')
-        g.px(-1, -4, '#cc0000'); g.px(0, -4, '#cc0000')
-        for (x, y) in ((-4, 3), (-3, 4), (-2, 5)): g.px(x, y, '#8a5a3b')
-        g.px(-1, 5, '#cc0000'); g.px(0, 5, '#cc0000')
-    else:                                            # finish: leaning back, oars swept behind
-        g.px(-3, -1, ROWER_SKIN)
-        for (x, y) in ((-4, -2), (-5, -3)): g.px(x, y, '#8a5a3b')
-        g.px(-6, -4, '#cc0000'); g.px(-7, -4, '#cc0000')
-        for (x, y) in ((-4, 3), (-5, 4)): g.px(x, y, '#8a5a3b')
-        g.px(-6, 5, '#cc0000'); g.px(-7, 5, '#cc0000')
+    cx = -1 if frame == 0 else -3                    # catch: leaning forward, arms reaching back for the oars; finish: leaning back
+    if frame == 0:
+        for (x, y) in ((-4, -2), (-3, -3), (-2, -4)): g.px(x, y, OAR)
+        g.px(-1, -4, BLADE); g.px(0, -4, BLADE)
+        for (x, y) in ((-4, 3), (-3, 4), (-2, 5)): g.px(x, y, OAR)
+        g.px(-1, 5, BLADE); g.px(0, 5, BLADE)
+    else:
+        for (x, y) in ((-4, -2), (-5, -3)): g.px(x, y, OAR)
+        g.px(-6, -4, BLADE); g.px(-7, -4, BLADE)
+        for (x, y) in ((-4, 3), (-5, 4)): g.px(x, y, OAR)
+        g.px(-6, 5, BLADE); g.px(-7, 5, BLADE)
+    g.rect(cx - 1, -2, cx + 1, 3, JERSEY)            # shoulders and back, seen from above
+    g.rect(cx - 1, 0, cx - 1, 1, JERSEYD); g.rect(cx + 1, -2, cx + 1, -2, JERSEYD); g.rect(cx + 1, 3, cx + 1, 3, JERSEYD)
+    g.rect(cx, -1, cx + 1, 2, HAIR)                  # the head, from above
+    g.px(cx - 1, -1, ROWER_SKIN); g.px(cx - 1, 2, ROWER_SKIN)       # hands on the oar handles
+    if frame == 0: g.px(cx - 2, -2, ROWER_SKIN); g.px(cx - 2, 3, ROWER_SKIN)
     g.outline(OL)
     for x in (-12, -14, -17): g.px(x, 0 if x == -12 else 1, '#ffffff')
     g.px(-15, 0, '#ffffff'); g.px(-18, 0, '#ffffff')

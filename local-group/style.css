@@ -240,12 +240,12 @@ body.sched .card { box-shadow: 4px 4px 0 #3a4a8a; }
 .card { background: var(--cream); border: 3px solid var(--navy); box-shadow: 4px 4px 0 var(--navy); padding: 1.1rem 1.2rem; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-.legend { margin-bottom: 1.8rem; }
+.legend { margin-bottom: 1.8rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1.4rem 2rem; }
 .legend h2 { margin: 0 0 0.9rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
-.legend ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr)); gap: 0.9rem 1.6rem; }
+.legend ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.9rem; }
 .legend li { display: flex; align-items: center; gap: 0.8rem; font-size: 0.55rem; line-height: 1.9; }
+.l-ico { flex: none; width: 3.6rem; display: flex; justify-content: center; }
 .legend b { font-weight: 400; font-size: 0.7rem; }
-.legend svg { flex: none; }
 
 .meetings { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6rem; }
 .meeting header { display: flex; align-items: center; gap: 1.1rem; }
@@ -256,6 +256,8 @@ body.sched .card { box-shadow: 4px 4px 0 #3a4a8a; }
 .m-where a:hover, .m-where a:focus-visible { color: var(--navy); }
 a.m-ico:hover svg, a.m-ico:focus-visible svg { transform: translateY(-2px); filter: brightness(1.1); }
 .m-when { display: flex; flex-wrap: wrap; gap: 0.3rem 0; margin: 0.45rem 0 0; font-size: 0.55rem; line-height: 1.8; }
+.m-freq { display: inline-flex; align-items: center; gap: 0.4rem; }
+.q-svg { display: block; margin: -4px 0; flex: none; }
 .m-when span + span { margin-left: 0.9rem; padding-left: 0.9rem; border-left: 3px solid rgba(29, 43, 83, 0.25); }
 .venue { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1.6rem; }
 .venue h2 { margin: 0 0 0.5rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -274,7 +276,10 @@ a.m-ico:hover svg, a.m-ico:focus-visible svg { transform: translateY(-2px); filt
 .dir:active { transform: translate(3px, 3px); box-shadow: 0 0 0 #3a4a8a; }
 .dir-svg { display: block; image-rendering: pixelated; flex: none; }
 .empty { font-size: 0.6rem; line-height: 1.9; }
-.m-food { margin: 0.4rem 0 0; font-size: 0.5rem; line-height: 1.8; color: #5a6389; }
+.m-food { display: flex; align-items: center; gap: 1.1rem; margin: 0; padding: 0.8rem 0 0.1rem; border-top: 3px dotted rgba(29, 43, 83, 0.15); font-size: 0.5rem; line-height: 1.8; color: #5a6389; }
+.talks + .m-food { border-top: 3px solid rgba(29, 43, 83, 0.15); margin-top: 0.4rem; }
+.f-ico { flex: none; width: 8rem; display: flex; justify-content: center; }
+.f-svg { display: block; image-rendering: pixelated; }
 .talks { list-style: none; margin: 1rem 0 0; padding: 0.4rem 0 0; border-top: 3px solid rgba(29, 43, 83, 0.15); }
 .talks li { display: flex; align-items: center; gap: 1.1rem; padding: 0.7rem 0; }
 .talks li + li { border-top: 3px dotted rgba(29, 43, 83, 0.15); }
@@ -282,7 +287,7 @@ a.m-ico:hover svg, a.m-ico:focus-visible svg { transform: translateY(-2px); filt
 .t-text { display: flex; flex-direction: column; gap: 0.4rem; }
 .t-title { font-size: 0.7rem; line-height: 1.5; }
 .t-speaker { font-size: 0.5rem; line-height: 1.6; color: #5a6389; }
-@media (max-width: 520px) { .m-ico, .t-ico { width: 7.3rem; } .meeting h2 { font-size: 0.72rem; } .meeting header, .talks li { gap: 0.8rem; } }
+@media (max-width: 520px) { .m-when { flex-direction: column; align-items: flex-start; } .m-when span + span { margin-left: 0; padding-left: 0; border-left: 0; } .m-ico, .t-ico, .f-ico { width: 7.3rem; } .meeting h2 { font-size: 0.72rem; } .meeting header, .talks li, .m-food { gap: 0.8rem; } }
 
 /* ---------- About ---------- */
 .organisers h2 { margin: 0 0 0.6rem; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }

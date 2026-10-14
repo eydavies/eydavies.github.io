@@ -1044,6 +1044,40 @@ def table_icon():
     g.outline(OL)
     return g
 
+def food_icon():
+    """A mug of coffee beside a chocolate chip cookie."""
+    g = Grid(); MUG, COF, STEAM = '#e8704f', '#5a3a22', '#c8d0e0'
+    g.rect(0, 5, 5, 10, MUG); g.rect(1, 5, 4, 6, COF); g.px(1, 7, '#f08c6c'); g.px(1, 8, '#f08c6c')
+    for x, y in ((6, 6), (7, 7), (7, 8), (6, 9)): g.px(x, y, MUG)                    # handle
+    for x, y in ((2, 3), (3, 2), (2, 1), (3, 0)): g.px(x, y, STEAM)                  # steam
+    COOK, COOKD, CHIP = '#e3ac60', '#c58a3e', '#4a2c1a'                              # a chocolate chip cookie
+    cx, cy, r = 16, 6, 4.8
+    for y in range(0, 12):
+        for x in range(10, 23):
+            d2 = (x - cx) ** 2 + (y - cy) ** 2
+            if d2 <= r * r: g.px(x, y, COOKD if d2 > (r - 1.3) ** 2 and (x + y) > cx + cy - 1 else COOK)
+    for x, y in ((14, 4), (17, 3), (18, 6), (15, 7), (17, 9), (13, 8)): g.px(x, y, CHIP)   # chocolate chips
+    for x, y in ((14, 5), (18, 7)): g.px(x, y, CHIP)
+    g.outline(OL)
+    return g
+FOOD_ICON = icon_svg(food_icon(), 2, "f-svg")
+
+def pie_icon(frac):
+    """A little pie chart, filled clockwise from 12 o'clock by `frac` of the circle (13 x 13)."""
+    g = Grid(); N, R = 13, 6.2
+    for y in range(N):
+        for x in range(N):
+            dx, dy = x - 6, y - 6
+            if dx * dx + dy * dy > R * R: continue
+            ang = (math.atan2(dx, -dy) % (2 * math.pi)) / (2 * math.pi)
+            g.px(x, y, '#e8704f' if (dx == 0 and dy == 0) or ang < frac else '#ffffff')
+    g.outline(OL)
+    return g
+
+# How often a meeting happens: the pie shows how much of a year it fills (one month of twelve, or one semester of three).
+FREQUENCIES = {"monthly": ("Monthly", "once a month", 1 / 12), "semesterly": ("Semesterly", "once a semester", 1 / 3)}
+FREQ_ICON = {k: icon_svg(pie_icon(v[2]), 2, "q-svg") for k, v in FREQUENCIES.items()}
+
 TALK_TYPES = {"chalk": ("Chalk talk", "at the board, no slides", chalk_icon),
               "colloquium": ("Colloquium", "a talk with slides", projector_icon),
               "workshop": ("Workshop", "open group discussion", table_icon)}
@@ -1092,7 +1126,12 @@ def meeting_card(m, venues, on_campus_page=False):
         f'<span class="t-text"><span class="t-title">{esc(t.get("title") or "Untitled talk")}</span>'
         f'<span class="t-speaker">{esc(t.get("speaker") or "Speaker TBA")}</span></span></li>' for t in m["talks"])
     room = tba(m.get("room") or venues.get(m["campus"], {}).get("room"), "Room")
+    freq = (m.get("frequency") or "monthly").strip().lower()
+    if freq not in FREQUENCIES: raise SystemExit(f'schedule.json: frequency must be one of {", ".join(FREQUENCIES)} (meeting {m["date"]})')
     room_html = esc(room)
+    food_html = esc(m.get("food") or "TBA")
+    if (m.get("food_url") or "").strip():                                           # the caterer's name links to their website
+        food_html = f'<a class="room-link" href="{esc(m["food_url"].strip())}" target="_blank" rel="noopener">{food_html}</a>'
     if m["campus"] in DIRECTIONS and room.upper() != "ROOM TBA":                    # a known room links to its directions
         room_html = (f'<a class="room-link" href="{esc(maps_url(m["campus"]))}" target="_blank" rel="noopener" '
                      f'title="Directions on Google Maps">{esc(room)}</a>')
@@ -1103,15 +1142,19 @@ def meeting_card(m, venues, on_campus_page=False):
         where = f'{d:%A} at <a href="{c["href"]}">{c["label"]}</a>'
     return (f'<li id="{m["date"]}"><article class="card meeting" style="--c:{c["color"]}">'
             f'<header>{ico}<div><h2>{d:%B} {d.day}, {d.year}</h2><p class="m-where">{where}</p>'
-            f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{room_html}</span></p>'
-            f'<p class="m-food">Food provided by {esc(m.get("food") or "TBA")}</p></div></header>'
-            f'<ul class="talks">{talks}</ul></article></li>')
+            f'<p class="m-when"><span>{esc(tba(m.get("time"), "Time"))}</span><span>{room_html}</span>'
+            f'<span class="m-freq" title="{esc(FREQUENCIES[freq][1])}">{FREQ_ICON[freq]}{esc(FREQUENCIES[freq][0])}</span></p>'
+            f'</div></header>'
+            f'<ul class="talks">{talks}</ul>'
+            f'<p class="m-food"><span class="f-ico">{FOOD_ICON}</span><span>Food provided by {food_html}</span></p></article></li>')
 
 def schedule_page():
     data = load_schedule(); venues = data.get("venues", {})
-    legend = "".join(f'<li>{TALK_ICON[k]}<span><b>{name}</b><br>{esc(desc)}</span></li>' for k, (name, desc, _) in TALK_TYPES.items())
+    legend = "".join(f'<li><span class="l-ico">{TALK_ICON[k]}</span><span><b>{name}</b><br>{esc(desc)}</span></li>' for k, (name, desc, _) in TALK_TYPES.items())
+    freqs = "".join(f'<li><span class="l-ico">{FREQ_ICON[k]}</span><span><b>{name}</b><br>{esc(desc)}</span></li>' for k, (name, desc, _) in FREQUENCIES.items())
     meetings = [meeting_card(m, venues) for m in sorted(data["meetings"], key=lambda m: m["date"])]
-    main = (f'<section class="card legend" aria-label="Talk types"><h2>Talk types</h2><ul>{legend}</ul></section>\n\t\t'
+    main = (f'<section class="card legend" aria-label="Key"><div><h2>Talk types</h2><ul>{legend}</ul></div>'
+            f'<div><h2>Meetings</h2><ul>{freqs}</ul></div></section>\n\t\t'
             f'<ol class="meetings">\n\t\t\t' + "\n\t\t\t".join(meetings) + '\n\t\t</ol>')
     return subpage("Schedule", "Upcoming meetings and talks.", "Upcoming meetings and talks of The Local Group, a discussion and seminar group for galactic dynamics and near-field cosmology.", main)
 

@@ -1,5 +1,5 @@
 {
-  "_note": "Edit this file, then run: python3 local-group/build.py.  campus: harvard | mit | bu.  type: chalk | colloquium | workshop.  time / room / food are shown as typed ('TBA' or blank shows 'Time TBA' / 'Room TBA').  A meeting's room falls back to its campus's room in 'venues'.",
+  "_note": "Edit this file, then run: python3 local-group/build.py.  campus: harvard | mit | bu.  type: chalk | colloquium | workshop.  frequency (per meeting): monthly | semesterly (blank = monthly).  time / room / food are shown as typed ('TBA' or blank shows 'Time TBA' / 'Room TBA').  A meeting's room falls back to its campus's room in 'venues'.  food_url (optional, per meeting): makes the food provider's name a link.",
   "venues": {
     "harvard": {
       "room": "G-04 (Pratt Conference Room)"
@@ -17,7 +17,7 @@
       "campus": "bu",
       "time": "11am - 1pm",
       "room": "Room 500",
-      "food": "TBA",
+      "food": "Tatte Bakery & Café",
       "talks": [
         {
           "type": "chalk",
@@ -34,14 +34,16 @@
           "title": "Untitled talk",
           "speaker": "Speaker TBA"
         }
-      ]
+      ],
+      "frequency": "monthly",
+      "food_url": "https://tattebakery.com/"
     },
     {
       "date": "2026-11-18",
       "campus": "bu",
       "time": "11am - 1pm",
       "room": "Room 500",
-      "food": "TBA",
+      "food": "Tatte Bakery & Café",
       "talks": [
         {
           "type": "chalk",
@@ -58,14 +60,16 @@
           "title": "Untitled talk",
           "speaker": "Speaker TBA"
         }
-      ]
+      ],
+      "frequency": "monthly",
+      "food_url": "https://tattebakery.com/"
     },
     {
       "date": "2026-12-16",
       "campus": "bu",
       "time": "11am - 1pm",
       "room": "Room 500",
-      "food": "TBA",
+      "food": "Tatte Bakery & Café",
       "talks": [
         {
           "type": "chalk",
@@ -82,7 +86,9 @@
           "title": "Untitled talk",
           "speaker": "Speaker TBA"
         }
-      ]
+      ],
+      "frequency": "monthly",
+      "food_url": "https://tattebakery.com/"
     }
   ]
 }

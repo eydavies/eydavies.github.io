@@ -1,15 +1,31 @@
 /* University of Cambridge: only what differs from The Local Group's stylesheet (loaded first, from ../local-group/style.css). */
 
-/* the map is a zoomable box about as tall as the screen */
-.cam .scene-wrap { flex: none; position: relative; overflow: hidden; height: clamp(520px, calc(100vh - 28px), 1100px); min-height: 0; }
-@supports (height: 100svh) { .cam .scene-wrap { height: clamp(520px, calc(100svh - 28px), 1100px); } }
+/* no banner: the map is the whole page, and a toolbar of buttons floats over it (it never scrolls or scales) */
+html:has(body.cam), html.lower:has(body.cam) { background: var(--grass); }
+:root[data-time="night"]:has(body.cam), :root[data-time="night"].lower:has(body.cam) { background: #34503f; background: color-mix(in srgb, var(--grass) 55%, #0e1640); }
+.cam .scene-wrap { position: fixed; inset: 0; z-index: 0; overflow: hidden; min-height: 0; height: auto; }
 .cam .scene { touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
 .cam .scene.dragging { cursor: grabbing; }
 .cam .scene.zoomed { touch-action: none; }
 
+.bar { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.8rem 1rem; pointer-events: none; }
+.bar > * { pointer-events: auto; }
+.bar h1 { pointer-events: none; }
+.bar .links { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.bar .btn, .bar .tod, .zoom button {
+	display: inline-flex; align-items: center; justify-content: center; height: 2.6rem; padding: 0 0.9rem; font-size: 0.7rem; line-height: 1;
+	box-shadow: 3px 3px 0 var(--navy);
+}
+.bar .btn:hover, .zoom button:hover { box-shadow: 1px 1px 0 var(--navy); }
+.cam .tod { position: static; width: 3rem; padding: 0; flex: none; }
+.bar .zoom { margin-left: auto; }
+@media (max-width: 599px) { .bar .opt { display: none; } .bar { padding: 0.6rem 0.7rem; gap: 0.5rem; } .bar .btn { padding: 0 0.7rem; font-size: 0.62rem; } }
+
 /* the lawns (Parker's Piece and friends): a deeper green than the grass, in every season */
-.lawn { fill: #82c862; fill: color-mix(in srgb, var(--grass) 80%, #2e8f3c); }
-.lawnd { fill: #6fb450; fill: color-mix(in srgb, var(--grass) 66%, #2e8f3c); }
+.lawn { fill: #76bd58; fill: color-mix(in srgb, var(--grass) 70%, #2e8f3c); }
+.lawnd { fill: #5fa545; fill: color-mix(in srgb, var(--grass) 52%, #2e8f3c); }
+html[data-season="winter"] .lawn { fill: #d3dfec; }
+html[data-season="winter"] .lawnd { fill: #b6c7da; }
 
 /* leaves, petals and snow fall the whole height of the map (--fall is set on the svg) */
 @keyframes drop {
@@ -17,23 +33,46 @@
 	to   { transform: translate(calc(var(--x) + var(--dx)), var(--fall, 900px)); }
 }
 
-/* zoom buttons: bottom right of the map; only shown when scripts run */
-.zoom { display: none; position: absolute; right: 1rem; bottom: 1rem; z-index: 3; flex-direction: column; gap: 0.6rem; }
+/* zoom buttons: in the toolbar (a row) on wide screens, bottom right (a column) on phones; only shown when scripts run */
+.zoom { display: none; gap: 0.6rem; }
 .js .zoom { display: flex; }
-.zoom button {
-	width: 3rem; height: 2.6rem; padding: 0; font: inherit; font-size: 0.9rem; color: var(--navy); background: var(--cream);
-	border: 3px solid var(--navy); box-shadow: 3px 3px 0 var(--navy); cursor: pointer;
-}
-.zoom button:hover { background: #fff; transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--navy); }
+.zoom button { width: 2.8rem; padding: 0; font: inherit; font-size: 0.9rem; color: var(--navy); background: var(--cream); border: 3px solid var(--navy); cursor: pointer; }
+.zoom button:hover { background: #fff; transform: translate(2px, 2px); }
 .zoom button:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--navy); }
 .zoom button:disabled { opacity: 0.45; cursor: default; }
-#zfit { font-size: 0.55rem; }
+#zfit { font-size: 0.55rem; width: 3rem; }
+@media (max-width: 699px) {
+	.js .zoom { position: fixed; right: 0.8rem; bottom: 0.8rem; flex-direction: column; margin: 0; }
+	.zoom button { width: 3rem; }
+}
 .map-hint {
-	display: none; position: absolute; left: 1rem; bottom: 1rem; z-index: 3; margin: 0; max-width: 17rem; padding: 0.6rem 0.8rem;
+	display: none; position: fixed; left: 1rem; bottom: 1rem; z-index: 3; margin: 0; max-width: 17rem; padding: 0.6rem 0.8rem;
 	font-size: 0.5rem; line-height: 1.8; color: var(--navy); background: var(--cream); border: 3px solid var(--navy); box-shadow: 3px 3px 0 var(--navy);
 	pointer-events: none; transition: opacity 0.4s steps(4, end);
 }
 .js .map-hint { display: block; }
 .map-hint.gone { opacity: 0; }
-@media (max-width: 899px) { .map-hint { max-width: 12rem; font-size: 0.45rem; } }
+@media (max-width: 899px) { .map-hint { max-width: 10rem; font-size: 0.45rem; left: 0.8rem; bottom: 0.8rem; } }
 @media (prefers-reduced-motion: reduce) { .map-hint { transition: none; } }
+
+/* the season button: on the right-hand side, halfway down. Press to step through spring, summer, fall and winter (only shown when scripts run) */
+.season { display: none; }
+.js .season {
+	position: fixed; right: 0.8rem; top: 50%; z-index: 10; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+	width: 5.2rem; padding: 0.6rem 0.3rem 0.55rem; font: inherit; color: var(--navy); background: var(--cream); border: 3px solid var(--navy); box-shadow: 3px 3px 0 var(--navy); cursor: pointer;
+}
+.season:hover { background: #fff; transform: translateY(calc(-50% + 2px)) translateX(2px); box-shadow: 1px 1px 0 var(--navy); }
+.season:active { transform: translateY(calc(-50% + 3px)) translateX(3px); box-shadow: 0 0 0 var(--navy); }
+.season small { font-size: 0.42rem; letter-spacing: 0.05em; opacity: 0.75; }
+.season span { font-size: 0.6rem; line-height: 1; text-transform: uppercase; }
+.season i { width: 1.2rem; height: 1.2rem; border: 3px solid var(--navy); background: #8fd16c; box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.18); }
+html[data-season="spring"] .season i { background: #ff9ec4; }
+html[data-season="summer"] .season i { background: #ffd23f; }
+html[data-season="fall"] .season i { background: #e8782a; }
+html[data-season="winter"] .season i { background: #ffffff; }
+@media (max-width: 699px) { .js .season { width: 4.3rem; right: 0.6rem; padding: 0.5rem 0.2rem; } .season span { font-size: 0.5rem; } }
+/* the lamp in the middle of Parker's Piece glows at night (its .lit layer is only shown then) */
+
+/* the walkers: hidden for people who prefer no motion */
+#walkers { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { #walkers { display: none; } }

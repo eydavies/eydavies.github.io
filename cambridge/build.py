@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Builds the University of Cambridge page: cambridge/index.html.
 
-A zoomable pixel-art map of 28 Cambridge colleges in the style of The Local Group's home page (local-group/). The layout
+A zoomable pixel-art map of 28 Cambridge colleges in the style of The Local Group's home page (local-group/), with a small toolbar floating over the map instead of a banner. The layout
 follows an illustrated map of the town: the River Cam comes in from the lower left, runs up the Backs, hooks round St John's
 and Magdalene, and leaves down the right-hand side. It borrows the Local Group's drawing helpers by running
 local-group/build.py into a temporary folder, and links to that site's style.css and season.js, so the look (seasons, night
@@ -12,7 +12,7 @@ mode, header, fonts) stays in step. Nothing in local-group/ links back here.
 Writes cambridge/index.html only. Positions come from REF (coordinates on the reference map), scaled by F, then nudged apart
 until no building or name tag overlaps. The map is a schematic, not a survey.
 """
-import contextlib, hashlib, io, math, pathlib, random, runpy, shutil, sys, tempfile
+import contextlib, hashlib, html as _html, io, json, math, pathlib, random, runpy, shutil, sys, tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
 LG = HERE.parent / "local-group"
@@ -32,12 +32,41 @@ finally:
     shutil.rmtree(_tmp, ignore_errors=True)
 Grid, svg_paths, plaza, tag = G["Grid"], G["svg_paths"], G["plaza"], G["tag"]
 night_lights, snow_layer, OL, tree = G["night_lights"], G["snow_layer"], G["OL"], G["tree"]
-TOD_BUTTON, GALAXY, GAL_W, GAL_H, BUILD_SEASON = G["TOD_BUTTON"], G["GALAXY"], G["GAL_W"], G["GAL_H"], G["BUILD_SEASON"]
+TOD_BUTTON, BUILD_SEASON = G["TOD_BUTTON"], G["BUILD_SEASON"]
 text_width, boat_svg = G["text_width"], G["boat_svg"]
 
 import sprites
 GL = sprites.GL
 SPR = sprites.build_all(Grid, OL)
+
+# ------------------------------------------------------------------ the walkers: students in black gowns (no caps), 12 px tall, drawn facing left (the script mirrors them)
+GOWN, GOWN_D, GOWN_L = '#3d3f66', '#2c2e4d', '#555985'
+def gowned(hair, skin, trousers, book, frame):
+    g = Grid(); px = g.px
+    for x in (-1, 0, 1): px(x, -12, hair)
+    for y in (-11, -10): px(-1, y, skin); px(0, y, skin); px(1, y, hair)       # the face looks left; hair at the back of the head
+    px(-1, -9, '#ffffff'); px(0, -9, '#ffffff'); px(1, -9, GOWN)               # a white collar
+    for y in range(-8, -5):
+        px(-1, y, GOWN_L); px(0, y, GOWN); px(1, y, GOWN)                      # the shoulders and chest
+        px(-2, y, GOWN_D); px(2, y, GOWN_D)                                    # the arms, hung in loose sleeves
+    px(-2, -5, skin)                                                           # a hand
+    for y in (-5, -4):
+        px(-1, y, GOWN_L)
+        for x in range(0, 3): px(x, y, GOWN)
+    px(2, -5, GOWN_D); px(2, -4, GOWN_D)
+    for x in range(-3, 4): px(x, -3, GOWN_D if x in (-3, 3) else GOWN)      # the gown flares to the hem and swings as they step
+    for x in (range(-3, 4) if frame == 0 else range(-2, 4)): px(x, -2, GOWN_D)
+    if frame == 0: px(-1, -1, '#1d1b2a'); px(1, -1, '#1d1b2a')
+    else: px(0, -1, '#1d1b2a'); px(-1, -1, '#1d1b2a')
+    if book:
+        for (x, y) in ((-4, -6), (-3, -6), (-4, -5), (-3, -5)): px(x, y, book)
+    g.outline(OL)
+    return g
+# (hair, skin, trousers, book): one in three has dark skin
+PEOPLE = [('#3b2a20', '#ffd9a8', '#4a4a5a', None), ('#1d1d1d', '#7a4a2a', '#3a3a4a', '#a5342f'), ('#e9c46a', '#f1c27d', '#555566', None),
+          ('#1d1d1d', '#c68642', '#3a3a4a', '#2a7f62'), ('#8a4b24', '#ffd9a8', '#4a4a5a', '#2a5ea5'), ('#1d1d1d', '#5c3a21', '#3a3a4a', None),
+          ('#c9c9c9', '#f1c27d', '#555566', '#a5342f'), ('#d96a3c', '#ffe0bd', '#4a4a5a', None)]
+WALKER_DEFS = "".join(f'<g id="pw{i}a">{svg_paths(gowned(*p, 0))}</g><g id="pw{i}b">{svg_paths(gowned(*p, 1))}</g>' for i, p in enumerate(PEOPLE))
 
 # ------------------------------------------------------------------ the colleges
 # name, tag text, colour (white-on-colour must be readable: checked below), website, sprite, position on the reference map
@@ -181,9 +210,47 @@ MINY = min(c["y"] - 30 for c in COLLEGES) - 20; MAXY = max(c["y"] + 22 for c in 
 MAP = (MINX, MINY, MAXX, MAXY)
 W, H = MAXX - MINX, MAXY - MINY
 
-# ------------------------------------------------------------------ roads (a spanning tree joining every college), bridges, lawns
+# ------------------------------------------------------------------ the streets: the main roads of the reference map, a spur from each college, bridges where they cross the river
+# (name, width 1-3, key points on the reference map). Drawn smoothed; any stretch inside the river becomes a bridge deck.
+ROADS_REF = [
+    ("Regent St to Castle St", 3, [(130, 1875), (200, 1812), (300, 1740), (380, 1670), (450, 1600), (515, 1535), (535, 1440), (580, 1360), (625, 1275), (660, 1225),
+                                   (740, 1170), (820, 1120), (900, 1065), (970, 1030), (1060, 985), (1130, 940), (1190, 905), (1250, 865), (1292, 832),
+                                   (1335, 765), (1370, 690), (1400, 600), (1412, 450), (1410, 300)]),
+    ("Trumpington St to St John's St", 3, [(60, 1640), (130, 1480), (230, 1360), (320, 1275), (400, 1215), (470, 1185), (560, 1150), (630, 1095), (690, 1050),
+                                           (760, 1025), (850, 1015), (930, 1010), (975, 1030)]),
+    ("Queens' Road", 3, [(40, 1090), (170, 985), (300, 890), (420, 800), (520, 730), (620, 660), (720, 600), (820, 575), (900, 572), (1000, 585)]),
+    ("Madingley Road", 3, [(390, 545), (500, 470), (620, 395), (740, 320), (840, 262), (930, 205), (962, 195)]),
+    ("Madingley Rd to Northampton St", 3, [(962, 195), (975, 300), (995, 420), (1005, 530), (1010, 585), (1090, 625), (1180, 730), (1260, 830), (1292, 832)]),
+    ("Jesus Lane and Maid's Causeway", 3, [(965, 1035), (1000, 1120), (1012, 1200), (1005, 1280), (990, 1380), (975, 1470), (958, 1560), (955, 1650), (950, 1750),
+                                           (950, 1900), (948, 1990)]),
+    ("Victoria Avenue", 3, [(955, 1665), (1060, 1640), (1180, 1600), (1290, 1555), (1400, 1510), (1450, 1495)]),
+    ("Storey's Way", 2, [(900, 152), (1000, 142), (1130, 128), (1200, 108), (1290, 50), (1350, 15)]),
+    ("Margaret Road", 2, [(1215, 190), (1170, 260), (1130, 340), (1100, 420), (1085, 490)]),
+    ("Mount Pleasant", 2, [(1090, 495), (1160, 550), (1230, 620), (1290, 700), (1335, 765)]),
+    ("Emmanuel Road", 2, [(600, 1640), (700, 1650), (830, 1660), (955, 1665)]),
+    ("Clarendon Street", 2, [(545, 1812), (700, 1808), (850, 1803), (950, 1800)]),
+    ("Drummer St and Park Terrace", 2, [(690, 1440), (700, 1560), (650, 1650), (590, 1720), (545, 1810), (548, 1860), (570, 1960)]),
+    ("West Road", 2, [(110, 620), (200, 720), (290, 830), (340, 900)]),
+    ("Silver Street", 2, [(300, 1262), (250, 1160), (215, 1090), (180, 1030), (165, 985)]),
+]
+ROAD_DENSE = []                                 # (name, width, [(x, y) every art pixel, smoothed])
+for (rname, rw, rpts) in ROADS_REF:
+    key = [art(p) for p in rpts]; dn = []
+    for (ax, ay), (bx, by) in zip(key, key[1:]):
+        n = max(1, int(math.hypot(bx - ax, by - ay)))
+        for i in range(n): dn.append((ax + (bx - ax) * i / n, ay + (by - ay) * i / n))
+    dn.append(key[-1])
+    sm = []
+    for i in range(len(dn)):                    # a light smoothing, so the corners are rounded but the ends stay put
+        k = min(5, i, len(dn) - 1 - i); lo, hi = i - k, i + k
+        sm.append((sum(p[0] for p in dn[lo:hi + 1]) / (hi - lo + 1), sum(p[1] for p in dn[lo:hi + 1]) / (hi - lo + 1)))
+    ROAD_DENSE.append((rname, rw, sm))
+
 roads, bridges = Grid(), Grid()
 RPTS = []                                       # road centre points, so trees keep off them
+ROAD_JOBS = []                                  # (points, width): drawn together at the end, so junctions are clean
+ROUTES = []                                     # polylines the walkers follow: (count, [(x, y), ...])
+WIDTH = {1: (1.9, 1.0), 2: (2.5, 1.5), 3: (3.3, 2.3)}
 def stamp(g, cx, cy, r, col):
     for dy in range(-int(r) - 1, int(r) + 2):
         for dx in range(-int(r) - 1, int(r) + 2):
@@ -194,43 +261,137 @@ def path_pts(pts):
         n = max(1, int(max(abs(bx - ax), abs(by - ay)) * 2))
         for i in range(n + 1): out.append((ax + (bx - ax) * i / n, ay + (by - ay) * i / n))
     return out
-def draw_path(pts):
-    pp = path_pts(pts)
-    wet = [(round(x), round(y)) in RIVER for (x, y) in pp]
-    for (x, y), w in zip(pp, wet):
-        if w: stamp(bridges, x, y, 3.7, '#a39d8e')
-        else: stamp(roads, x, y, 2.5, '.pthd')
-    for (x, y), w in zip(pp, wet):
-        if w: stamp(bridges, x, y, 2.7, '#d9d2c0')
-        else: stamp(roads, x, y, 1.5, '.pth'); RPTS.append((x, y))
-nodes = [(c["x"], c["y"] + 1) for c in COLLEGES]
-inT, edges = {0}, []
-while len(inT) < len(nodes):                    # Prim's minimum spanning tree
+def draw_path(pts, w=2): ROAD_JOBS.append((pts, w))
+def flush_roads():
+    jobs = [(path_pts(p), w) for p, w in ROAD_JOBS]
+    for pp, w in jobs:                          # first every edge, then every surface: a side road never leaves an edge line across a main road
+        e = WIDTH[w][0]
+        for (x, y) in pp:
+            if (round(x), round(y)) in RIVER: stamp(bridges, x, y, 3.7 + (w == 3) * .6, '#a39d8e')
+            else: stamp(roads, x, y, e, '.pthd')
+    for pp, w in jobs:
+        i_ = WIDTH[w][1]
+        for (x, y) in pp:
+            if (round(x), round(y)) in RIVER: stamp(bridges, x, y, 2.7 + (w == 3) * .6, '#d9d2c0')
+            else: stamp(roads, x, y, i_, '.pth'); RPTS.append((x, y))
+for (rname, rw, sm) in ROAD_DENSE:
+    draw_path(sm, rw)
+    run = best = 0                              # no road may run along the water for long: that would not be a bridge
+    for (x, y) in sm:
+        run = run + 1 if (round(x), round(y)) in RIVER else 0; best = max(best, run)
+    assert best < 48, f"{rname} runs {best} px inside the river"
+
+def nearest_road(pt):
     best = None
-    for i in inT:
-        for j in range(len(nodes)):
-            if j in inT: continue
-            d = math.hypot(nodes[i][0] - nodes[j][0], nodes[i][1] - nodes[j][1])
-            if best is None or d < best[0]: best = (d, i, j)
-    _, i, j = best; inT.add(j); edges.append((i, j))
-for (i, j) in edges:
-    (ax, ay), (bx, by) = nodes[i], nodes[j]
-    mid = (bx, ay) if abs(bx - ax) > abs(by - ay) else (ax, by)       # one bend, like a street grid
-    draw_path([(ax, ay), mid, (bx, by)])
+    for (_, _, sm) in ROAD_DENSE:
+        for (x, y) in sm[::2]:
+            if (round(x), round(y)) in RIVER: continue
+            d = math.hypot(x - pt[0], y - pt[1])
+            if best is None or d < best[0]: best = (d, (round(x), round(y)))
+    return best
+def _near_boxes(pts, skip=None):                # how many samples of a path pass through another college's building or name tag
+    n = 0
+    for (x, y) in path_pts(pts)[::2]:
+        for c in COLLEGES:
+            if c is skip: continue
+            if abs(x - c["x"]) < RX + 3 and -30 < y - c["y"] < 4: n += 1
+            elif abs(x - c["x"]) < c["hw"] + 1 and 4 < y - c["y"] < 24: n += 1
+    return n
+def spur_for(pt, skip=None):                    # the best of: straight, or one bend either way (like a street grid), from pt to the nearest road
+    d, rp = nearest_road(pt)
+    if d < 3: return None
+    opts = [[pt, rp], [pt, (rp[0], pt[1]), rp], [pt, (pt[0], rp[1]), rp]]
+    return min(opts, key=lambda o: (_near_boxes(o, skip) * 40 + sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(o, o[1:]))))
+for c in COLLEGES:                              # a short spur from every college's gate to the nearest street
+    sp = spur_for((c["x"], c["y"] + 1), skip=c)
+    if sp:
+        draw_path(sp, 1)
+        if sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(sp, sp[1:])) >= 22: ROUTES.append((1, sp[::-1]))
 for c in COLLEGES:                              # the Backs: a footbridge from each college over the river to the meadow
     if not c.get("backs"): continue
     cx, cy = min(RIVER_PTS, key=lambda p: math.hypot(p[0] - c["x"], p[1] - c["y"] - 8))
     dx, dy = cx - c["x"], cy - (c["y"] + 1)
     n = math.hypot(dx, dy); dx, dy = dx / n, dy / n
-    draw_path([(c["x"], c["y"] + 1), (cx + dx * (HALF + 12), cy + dy * (HALF + 12))])
-bridges.outline(OL)
+    draw_path([(c["x"], c["y"] + 1), (cx + dx * (HALF + 12), cy + dy * (HALF + 12))], 1)
 
-lawn, lawn_ref = Grid(), [(420, 1810, 95, 110), (810, 1530, 45, 75), (1270, 1640, 100, 70), (790, 430, 110, 110), (430, 395, 90, 40),
-                          (1010, 640, 70, 28)]
-for (rx_, ry_, ax_, ay_) in lawn_ref:
-    cx, cy = art((rx_, ry_)); lawn.disc(cx, cy, ax_ * F, ay_ * F, '.lawn', cond=lambda x, y: (x, y) not in RIVER)
+# ------------------------------------------------------------------ the parks: square-cornered greens with their own footpaths (and, in the two Pieces, a lamp in the middle)
+# name, centre on the reference map, half-width and half-height in art pixels, paths: x = corner to corner, long = along the length, none
+PARKS = [
+    dict(name="Parker's Piece", ref=(385, 1850), hw=35, hh=35, kind="x", lamp=1),
+    dict(name="Christ's Pieces", ref=(790, 1510), hw=17, hh=22, kind="x", lamp=1),
+    dict(name="Jesus Green", ref=(1285, 1440), hw=15, hh=34, kind="long"),
+    dict(name="Midsummer Common", ref=(1120, 1735), hw=36, hh=20, kind="long"),
+    dict(name="St John's College Playing Fields", ref=(810, 390), hw=40, hh=44, kind="none"),
+    dict(name="University Rugby Ground", ref=(110, 640), hw=14, hh=11, kind="pitch"),
+]
+def _park_conflict(box):                        # does the park touch a college's building, plaza or the river?
+    x0, y0, x1, y1 = box
+    for c in COLLEGES:
+        if c["x"] - RX - 3 < x1 and x0 < c["x"] + RX + 3 and c["y"] - 29 < y1 and y0 < c["y"] + 6: return True
+    return any((x, y) in RIVER for x in range(x0, x1 + 1, 2) for y in range(y0, y1 + 1, 2))
+for p in PARKS:                                  # start from the reference position, move the least that clears the colleges
+    cx0, cy0 = (round(v) for v in art(p["ref"]))
+    best = None
+    for dy in range(-26, 27, 2):
+        for dx in range(-26, 27, 2):
+            box = (cx0 + dx - p["hw"], cy0 + dy - p["hh"], cx0 + dx + p["hw"], cy0 + dy + p["hh"])
+            if not _park_conflict(box) and (best is None or dx * dx + dy * dy < best[0]): best = (dx * dx + dy * dy, dx, dy)
+    if best is None: raise SystemExit(f"nowhere to put {p['name']}")
+    p["cx"], p["cy"] = cx0 + best[1], cy0 + best[2]
+    p["box"] = (p["cx"] - p["hw"], p["cy"] - p["hh"], p["cx"] + p["hw"], p["cy"] + p["hh"])
+lawn = Grid()
+for p in PARKS:
+    x0, y0, x1, y1 = p["box"]
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            if min(x - x0, x1 - x) + min(y - y0, y1 - y) < 3: continue           # chamfered corners
+            lawn.px(x, y, '.lawn')
+    if p["kind"] == "pitch":                                                      # pitch markings
+        for x in range(x0 + 3, x1 - 2): lawn.px(x, y0 + 3, '#f4f4e8'); lawn.px(x, y1 - 3, '#f4f4e8')
+        for y in range(y0 + 3, y1 - 2): lawn.px(x0 + 3, y, '#f4f4e8'); lawn.px(x1 - 3, y, '#f4f4e8'); lawn.px((x0 + x1) // 2, y, '#f4f4e8')
 lawn.outline('.lawnd')
-lawn_boxes = [(art((a - r, b - s)), art((a + r, b + s))) for a, b, r, s in lawn_ref]
+LAMPS = []
+for p in PARKS:
+    x0, y0, x1, y1 = p["box"]; cx, cy = p["cx"], p["cy"]
+    if p["kind"] == "x":                        # corner to corner, crossing in the middle
+        diag = [[(x0 + 3, y0 + 3), (x1 - 3, y1 - 3)], [(x1 - 3, y0 + 3), (x0 + 3, y1 - 3)]]
+    elif p["kind"] == "long":                   # along the length, with a short cross-path
+        diag = [[(x0 + 2, cy), (x1 - 2, cy)]] if p["hw"] > p["hh"] else [[(cx, y0 + 2), (cx, y1 - 2)]]
+        diag.append([(cx, y0 + 2), (cx, y1 - 2)] if p["hw"] > p["hh"] else [(x0 + 2, cy), (x1 - 2, cy)])
+    else: diag = []
+    for d in diag:
+        draw_path(d, 1 if p["hw"] < 20 else 2)
+        if p["kind"] == "x" or d is diag[0]: ROUTES.append((1, d))
+    if p.get("lamp"):                           # a round of paving where the paths cross, with a lamp on it
+        for yy in range(-4, 5):
+            for xx in range(-4, 5):
+                r2 = xx * xx + yy * yy
+                if r2 <= 20: roads.px(cx + xx, cy + yy, '.pthd' if r2 > 12 else '.pth')
+        LAMPS.append((cx, cy + 2))
+    if p["kind"] != "pitch":                    # a path out to the nearest street
+        pts_ = [(cx, y0 + 1), (cx, y1 - 1), (x0 + 1, cy), (x1 - 1, cy)]
+        q = min(pts_, key=lambda q_: nearest_road(q_)[0])
+        sp = spur_for(q)
+        if sp: draw_path(sp, 1)
+for rname, rw, sm in ROAD_DENSE:                # the long streets, as routes for the walkers: only the part of each inside the map
+    run = []
+    for (x, y) in sm[::6] + [sm[-1]]:
+        if MINX + 4 < x < MAXX - 4 and MINY + 4 < y < MAXY - 4: run.append((round(x), round(y)))
+        else:
+            if len(run) > 8: ROUTES.append((2 if rw == 3 else 1, run))
+            run = []
+    if len(run) > 8: ROUTES.append((2 if rw == 3 else 1, run))
+flush_roads()
+bridges.outline(OL)
+lamp, lamp_lit, lamp_glow, lamp_glow2 = Grid(), Grid(), Grid(), Grid()
+for (LX, LY) in LAMPS:
+    for dx in (-1, 0, 1): lamp.px(LX + dx, LY, '#3a3550')
+    for y in range(LY - 8, LY): lamp.px(LX, y, '#3a3550')
+    lamp.rect(LX - 1, LY - 12, LX + 1, LY - 10, '#f6efc9')
+    lamp_lit.rect(LX - 1, LY - 12, LX + 1, LY - 10, '#fff1a0'); lamp_lit.px(LX, LY - 11, '#ffffff')
+    lamp_glow.disc(LX, LY - 8, 14, 12, '#ffe27a'); lamp_glow2.disc(LX, LY - 9, 7, 6, '#ffe27a')
+lamp.outline(OL)
+lawn_boxes = [((x0 - 4, y0 - 4), (x1 + 4, y1 + 12)) for (x0, y0, x1, y1) in (p["box"] for p in PARKS)]
 
 # ------------------------------------------------------------------ the ground: tiles of tufts, flowers and leaves, repeated across the whole map
 def tile(seed, n, draw, size=128):
@@ -286,7 +447,7 @@ def sprinkle(n, x0, y0, x1, y1, d, tries):
     for _ in range(tries):
         if got >= n: break
         x, y = random.randint(x0, x1), random.randint(y0, y1)
-        if any(a0[0] < x < a1[0] and a0[1] < y < a1[1] for a0, a1 in lawn_boxes) and random.random() < .8: continue
+        if any(a0[0] < x < a1[0] and a0[1] < y < a1[1] for a0, a1 in lawn_boxes): continue
         if tree_ok(x, y) and far_enough(x, y, d):
             TREES.append((x, y, random.choice([0, 1, 1]))); grid_t.setdefault(cell(x, y, d), []).append((x, y)); got += 1
 sprinkle(260, MINX, MINY + 16, MAXX, MAXY, 22, 60000)
@@ -387,28 +548,28 @@ HTML = r'''<!DOCTYPE html>
 </head>
 <body class="home cam">
 	<a class="skip-link" href="#main">Skip to content</a>
-	<div class="hero">
-		<div class="sky" aria-hidden="true"></div>
-		<svg class="galaxy" viewBox="0 0 @@GALW@@ @@GALH@@" shape-rendering="crispEdges" aria-hidden="true" focusable="false">@@GALAXY@@</svg>
-
-		@@TOD@@
-
-		<div class="intro">
-			<h1>University of Cambridge</h1>
-			<p class="tagline">Twenty-eight colleges along the River Cam. Pick one to visit its website.</p>
-			<nav class="buttons" aria-label="University of Cambridge">
-				<a class="btn" href="https://www.cam.ac.uk" target="_blank" rel="noopener">cam.ac.uk<span class="sr"> (opens in a new tab)</span></a>
-				<a class="btn" href="../">Elliot's homepage</a>
-			</nav>
+	<header class="bar">
+		<h1 class="sr">University of Cambridge</h1>
+		<nav class="links" aria-label="University of Cambridge">
+			<a class="btn" href="../"><span><span aria-hidden="true">&lt; </span><span class="opt">Elliot's </span>homepage</span></a>
+			<a class="btn" href="https://www.cam.ac.uk" target="_blank" rel="noopener"><span>cam.ac.uk</span><span class="sr"> (opens in a new tab)</span></a>
+		</nav>
+		<div class="zoom" role="group" aria-label="Map zoom">
+			<button type="button" id="zout" aria-label="Zoom out">-</button>
+			<button type="button" id="zin" aria-label="Zoom in">+</button>
+			<button type="button" id="zfit" aria-label="Show the whole map">ALL</button>
 		</div>
-	</div>
+		@@TOD@@
+	</header>
+	<button type="button" class="season" id="season" aria-label="Change the season. It is now @@SEASON@@."><i aria-hidden="true"></i><small>SEASON</small><span id="seasonname">@@SEASON@@</span></button>
 
 	<main class="scene-wrap" id="main">
-		<h2 class="sr">The colleges</h2>
+		<p class="sr">Twenty-eight colleges along the River Cam. Pick one to visit its website.</p>
 		<svg class="scene" role="group" aria-label="Pixel-art map of 28 Cambridge colleges along the River Cam, which comes in from the lower left, runs past the Backs and St John's, and leaves down the right-hand side. Each college is a link to its own website." viewBox="@@VIEW@@" data-map="@@MAP@@" data-focus="@@FOCUS@@" data-arm="@@ARM@@" data-arm-x0="@@ARMX0@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" style="--fall:@@FALL@@px">
 			<defs>
 				@@TILES@@
 				@@TREEDEFS@@
+				@@WALKERDEFS@@
 				<!-- night: every colour moves 45% of the way towards a deep blue (same blend as the page background in style.css) -->
 				<filter id="dim" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
 					<feColorMatrix type="matrix" values="0.55 0 0 0 0.025  0 0.55 0 0 0.039  0 0 0.55 0 0.1125  0 0 0 1 0"/>
@@ -431,17 +592,15 @@ HTML = r'''<!DOCTYPE html>
 					<g>@@ROADS@@</g>
 					<g>@@BRIDGES@@</g>
 					@@TREES@@
+					<g>@@LAMP@@</g>
 				</g>
+				<g id="walkers" aria-hidden="true" pointer-events="none" data-people="@@NPEOPLE@@" data-routes="@@ROUTES@@"></g>
+				<g class="lit lamp" aria-hidden="true" pointer-events="none"><g opacity=".28">@@GLOW@@</g><g opacity=".38">@@GLOW2@@</g>@@LAMPLIT@@</g>
 
 				@@COLLEGES@@
 				@@PARTICLES@@
 			</g>
 		</svg>
-		<div class="zoom" role="group" aria-label="Map zoom">
-			<button type="button" id="zin" aria-label="Zoom in">+</button>
-			<button type="button" id="zout" aria-label="Zoom out">-</button>
-			<button type="button" id="zfit" aria-label="Show the whole map">ALL</button>
-		</div>
 		<p class="map-hint" aria-hidden="true">Drag to move. Pinch, or Ctrl + scroll, to zoom.</p>
 	</main>
 </body>
@@ -450,8 +609,7 @@ HTML = r'''<!DOCTYPE html>
 
 PAD = 10
 FOCUS = (round(sum(c['x'] for c in COLLEGES if c.get('backs')) / 6), round(sum(c['y'] for c in COLLEGES if c.get('backs')) / 6))   # phones open here
-html = (HTML.replace("@@SEASON@@", BUILD_SEASON).replace("@@TOD@@", TOD_BUTTON).replace("@@GALAXY@@", GALAXY)
-        .replace("@@GALW@@", str(GAL_W)).replace("@@GALH@@", str(GAL_H))
+html = (HTML.replace("@@SEASON@@", BUILD_SEASON).replace("@@TOD@@", TOD_BUTTON)
         .replace("@@VIEW@@", f"{MINX - PAD} {MINY - PAD} {W + 2 * PAD} {H + 2 * PAD}").replace("@@MAP@@", f"{MINX} {MINY} {MAXX} {MAXY}").replace("@@FOCUS@@", f"{FOCUS[0]} {FOCUS[1]}")
         .replace("@@ARM@@", ARM).replace("@@ARMX0@@", str(ARM_X0)).replace("@@FALL@@", str(H + 60))
         .replace("@@TILES@@", tiles_defs).replace("@@TREEDEFS@@", tree_def(0) + tree_def(1))
@@ -459,6 +617,9 @@ html = (HTML.replace("@@SEASON@@", BUILD_SEASON).replace("@@TOD@@", TOD_BUTTON).
         .replace("@@LITTER@@", ground_rect("lit")).replace("@@LAWN@@", svg_paths(lawn)).replace("@@ROADS@@", svg_paths(roads)).replace("@@RIVER@@", svg_paths(river))
         .replace("@@SH1@@", svg_paths(SHIM[0])).replace("@@SH2@@", svg_paths(SHIM[1])).replace("@@SH3@@", svg_paths(SHIM[2]))
         .replace("@@BOAT@@", boat_svg()).replace("@@BOATY@@", str(round(river_y_at(ARM_X0))))
+        .replace("@@WALKERDEFS@@", WALKER_DEFS).replace("@@NPEOPLE@@", str(len(PEOPLE)))
+        .replace("@@ROUTES@@", _html.escape(json.dumps([[n] + [round(v) for p_ in pts for v in p_] for n, pts in ROUTES], separators=(",", ":")), quote=True))
+        .replace("@@LAMP@@", svg_paths(lamp)).replace("@@LAMPLIT@@", svg_paths(lamp_lit)).replace("@@GLOW@@", svg_paths(lamp_glow)).replace("@@GLOW2@@", svg_paths(lamp_glow2))
         .replace("@@BRIDGES@@", svg_paths(bridges)).replace("@@TREES@@", trees_svg)
         .replace("@@COLLEGES@@", "\n\t\t\t\t".join(college_svg(c) for c in COLLEGES)).replace("@@PARTICLES@@", PARTICLES)
         .replace("@@V_SEASON@@", V["lgseason"]).replace("@@V_LGCSS@@", V["lgcss"]).replace("@@V_CSS@@", V["css"]).replace("@@V_JS@@", V["js"]))

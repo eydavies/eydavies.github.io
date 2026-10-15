@@ -23,9 +23,25 @@
 		});
 	}
 
+	/* ---------- the season button: spring -> summer -> fall -> winter (not remembered: the page starts on today's season) ---------- */
+	var seasonBtn = document.getElementById('season'), seasonName = document.getElementById('seasonname'), ORDER = ['spring', 'summer', 'fall', 'winter'];
+	function syncSeason() {
+		var cur = root.getAttribute('data-season') || 'summer';
+		if (seasonName) { seasonName.textContent = cur; }
+		if (seasonBtn) { seasonBtn.setAttribute('aria-label', 'Change the season. It is now ' + cur + '.'); }
+	}
+	if (seasonBtn) {
+		syncSeason();
+		seasonBtn.addEventListener('click', function () {
+			var i = ORDER.indexOf(root.getAttribute('data-season'));
+			root.setAttribute('data-season', ORDER[(i + 1) % ORDER.length]);
+			syncSeason();
+		});
+	}
+
 	var svg = document.querySelector('.scene'), world = document.getElementById('world');
 	if (!svg || !world) { return; }
-	var wrap = svg.parentNode, hint = document.querySelector('.map-hint');
+	var wrap = svg.parentNode, hint = document.querySelector('.map-hint'), bar = document.querySelector('.bar');
 	var zin = document.getElementById('zin'), zout = document.getElementById('zout'), zfit = document.getElementById('zfit');
 
 	/* ---------- zoom and pan ----------
@@ -34,13 +50,14 @@
 	var map = svg.getAttribute('data-map').split(' ').map(Number);               /* x0 y0 x1 y1 of the map, in art pixels */
 	var mw = map[2] - map[0], mh = map[3] - map[1];
 	svg.removeAttribute('viewBox');
-	var bw = 0, bh = 0, s = 1, tx = 0, ty = 0, fitS = 1, minS = 0.2, maxS = 12, auto = true, raf = null;
+	var bw = 0, bh = 0, top0 = 0, s = 1, tx = 0, ty = 0, fitS = 1, minS = 0.2, maxS = 12, auto = true, raf = null;
 
 	function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 	function measure() {
 		var r = svg.getBoundingClientRect(); bw = r.width; bh = r.height;
+		top0 = bar ? Math.max(0, bar.getBoundingClientRect().bottom - r.top + 4) : 0;        /* the toolbar floats over the top of the map */
 		var pad = Math.min(24, bw * 0.04);
-		fitS = Math.min((bw - 2 * pad) / mw, (bh - 2 * pad) / mh);
+		fitS = Math.min((bw - 2 * pad) / mw, (bh - top0 - 2 * pad) / mh);
 		minS = fitS * 0.4; maxS = Math.max(10, fitS * 6);
 	}
 	function limit() {                                                          /* keep at least a corner of the map on screen */
@@ -54,9 +71,8 @@
 		if (zin) { zin.disabled = s >= maxS * 0.999; }
 		if (zout) { zout.disabled = s <= minS * 1.001; }
 	}
-	function showAll() {
-		s = fitS; tx = (bw - mw * s) / 2 - map[0] * s; ty = (bh - mh * s) / 2 - map[1] * s; auto = true; apply();
-	}
+	function fitView() { return [fitS, (bw - mw * fitS) / 2 - map[0] * fitS, top0 + (bh - top0 - mh * fitS) / 2 - map[1] * fitS]; }
+	function showAll() { var v = fitView(); s = v[0]; tx = v[1]; ty = v[2]; auto = true; apply(); }
 	function setView(ns, ntx, nty) { s = ns; tx = ntx; ty = nty; limit(); apply(); }
 	function animate(ns, ntx, nty) {
 		ns = clamp(ns, minS, maxS);
@@ -76,7 +92,7 @@
 		return [ns, px - (px - tx) * k, py - (py - ty) * k];
 	}
 	function zoomBy(factor, px, py, instant) {
-		if (px === undefined) { px = bw / 2; py = bh / 2; }
+		if (px === undefined) { px = bw / 2; py = top0 + (bh - top0) / 2; }
 		var v = zoomTarget(factor, px, py); auto = false; touched();
 		if (instant) { setView(v[0], v[1], v[2]); } else { animate(v[0], v[1], v[2]); }
 	}
@@ -87,19 +103,19 @@
 		showAll();
 		if (bw >= 700) { return; }
 		var f = (svg.getAttribute('data-focus') || '').split(' ').map(Number);
-		if (f.length === 2) { s = fitS * 1.9; tx = bw / 2 - f[0] * s; ty = bh / 2 - f[1] * s; auto = false; limit(); apply(); }
+		if (f.length === 2) { s = fitS * 1.9; tx = bw / 2 - f[0] * s; ty = top0 + (bh - top0) / 2 - f[1] * s; auto = false; limit(); apply(); }
 	}
 	measure(); start();
 	window.addEventListener('resize', function () {
-		var cx = (bw / 2 - tx) / s, cy = (bh / 2 - ty) / s;                       /* the art-pixel point at the middle of the view */
+		var cx = (bw / 2 - tx) / s, cy = (top0 + (bh - top0) / 2 - ty) / s;                       /* the art-pixel point at the middle of the view */
 		measure();
 		if (auto) { showAll(); return; }
-		s = clamp(s, minS, maxS); tx = bw / 2 - cx * s; ty = bh / 2 - cy * s; limit(); apply();
+		s = clamp(s, minS, maxS); tx = bw / 2 - cx * s; ty = top0 + (bh - top0) / 2 - cy * s; limit(); apply();
 	});
 
 	if (zin) { zin.addEventListener('click', function () { zoomBy(1.6); }); }
 	if (zout) { zout.addEventListener('click', function () { zoomBy(1 / 1.6); }); }
-	if (zfit) { zfit.addEventListener('click', function () { touched(); if (raf) { cancelAnimationFrame(raf); } var a = [fitS, (bw - mw * fitS) / 2 - map[0] * fitS, (bh - mh * fitS) / 2 - map[1] * fitS]; animate(a[0], a[1], a[2]); auto = true; }); }
+	if (zfit) { zfit.addEventListener('click', function () { touched(); if (raf) { cancelAnimationFrame(raf); } var a = fitView(); animate(a[0], a[1], a[2]); auto = true; }); }
 
 	/* Ctrl / Cmd + scroll wheel (this is also how a trackpad pinch arrives), so that plain scrolling still scrolls the page */
 	svg.addEventListener('wheel', function (e) {
@@ -182,11 +198,67 @@
 	});
 	wrap.addEventListener('focusin', function (e) {
 		var a = e.target.closest ? e.target.closest('a.campus') : null; if (!a) { return; }
-		var r = a.getBoundingClientRect(), b = svg.getBoundingClientRect(), m = 28, dx = 0, dy = 0;
+		var r = a.getBoundingClientRect(), b = svg.getBoundingClientRect(), m = 28, dx = 0, dy = 0, tm = m + top0;
 		if (r.left < b.left + m) { dx = b.left + m - r.left; } else if (r.right > b.right - m) { dx = b.right - m - r.right; }
-		if (r.top < b.top + m) { dy = b.top + m - r.top; } else if (r.bottom > b.bottom - m) { dy = b.bottom - m - r.bottom; }
+		if (r.top < b.top + tm) { dy = b.top + tm - r.top; } else if (r.bottom > b.bottom - m) { dy = b.bottom - m - r.bottom; }
 		if (dx || dy) { auto = false; setView(s, tx + dx, ty + dy); }
 	});
+
+	/* ---------- students in gowns walking the streets and paths: each follows its route to the end, vanishes, and comes back the other way ---------- */
+	var wl = document.getElementById('walkers');
+	if (wl && !reduce) {
+		var routes = [], NP = Number(wl.getAttribute('data-people')) || 8, NS = 'http://www.w3.org/2000/svg', walkers = [];
+		try { routes = JSON.parse(wl.getAttribute('data-routes') || '[]'); } catch (e) { routes = []; }
+		var mk = function (tag, attrs) { var el = document.createElementNS(NS, tag); for (var k in attrs) { el.setAttribute(k, attrs[k]); } return el; };
+		routes.forEach(function (r, ri) {
+			var pts = [], cum = [0], i, k;
+			for (i = 1; i + 1 < r.length; i += 2) { pts.push([r[i], r[i + 1]]); }
+			for (i = 1; i < pts.length; i++) { cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); }
+			var len = cum[cum.length - 1];
+			if (len < 16) { return; }
+			for (k = 0; k < r[0]; k++) {
+				var p = (ri * 3 + k * 5 + Math.floor(Math.random() * NP)) % NP;
+				var outer = mk('g', { 'class': 'dim', display: 'none' }), flip = mk('g', {});
+				var ua = mk('use', { href: '#pw' + p + 'a' }), ub = mk('use', { href: '#pw' + p + 'b', display: 'none' });
+				flip.appendChild(ua); flip.appendChild(ub); outer.appendChild(flip); wl.appendChild(outer);
+				walkers.push({ pts: pts, cum: cum, len: len, dir: (k + ri) % 2 ? -1 : 1, pos: Math.random() * len, wait: Math.random() < 0.4 ? Math.random() * 12 : 0,
+					speed: 5 + Math.random() * 3, el: outer, flip: flip, ua: ua, ub: ub, face: 1, fr: 0, x: null, y: null, o: 1, shown: false });
+			}
+		});
+		var seg = function (w, d) {
+			var c = w.cum, i = 1;
+			while (i < c.length - 1 && c[i] < d) { i++; }
+			var t = (d - c[i - 1]) / ((c[i] - c[i - 1]) || 1), a = w.pts[i - 1], b = w.pts[i];
+			return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, b[0] - a[0]];
+		};
+		var wlast = null;
+		var wtick = function (t) {
+			var dt = wlast === null ? 0 : Math.min(0.1, (t - wlast) / 1000); wlast = t;
+			for (var n = 0; n < walkers.length; n++) {
+				var w = walkers[n];
+				if (w.wait > 0) {
+					w.wait -= dt;
+					if (w.wait <= 0) { w.dir = -w.dir; w.pos = w.dir > 0 ? 0 : w.len; }
+					continue;
+				}
+				w.pos += w.dir * w.speed * dt;
+				if (w.pos < 0 || w.pos > w.len) { w.wait = 2 + Math.random() * 14; w.pos = clamp(w.pos, 0, w.len); if (w.shown) { w.el.setAttribute('display', 'none'); w.shown = false; } continue; }
+				var q = seg(w, w.pos), x = Math.round(q[0]), y = Math.round(q[1]);
+				if (!w.shown) { w.el.removeAttribute('display'); w.shown = true; w.x = null; }
+				if (x !== w.x || y !== w.y) { w.x = x; w.y = y; w.el.setAttribute('transform', 'translate(' + x + ' ' + y + ')'); }
+				if (Math.abs(q[2]) > 0.3) {
+					var face = q[2] * w.dir > 0 ? 1 : -1;
+					if (face !== w.face) { w.face = face; w.flip.setAttribute('transform', face > 0 ? 'scale(-1 1)' : ''); }
+				}
+				var fr = Math.floor(w.pos / 2.6) & 1;
+				if (fr !== w.fr) { w.fr = fr; w.ua.setAttribute('display', fr ? 'none' : 'inline'); w.ub.setAttribute('display', fr ? 'inline' : 'none'); }
+				var o = clamp(Math.min(w.pos, w.len - w.pos) / 9, 0, 1);
+				if (o !== w.o) { w.o = o; if (o < 1) { w.el.setAttribute('opacity', o.toFixed(2)); } else { w.el.removeAttribute('opacity'); } }
+			}
+			requestAnimationFrame(wtick);
+		};
+		requestAnimationFrame(wtick);
+	}
 
 	/* ---------- the boat: whole-pixel steps along the first stretch of the river ---------- */
 	var boat = document.getElementById('boat');

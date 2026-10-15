@@ -1,0 +1,39 @@
+/* University of Cambridge: only what differs from The Local Group's stylesheet (loaded first, from ../local-group/style.css). */
+
+/* the map is a zoomable box about as tall as the screen */
+.cam .scene-wrap { flex: none; position: relative; overflow: hidden; height: clamp(520px, calc(100vh - 28px), 1100px); min-height: 0; }
+@supports (height: 100svh) { .cam .scene-wrap { height: clamp(520px, calc(100svh - 28px), 1100px); } }
+.cam .scene { touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+.cam .scene.dragging { cursor: grabbing; }
+.cam .scene.zoomed { touch-action: none; }
+
+/* the lawns (Parker's Piece and friends): a deeper green than the grass, in every season */
+.lawn { fill: #82c862; fill: color-mix(in srgb, var(--grass) 80%, #2e8f3c); }
+.lawnd { fill: #6fb450; fill: color-mix(in srgb, var(--grass) 66%, #2e8f3c); }
+
+/* leaves, petals and snow fall the whole height of the map (--fall is set on the svg) */
+@keyframes drop {
+	from { transform: translate(var(--x), -8px); }
+	to   { transform: translate(calc(var(--x) + var(--dx)), var(--fall, 900px)); }
+}
+
+/* zoom buttons: bottom right of the map; only shown when scripts run */
+.zoom { display: none; position: absolute; right: 1rem; bottom: 1rem; z-index: 3; flex-direction: column; gap: 0.6rem; }
+.js .zoom { display: flex; }
+.zoom button {
+	width: 3rem; height: 2.6rem; padding: 0; font: inherit; font-size: 0.9rem; color: var(--navy); background: var(--cream);
+	border: 3px solid var(--navy); box-shadow: 3px 3px 0 var(--navy); cursor: pointer;
+}
+.zoom button:hover { background: #fff; transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--navy); }
+.zoom button:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--navy); }
+.zoom button:disabled { opacity: 0.45; cursor: default; }
+#zfit { font-size: 0.55rem; }
+.map-hint {
+	display: none; position: absolute; left: 1rem; bottom: 1rem; z-index: 3; margin: 0; max-width: 17rem; padding: 0.6rem 0.8rem;
+	font-size: 0.5rem; line-height: 1.8; color: var(--navy); background: var(--cream); border: 3px solid var(--navy); box-shadow: 3px 3px 0 var(--navy);
+	pointer-events: none; transition: opacity 0.4s steps(4, end);
+}
+.js .map-hint { display: block; }
+.map-hint.gone { opacity: 0; }
+@media (max-width: 899px) { .map-hint { max-width: 12rem; font-size: 0.45rem; } }
+@media (prefers-reduced-motion: reduce) { .map-hint { transition: none; } }

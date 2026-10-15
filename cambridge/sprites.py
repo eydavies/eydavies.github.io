@@ -432,3 +432,43 @@ def build_all(Grid, OL):
                 corpus=corpus, peter=peter, pembroke=pembroke, stcath=stcath, christs=christs, emma=emma, sidney=sidney,
                 churchill=churchill, girton=girton, fitz=fitz, lucy=lucy, murray=murray, stedmunds=stedmunds, magdalene=magdalene,
                 robinson=robinson, selwyn=selwyn, darwin=darwin, downing=downing, homerton=homerton, hughes=hughes, jesus=jesus)
+
+
+def punt(Grid, OL, frame):
+    """The summer boat: a flat-bottomed Cambridge punt, heading right, with a punter in a straw boater standing on the stern
+    and pushing it along with a long pole. Frame 0: the pole is planted and the punter leans into it; frame 1: the pole is
+    drawn up almost upright to be dropped in again. Origin: the water line at the middle of the punt."""
+    g = Grid()
+    WL, WM, WD = '#e2b57c', '#a9743f', '#7a4f2a'                  # the punt: light rim, wooden side, dark bottom
+    CUSH, CUSHD = '#d94a4a', '#a82f35'                             # red cushions
+    SHIRT, STRIPE, TROU = '#fffaf0', '#2b4a8a', '#3a4a6a'
+    SKIN, HAIR, STRAW, BAND = '#f1c27d', '#6b4a2b', '#f2d27a', '#cc2f2f'
+    POLE, POLEL = '#8a5a3b', '#c9a066'
+    g.hline(0, -10, 10, WL); g.hline(1, -10, 10, WM); g.hline(2, -9, 9, WD)        # a long, low hull with square ends
+    g.px(11, -1, WL); g.px(10, -1, WL)                                              # the raised, flat bow
+    g.hline(-1, -10, -4, WM)                                                        # the punting platform at the stern
+    g.rect(1, -2, 6, -1, CUSH); g.rect(1, -2, 6, -2, CUSHD)                         # cushions
+    lean = 1 if frame == 0 else 0                                                   # the punter leans forward as they push
+    x = -7
+    for yy in (-1, -2, -3, -4): g.px(x - 1, yy, TROU); g.px(x + 1, yy, TROU)    # legs, with dark shoes
+    g.px(x, -4, TROU); g.px(x - 1, -1, '#1d1b2a'); g.px(x + 1, -1, '#1d1b2a')
+    for i, yy in enumerate(range(-8, -4)):                                          # striped shirt
+        for xx in range(x - 1 + lean, x + 2 + lean): g.px(xx, yy, STRIPE if i % 2 == 0 else SHIRT)
+    for xx in range(x - 1 + lean, x + 2 + lean): g.px(xx, -11, SKIN); g.px(xx, -10, SKIN); g.px(xx, -9, SKIN)
+    g.px(x - 1 + lean, -10, HAIR); g.px(x - 1 + lean, -9, HAIR); g.px(x + 1 + lean, -10, '#1d1d1d')   # hair at the back, an eye
+    g.hline(-12, x - 2 + lean, x + 2 + lean, STRAW)                                 # the boater: a brim ...
+    g.hline(-13, x - 1 + lean, x + 1 + lean, BAND); g.hline(-14, x - 1 + lean, x + 1 + lean, STRAW)   # ... a red band and a crown
+    # the pole: held in both hands, going down behind the stern into the water
+    if frame == 0:
+        pts = [(x + 2 + lean, -9)]
+        for k in range(0, 21): pts.append((x + 2 + lean - round(k * 0.45), -9 + k))
+        hands = [(x + 3 + lean, -8), (x + 2 + lean, -6)]
+    else:
+        pts = [(x + 4, yy) for yy in range(-16, 4)]
+        hands = [(x + 3, -8), (x + 3, -6)]
+    for (px_, py_) in pts: g.px(px_, py_, POLE if py_ % 2 else POLEL)
+    for (hx, hy) in hands: g.px(hx, hy, SKIN)
+    g.outline(OL)
+    for (wx, wy) in ((-13, 1), (-15, 2), (-18, 1), (-21, 2)): g.px(wx, wy, '#ffffff')   # the wake
+    if frame == 0: g.px(x - 8, 5, '#ffffff'); g.px(x - 7, 6, '#ffffff')              # a splash where the pole goes in
+    return g

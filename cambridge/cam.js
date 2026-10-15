@@ -23,22 +23,6 @@
 		});
 	}
 
-	/* ---------- the season button: spring -> summer -> fall -> winter (not remembered: the page starts on today's season) ---------- */
-	var seasonBtn = document.getElementById('season'), seasonName = document.getElementById('seasonname'), ORDER = ['spring', 'summer', 'fall', 'winter'];
-	function syncSeason() {
-		var cur = root.getAttribute('data-season') || 'summer';
-		if (seasonName) { seasonName.textContent = cur; }
-		if (seasonBtn) { seasonBtn.setAttribute('aria-label', 'Change the season. It is now ' + cur + '.'); }
-	}
-	if (seasonBtn) {
-		syncSeason();
-		seasonBtn.addEventListener('click', function () {
-			var i = ORDER.indexOf(root.getAttribute('data-season'));
-			root.setAttribute('data-season', ORDER[(i + 1) % ORDER.length]);
-			syncSeason();
-		});
-	}
-
 	var svg = document.querySelector('.scene'), world = document.getElementById('world');
 	if (!svg || !world) { return; }
 	var wrap = svg.parentNode, hint = document.querySelector('.map-hint'), bar = document.querySelector('.bar');
@@ -49,6 +33,9 @@
 	   translate(tx ty) scale(s), where s is screen pixels per art pixel. */
 	var map = svg.getAttribute('data-map').split(' ').map(Number);               /* x0 y0 x1 y1 of the map, in art pixels */
 	var mw = map[2] - map[0], mh = map[3] - map[1];
+	var wd = (svg.getAttribute('data-world') || '').split(' ').map(Number);        /* the whole world: you can never see past it, so the ends of the river stay hidden */
+	if (wd.length !== 4 || wd.some(isNaN)) { wd = [map[0] - 300, map[1] - 300, map[2] + 300, map[3] + 300]; }
+	var coverS = 0.2;
 	svg.removeAttribute('viewBox');
 	var bw = 0, bh = 0, top0 = 0, s = 1, tx = 0, ty = 0, fitS = 1, minS = 0.2, maxS = 12, auto = true, raf = null;
 
@@ -58,12 +45,15 @@
 		top0 = bar ? Math.max(0, bar.getBoundingClientRect().bottom - r.top + 4) : 0;        /* the toolbar floats over the top of the map */
 		var pad = Math.min(24, bw * 0.04);
 		fitS = Math.min((bw - 2 * pad) / mw, (bh - top0 - 2 * pad) / mh);
-		minS = fitS * 0.4; maxS = Math.max(10, fitS * 6);
+		coverS = Math.max(bw / (wd[2] - wd[0]), bh / (wd[3] - wd[1]));             /* the least zoom at which the window is still filled by the world */
+		fitS = Math.max(fitS, coverS);
+		minS = Math.max(coverS, fitS * 0.8); maxS = Math.max(10, fitS * 6);
 	}
-	function limit() {                                                          /* keep at least a corner of the map on screen */
-		var m = 0.2 * Math.min(bw, bh);
-		tx = clamp(tx, m - map[2] * s, bw - m - map[0] * s);
-		ty = clamp(ty, m - map[3] * s, bh - m - map[1] * s);
+	function limit() {                                                          /* keep the window inside the world */
+		var hi = -wd[0] * s, lo = bw - wd[2] * s;
+		tx = lo > hi ? (lo + hi) / 2 : clamp(tx, lo, hi);
+		hi = -wd[1] * s; lo = bh - wd[3] * s;
+		ty = lo > hi ? (lo + hi) / 2 : clamp(ty, lo, hi);
 	}
 	function apply() {
 		world.setAttribute('transform', 'translate(' + tx.toFixed(2) + ' ' + ty.toFixed(2) + ') scale(' + s.toFixed(4) + ')');
@@ -72,7 +62,7 @@
 		if (zout) { zout.disabled = s <= minS * 1.001; }
 	}
 	function fitView() { return [fitS, (bw - mw * fitS) / 2 - map[0] * fitS, top0 + (bh - top0 - mh * fitS) / 2 - map[1] * fitS]; }
-	function showAll() { var v = fitView(); s = v[0]; tx = v[1]; ty = v[2]; auto = true; apply(); }
+	function showAll() { var v = fitView(); s = v[0]; tx = v[1]; ty = v[2]; auto = true; limit(); apply(); }
 	function setView(ns, ntx, nty) { s = ns; tx = ntx; ty = nty; limit(); apply(); }
 	function animate(ns, ntx, nty) {
 		ns = clamp(ns, minS, maxS);
@@ -278,6 +268,8 @@
 		if (x !== last) {
 			last = x;
 			boat.setAttribute('transform', 'translate(' + x + ' ' + riverY(x) + ')');
+			var fade = Math.min(x - START, END - x) / 30;                        /* it fades in and out at the ends of its stretch, never popping */
+			if (fade < 1) { boat.setAttribute('opacity', Math.max(0, fade).toFixed(2)); } else { boat.removeAttribute('opacity'); }
 		}
 		requestAnimationFrame(frame);
 	}

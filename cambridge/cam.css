@@ -27,10 +27,11 @@ html:has(body.cam), html.lower:has(body.cam) { background: var(--grass); }
 html[data-season="winter"] .lawn { fill: #d3dfec; }
 html[data-season="winter"] .lawnd { fill: #b6c7da; }
 
-/* leaves, petals and snow fall the whole height of the map (--fall is set on the svg) */
+/* leaves, petals and snow: a layer over the screen (whatever the zoom), falling the full height of the window */
+.fx { position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; overflow: hidden; }
 @keyframes drop {
-	from { transform: translate(var(--x), -8px); }
-	to   { transform: translate(calc(var(--x) + var(--dx)), var(--fall, 900px)); }
+	from { transform: translate(var(--x), -10px); }
+	to   { transform: translate(calc(var(--x) + var(--dx)), 104vh); }
 }
 
 /* zoom buttons: in the toolbar (a row) on wide screens, bottom right (a column) on phones; only shown when scripts run */
@@ -55,24 +56,12 @@ html[data-season="winter"] .lawnd { fill: #b6c7da; }
 @media (max-width: 899px) { .map-hint { max-width: 10rem; font-size: 0.45rem; left: 0.8rem; bottom: 0.8rem; } }
 @media (prefers-reduced-motion: reduce) { .map-hint { transition: none; } }
 
-/* the season button: on the right-hand side, halfway down. Press to step through spring, summer, fall and winter (only shown when scripts run) */
-.season { display: none; }
-.js .season {
-	position: fixed; right: 0.8rem; top: 50%; z-index: 10; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
-	width: 5.2rem; padding: 0.6rem 0.3rem 0.55rem; font: inherit; color: var(--navy); background: var(--cream); border: 3px solid var(--navy); box-shadow: 3px 3px 0 var(--navy); cursor: pointer;
-}
-.season:hover { background: #fff; transform: translateY(calc(-50% + 2px)) translateX(2px); box-shadow: 1px 1px 0 var(--navy); }
-.season:active { transform: translateY(calc(-50% + 3px)) translateX(3px); box-shadow: 0 0 0 var(--navy); }
-.season small { font-size: 0.42rem; letter-spacing: 0.05em; opacity: 0.75; }
-.season span { font-size: 0.6rem; line-height: 1; text-transform: uppercase; }
-.season i { width: 1.2rem; height: 1.2rem; border: 3px solid var(--navy); background: #8fd16c; box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.18); }
-html[data-season="spring"] .season i { background: #ff9ec4; }
-html[data-season="summer"] .season i { background: #ffd23f; }
-html[data-season="fall"] .season i { background: #e8782a; }
-html[data-season="winter"] .season i { background: #ffffff; }
-@media (max-width: 699px) { .js .season { width: 4.3rem; right: 0.6rem; padding: 0.5rem 0.2rem; } .season span { font-size: 0.5rem; } }
 /* the lamp in the middle of Parker's Piece glows at night (its .lit layer is only shown then) */
 
 /* the walkers: hidden for people who prefer no motion */
 #walkers { pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { #walkers { display: none; } }
+
+/* night: the whole ground (grass, river, roads, trees) is dimmed by one veil, the same blend as the dim filter the buildings use, but far cheaper to draw */
+.veil { display: none; }
+:root[data-time="night"] .veil { display: inline; opacity: 0.45; }

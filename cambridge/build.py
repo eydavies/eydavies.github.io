@@ -33,7 +33,13 @@ finally:
 Grid, svg_paths, plaza, tag = G["Grid"], G["svg_paths"], G["plaza"], G["tag"]
 night_lights, snow_layer, OL, tree = G["night_lights"], G["snow_layer"], G["OL"], G["tree"]
 TOD_BUTTON, BUILD_SEASON = G["TOD_BUTTON"], G["BUILD_SEASON"]
-text_width, boat_svg = G["text_width"], G["boat_svg"]
+text_width = G["text_width"]
+def boat_svg():                                  # the Local Group's boats, but a punter in summer, and in spring a single duck, no ducklings
+    sk = f'<g class="fa">{svg_paths(G["skater"](0))}</g><g class="fb">{svg_paths(G["skater"](1))}</g>'
+    sl = f'<g class="fa">{svg_paths(sprites.punt(Grid, OL, 0))}</g><g class="fb">{svg_paths(sprites.punt(Grid, OL, 1))}</g>'
+    rw = f'<g class="fa row">{svg_paths(G["rower"](0))}</g><g class="fb row">{svg_paths(G["rower"](1))}</g>'
+    duck = f'<g class="dbob">{svg_paths(G["duck"](True))}</g>'
+    return (f'<g class="bt bt-fall">{rw}</g><g class="bt bt-winter">{sk}</g><g class="bt bt-spring">{duck}</g><g class="bt bt-summer">{sl}</g>')
 
 import sprites
 GL = sprites.GL
@@ -119,10 +125,10 @@ F, OX, OY = 0.30, -6, 14                       # reference-map pixels -> art pix
 def art(p): return (F * p[0] + OX, F * p[1] + OY)
 
 # ------------------------------------------------------------------ the river Cam: in from the lower left, up the Backs, round the hook, out down the right
-REF_RIVER = [(-1500, 1330), (-700, 1230), (0, 1170), (130, 1140), (215, 1100), (285, 1050), (350, 1000), (415, 955), (480, 915),
+REF_RIVER = [(-2600, 1410), (-1500, 1330), (-700, 1230), (0, 1170), (130, 1140), (215, 1100), (285, 1050), (350, 1000), (415, 955), (480, 915),
              (545, 885), (620, 845), (700, 795), (790, 768), (870, 762), (940, 768), (995, 785), (1050, 835), (1095, 900),
              (1135, 955), (1215, 1010), (1295, 1085), (1355, 1165), (1395, 1255), (1410, 1400), (1405, 1520), (1370, 1620),
-             (1295, 1700), (1210, 1770), (1160, 1860), (1130, 1960), (1120, 2700)]
+             (1295, 1700), (1210, 1770), (1160, 1860), (1130, 1960), (1120, 2700), (1120, 4400)]
 KEY = [art(p) for p in REF_RIVER]
 dense = []
 for (ax, ay), (bx, by) in zip(KEY, KEY[1:]):
@@ -149,6 +155,12 @@ river.outline('.rvo')
 RIVER_PTS = CENTRE[::3]
 def river_dist(x, y):
     return min(math.hypot(x - cx, y - cy) for cx, cy in RIVER_PTS)
+RIVER_NEAR = set()                              # every pixel within HALF + 9 of the water, so trees can be tested in one lookup
+for (cx, cy) in CENTRE[::2]:
+    r_ = HALF + 9
+    for dy in range(-r_ - 1, r_ + 2):
+        for dx in range(-r_ - 1, r_ + 2):
+            if dx * dx + dy * dy <= (r_ + .5) ** 2: RIVER_NEAR.add((round(cx) + dx, round(cy) + dy))
 
 def shimmer(shift):
     g = Grid()
@@ -209,6 +221,14 @@ MINX = min(c["x"] - c["hw"] for c in COLLEGES) - 26; MAXX = max(c["x"] + c["hw"]
 MINY = min(c["y"] - 30 for c in COLLEGES) - 20; MAXY = max(c["y"] + 22 for c in COLLEGES) + 26
 MAP = (MINX, MINY, MAXX, MAXY)
 W, H = MAXX - MINX, MAXY - MINY
+# the world: the most of the page you can ever see. Tile-aligned, so the tree tiles below meet it cleanly. The river runs off both of its edges.
+TS = 320
+WM, IM = 460, 70                                # the margin of the world, and of the zone of individually placed trees, around the map
+WX0, WY0 = MINX - WM, MINY - WM
+WX1, WY1 = MAXX + WM, MAXY + WM
+IX0, IY0 = MINX - IM, MINY - IM                 # the tree zone is a whole number of tiles, with the tiles of woods starting on its corner
+IX1, IY1 = IX0 + -(-(W + 2 * IM) // TS) * TS, IY0 + -(-(H + 2 * IM) // TS) * TS
+assert CENTRE[0][0] < WX0 - 40 and CENTRE[-1][1] > WY1 + 40, "the river must run off the edge of the world"
 
 # ------------------------------------------------------------------ the streets: the main roads of the reference map, a spur from each college, bridges where they cross the river
 # (name, width 1-3, key points on the reference map). Drawn smoothed; any stretch inside the river becomes a bridge deck.
@@ -411,7 +431,7 @@ def d_litter(g, r, s):
         g.px(x, y, col); g.px(x + 1, y, col)
 TILES = [("tuft", tile(11, 46, d_tuft)), ("flw", tile(12, 13, d_flower)), ("spr", tile(13, 7, d_spring)), ("lit", tile(14, 8, d_litter))]
 tiles_defs = "".join(f'<pattern id="pt-{k}" width="128" height="128" patternUnits="userSpaceOnUse">{svg_paths(g)}</pattern>' for k, g in TILES)
-GX0, GY0, GX1, GY1 = MINX - 700, MINY - 700, MAXX + 700, MAXY + 700                # the ground goes on well past the map
+GX0, GY0, GX1, GY1 = WX0, WY0, WX1, WY1                                              # the ground fills the world
 def ground_rect(k): return f'<rect x="{GX0}" y="{GY0}" width="{GX1 - GX0}" height="{GY1 - GY0}" fill="url(#pt-{k})"/>'
 
 # ------------------------------------------------------------------ trees: spread evenly, never on a building, road or the river
@@ -430,7 +450,7 @@ def tree_ok(x, y):
         for j in range(cy - 1, cy + 2):
             for (px_, py_) in tree_cells.get((i, j), ()):
                 if abs(px_ - x) < 9 and -4 < py_ - y < 12 + 6: return False
-    if river_dist(x, y - 6) < HALF + 9: return False
+    if (round(x), round(y - 6)) in RIVER_NEAR: return False
     return True
 random.seed(23)
 TREES = []                                      # (x, y, big)
@@ -451,26 +471,52 @@ def sprinkle(n, x0, y0, x1, y1, d, tries):
         if tree_ok(x, y) and far_enough(x, y, d):
             TREES.append((x, y, random.choice([0, 1, 1]))); grid_t.setdefault(cell(x, y, d), []).append((x, y)); got += 1
 sprinkle(260, MINX, MINY + 16, MAXX, MAXY, 22, 60000)
-sprinkle(220, MINX - 400, MINY - 300, MAXX + 400, MAXY + 300, 38, 40000)      # beyond the map: sparser
+sprinkle(99999, IX0, IY0, IX1, IY1, 29, 150000)                                  # all round the map, as thick as inside it
+# beyond that: one tile of woods, repeated (it never touches the edges of its tile, so there are no seams)
+_r = random.Random(77); WOODS = []
+for _ in range(6000):
+    x, y = _r.randint(10, TS - 10), _r.randint(17, TS - 2)
+    if all((x - a) ** 2 + ((y - b) * 1.1) ** 2 >= 29 * 29 for a, b, _c in WOODS): WOODS.append((x, y, _r.choice([0, 1, 1])))
+WOODS.sort(key=lambda t: t[1])
+woods_tile = "".join(f'<g class="ctree tv{i % 3}" transform="translate({x} {y})"><use href="#tr{b}"/></g>' for i, (x, y, b) in enumerate(WOODS))
+woods_defs = f'<pattern id="pt-woods" x="{IX0}" y="{IY0}" width="{TS}" height="{TS}" patternUnits="userSpaceOnUse">{woods_tile}</pattern>'
+_cl = " ".join(f"{'M' if i == 0 else 'L'}{round(x)} {round(y)}" for i, (x, y) in enumerate(CENTRE[::12] + [CENTRE[-1]]))        # the river's course, to keep woods off the water
+woods_mask = (f'<mask id="wm" maskUnits="userSpaceOnUse" x="{WX0}" y="{WY0}" width="{WX1 - WX0}" height="{WY1 - WY0}">'
+              f'<rect x="{WX0}" y="{WY0}" width="{WX1 - WX0}" height="{WY1 - WY0}" fill="#fff"/><rect x="{IX0}" y="{IY0}" width="{IX1 - IX0}" height="{IY1 - IY0}" fill="#000"/>'
+              f'<path d="{_cl}" fill="none" stroke="#000" stroke-width="{2 * (HALF + 12)}" stroke-linejoin="round"/></mask>')
+woods_rect = f'<rect x="{WX0}" y="{WY0}" width="{WX1 - WX0}" height="{WY1 - WY0}" fill="url(#pt-woods)" mask="url(#wm)"/>'
 TREES.sort(key=lambda t: t[1])
+def heavy_snow(t):                              # winter: the top three rows of every lobe of foliage are snow, shaded blue-white on the fourth, plus the rim
+    pre = t.pre; leaf = {k for k, c in pre.items() if c.startswith('.lf')}
+    g = Grid()
+    for (x, y) in leaf:
+        if (x, y - 1) in leaf: continue                                       # start from each top surface
+        d = 0
+        while (x, y + d) in leaf and d < 4:
+            inner = (x - 1, y + d) in leaf and (x + 1, y + d) in leaf
+            if d < 3 or inner: g.px(x, y + d, '#f6faff' if d < 3 else '#d5e4f5')
+            d += 1
+    for (x, y) in leaf:                                                       # and a dusting along the sunny (upper-left) edge
+        if (x - 1, y) not in leaf and (x, y - 1) in leaf and (x + 1, y) in leaf: g.px(x, y, '#f6faff')
+    return g
 def tree_def(big):
-    t = tree(bool(big)); snow = snow_layer(t, pred=lambda c: c.startswith('.lf'))
+    t = tree(bool(big)); snow = heavy_snow(t)
     return f'<g id="tr{big}">{svg_paths(t)}<g class="snow">{svg_paths(snow)}</g></g>'
 trees_svg = "".join(f'<g class="ctree tv{i % 3}" transform="translate({x} {y})"><use href="#tr{b}"/></g>' for i, (x, y, b) in enumerate(TREES))
 
-# ------------------------------------------------------------------ falling leaves, petals and snow over the whole map
+# ------------------------------------------------------------------ falling leaves, petals and snow: a layer over the screen, so they fall wherever you are looking
 def particles(kind, n, colours, seed):
     rnd = random.Random(seed); out = []
     for _ in range(n):
-        x = rnd.randint(MINX - 150, MAXX + 150); dur = rnd.uniform(18, 34); delay = -rnd.uniform(0, dur)
+        x = rnd.uniform(-2, 102); dur = rnd.uniform(18, 34); delay = -rnd.uniform(0, dur)
         drift = rnd.choice([-36, -24, -12, 12, 24, 36])
-        w, h = (2, 1) if kind != 'snow' else ((2, 2) if rnd.random() < .22 else (1, 1))
-        out.append(f'<g class="pt" style="--x:{x}px;--dx:{drift}px;animation-duration:{dur:.1f}s;animation-delay:{delay:.1f}s">'
+        w, h = (3, 2) if kind != 'snow' else ((3, 3) if rnd.random() < .22 else (2, 2))
+        out.append(f'<g class="pt" style="--x:{x:.1f}vw;--dx:{drift}px;animation-duration:{dur:.1f}s;animation-delay:{delay:.1f}s">'
                    f'<rect class="sw" width="{w}" height="{h}" fill="{rnd.choice(colours)}"/></g>')
     return "".join(out)
-PARTICLES = (f'<g class="p p-fall" aria-hidden="true" pointer-events="none">{particles("leaf", 70, ["#e8782a", "#d9452f", "#e9b52e", "#c2561c"], 11)}</g>'
-             f'<g class="p p-spring" aria-hidden="true" pointer-events="none">{particles("petal", 55, ["#ffc2d9", "#ffffff", "#ffa8c8"], 12)}</g>'
-             f'<g class="p p-winter" aria-hidden="true" pointer-events="none">{particles("snow", 190, ["#ffffff", "#ffffff", "#eaf4ff"], 13)}</g>')
+PARTICLES = (f'<g class="p p-fall">{particles("leaf", 100, ["#e8782a", "#d9452f", "#e9b52e", "#c2561c"], 11)}</g>'
+             f'<g class="p p-spring">{particles("petal", 80, ["#ffc2d9", "#ffffff", "#ffa8c8"], 12)}</g>'
+             f'<g class="p p-winter">{particles("snow", 240, ["#ffffff", "#ffffff", "#eaf4ff"], 13)}</g>')
 
 # ------------------------------------------------------------------ a college: its building, plaza and name tag (a link to its own website)
 def college_svg(c):
@@ -523,7 +569,7 @@ def _ver(path): return hashlib.md5(path.read_bytes()).hexdigest()[:8]
 V = {"lgcss": _ver(LG / "style.css"), "lgseason": _ver(LG / "season.js"), "css": _ver(HERE / "cam.css"), "js": _ver(HERE / "cam.js")}
 
 # the stretch of river the boat sails along: centre y every 4 px from x = ARM_X0 (the river runs rightwards there)
-ARM_X0 = 0
+ARM_X0 = WX0 + 40
 def river_y_at(x):
     for (cx, cy) in CENTRE:
         if cx >= x: return cy
@@ -538,6 +584,7 @@ HTML = r'''<!DOCTYPE html>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>University of Cambridge</title>
 	<meta name="description" content="A zoomable pixel-art map of 28 colleges of the University of Cambridge along the River Cam. Select a college to visit its website.">
+	<meta name="robots" content="noindex, nofollow">
 	<meta name="theme-color" content="#0f1535">
 	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%238fd16c'/%3E%3Cpath fill='%233f95d8' d='M0 6h16v6H0z'/%3E%3Cpath fill='%235bb8f0' d='M0 6h16v4H0z'/%3E%3C/svg%3E">
 	<link rel="preload" href="../local-group/PressStart2P.woff2" as="font" type="font/woff2" crossorigin>
@@ -561,11 +608,10 @@ HTML = r'''<!DOCTYPE html>
 		</div>
 		@@TOD@@
 	</header>
-	<button type="button" class="season" id="season" aria-label="Change the season. It is now @@SEASON@@."><i aria-hidden="true"></i><small>SEASON</small><span id="seasonname">@@SEASON@@</span></button>
 
 	<main class="scene-wrap" id="main">
 		<p class="sr">Twenty-eight colleges along the River Cam. Pick one to visit its website.</p>
-		<svg class="scene" role="group" aria-label="Pixel-art map of 28 Cambridge colleges along the River Cam, which comes in from the lower left, runs past the Backs and St John's, and leaves down the right-hand side. Each college is a link to its own website." viewBox="@@VIEW@@" data-map="@@MAP@@" data-focus="@@FOCUS@@" data-arm="@@ARM@@" data-arm-x0="@@ARMX0@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" style="--fall:@@FALL@@px">
+		<svg class="scene" role="group" aria-label="Pixel-art map of 28 Cambridge colleges along the River Cam, which comes in from the lower left, runs past the Backs and St John's, and leaves down the right-hand side. Each college is a link to its own website." viewBox="@@VIEW@@" data-map="@@MAP@@" data-focus="@@FOCUS@@" data-arm="@@ARM@@" data-arm-x0="@@ARMX0@@" data-world="@@WORLD@@" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" >
 			<defs>
 				@@TILES@@
 				@@TREEDEFS@@
@@ -576,7 +622,7 @@ HTML = r'''<!DOCTYPE html>
 				</filter>
 			</defs>
 			<g id="world">
-				<g aria-hidden="true" class="dim">
+				<g aria-hidden="true">
 					@@GROUND@@
 					<g class="g-flowers">@@FLOWERS@@</g>
 					<g class="g-spring">@@SPRING@@</g>
@@ -592,15 +638,17 @@ HTML = r'''<!DOCTYPE html>
 					<g>@@ROADS@@</g>
 					<g>@@BRIDGES@@</g>
 					@@TREES@@
+					@@WOODS@@
 					<g>@@LAMP@@</g>
+					<rect class="veil" x="@@WX0@@" y="@@WY0@@" width="@@WW@@" height="@@WH@@" fill="#0e1640"/>
 				</g>
 				<g id="walkers" aria-hidden="true" pointer-events="none" data-people="@@NPEOPLE@@" data-routes="@@ROUTES@@"></g>
 				<g class="lit lamp" aria-hidden="true" pointer-events="none"><g opacity=".28">@@GLOW@@</g><g opacity=".38">@@GLOW2@@</g>@@LAMPLIT@@</g>
 
 				@@COLLEGES@@
-				@@PARTICLES@@
 			</g>
 		</svg>
+		<svg class="fx" aria-hidden="true" focusable="false" shape-rendering="crispEdges">@@PARTICLES@@</svg>
 		<p class="map-hint" aria-hidden="true">Drag to move. Pinch, or Ctrl + scroll, to zoom.</p>
 	</main>
 </body>
@@ -611,8 +659,8 @@ PAD = 10
 FOCUS = (round(sum(c['x'] for c in COLLEGES if c.get('backs')) / 6), round(sum(c['y'] for c in COLLEGES if c.get('backs')) / 6))   # phones open here
 html = (HTML.replace("@@SEASON@@", BUILD_SEASON).replace("@@TOD@@", TOD_BUTTON)
         .replace("@@VIEW@@", f"{MINX - PAD} {MINY - PAD} {W + 2 * PAD} {H + 2 * PAD}").replace("@@MAP@@", f"{MINX} {MINY} {MAXX} {MAXY}").replace("@@FOCUS@@", f"{FOCUS[0]} {FOCUS[1]}")
-        .replace("@@ARM@@", ARM).replace("@@ARMX0@@", str(ARM_X0)).replace("@@FALL@@", str(H + 60))
-        .replace("@@TILES@@", tiles_defs).replace("@@TREEDEFS@@", tree_def(0) + tree_def(1))
+        .replace("@@ARM@@", ARM).replace("@@ARMX0@@", str(ARM_X0)).replace("@@WX0@@", str(WX0)).replace("@@WY0@@", str(WY0)).replace("@@WW@@", str(WX1 - WX0)).replace("@@WH@@", str(WY1 - WY0)).replace("@@WORLD@@", f"{WX0} {WY0} {WX1} {WY1}")
+        .replace("@@TILES@@", tiles_defs).replace("@@TREEDEFS@@", tree_def(0) + tree_def(1) + woods_defs + woods_mask)
         .replace("@@GROUND@@", ground_rect("tuft")).replace("@@FLOWERS@@", ground_rect("flw")).replace("@@SPRING@@", ground_rect("spr"))
         .replace("@@LITTER@@", ground_rect("lit")).replace("@@LAWN@@", svg_paths(lawn)).replace("@@ROADS@@", svg_paths(roads)).replace("@@RIVER@@", svg_paths(river))
         .replace("@@SH1@@", svg_paths(SHIM[0])).replace("@@SH2@@", svg_paths(SHIM[1])).replace("@@SH3@@", svg_paths(SHIM[2]))
@@ -620,7 +668,7 @@ html = (HTML.replace("@@SEASON@@", BUILD_SEASON).replace("@@TOD@@", TOD_BUTTON)
         .replace("@@WALKERDEFS@@", WALKER_DEFS).replace("@@NPEOPLE@@", str(len(PEOPLE)))
         .replace("@@ROUTES@@", _html.escape(json.dumps([[n] + [round(v) for p_ in pts for v in p_] for n, pts in ROUTES], separators=(",", ":")), quote=True))
         .replace("@@LAMP@@", svg_paths(lamp)).replace("@@LAMPLIT@@", svg_paths(lamp_lit)).replace("@@GLOW@@", svg_paths(lamp_glow)).replace("@@GLOW2@@", svg_paths(lamp_glow2))
-        .replace("@@BRIDGES@@", svg_paths(bridges)).replace("@@TREES@@", trees_svg)
+        .replace("@@BRIDGES@@", svg_paths(bridges)).replace("@@TREES@@", trees_svg).replace("@@WOODS@@", woods_rect)
         .replace("@@COLLEGES@@", "\n\t\t\t\t".join(college_svg(c) for c in COLLEGES)).replace("@@PARTICLES@@", PARTICLES)
         .replace("@@V_SEASON@@", V["lgseason"]).replace("@@V_LGCSS@@", V["lgcss"]).replace("@@V_CSS@@", V["css"]).replace("@@V_JS@@", V["js"]))
 (HERE / "index.html").write_text(html, encoding="utf-8")
